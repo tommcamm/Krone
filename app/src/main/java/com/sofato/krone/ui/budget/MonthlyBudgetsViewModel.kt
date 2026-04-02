@@ -70,7 +70,7 @@ class MonthlyBudgetsViewModel @Inject constructor(
                 categoryRepository.getActiveCategories(),
             ) { allocations, categories ->
                 val allocatedIds = allocations.map { it.categoryId }.toSet()
-                categories.filter { it.id !in allocatedIds }
+                categories.filter { it.id !in allocatedIds && !(it.iconName == "MoreHoriz" && !it.isCustom) }
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

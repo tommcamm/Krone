@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.CurrencyExchange
+import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.FileDownload
@@ -67,6 +68,8 @@ fun SettingsScreen(
 ) {
     val darkModeOverride by viewModel.darkModeOverride.collectAsState()
     val isDynamicColorEnabled by viewModel.isDynamicColorEnabled.collectAsState()
+    val showMonthlyCard by viewModel.showMonthlyCard.collectAsState()
+    val showDailyCard by viewModel.showDailyCard.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -184,6 +187,29 @@ fun SettingsScreen(
                         onCheckedChange = { viewModel.setDynamicColor(it) },
                     )
                 }
+            }
+
+            // Dashboard section
+            item { SettingsSection("Dashboard") }
+
+            item {
+                SettingsSwitchRow(
+                    icon = Icons.Outlined.Dashboard,
+                    title = "Monthly overview",
+                    subtitle = "Show \"Left this month\" card",
+                    checked = showMonthlyCard,
+                    onCheckedChange = { viewModel.setShowMonthlyCard(it) },
+                )
+            }
+
+            item {
+                SettingsSwitchRow(
+                    icon = Icons.Outlined.Dashboard,
+                    title = "Daily budget",
+                    subtitle = "Show \"You can spend today\" card",
+                    checked = showDailyCard,
+                    onCheckedChange = { viewModel.setShowDailyCard(it) },
+                )
             }
 
             // General section

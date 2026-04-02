@@ -27,6 +27,12 @@ class SettingsViewModel @Inject constructor(
     val isDynamicColorEnabled: StateFlow<Boolean> = userPreferencesRepository.isDynamicColorEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val showMonthlyCard: StateFlow<Boolean> = userPreferencesRepository.showMonthlyCard
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val showDailyCard: StateFlow<Boolean> = userPreferencesRepository.showDailyCard
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     private val _events = MutableSharedFlow<SettingsEvent>()
     val events = _events.asSharedFlow()
 
@@ -46,6 +52,18 @@ class SettingsViewModel @Inject constructor(
     fun setDynamicColor(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setDynamicColorEnabled(enabled)
+        }
+    }
+
+    fun setShowMonthlyCard(show: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setShowMonthlyCard(show)
+        }
+    }
+
+    fun setShowDailyCard(show: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setShowDailyCard(show)
         }
     }
 

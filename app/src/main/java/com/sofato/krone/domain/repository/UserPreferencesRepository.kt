@@ -8,10 +8,14 @@ interface UserPreferencesRepository {
     val darkModeOverride: Flow<String>
     val hasCompletedOnboarding: Flow<Boolean>
     val incomeDay: Flow<Int>
+    val showMonthlyCard: Flow<Boolean>
+    val showDailyCard: Flow<Boolean>
     suspend fun setHomeCurrencyCode(code: String)
     suspend fun setDynamicColorEnabled(enabled: Boolean)
     suspend fun setDarkModeOverride(mode: String)
     suspend fun setHasCompletedOnboarding(completed: Boolean)
     suspend fun setIncomeDay(day: Int)
+    suspend fun setShowMonthlyCard(show: Boolean)
+    suspend fun setShowDailyCard(show: Boolean)
     suspend fun clearAll()
 }

@@ -103,15 +103,25 @@ fun DailyBudgetHeroCard(
 
             Spacer(Modifier.height(Dimens.SpacingMd))
 
-            LinearProgressIndicator(
-                progress = { progress.coerceAtMost(1f) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(MaterialTheme.shapes.small),
-                color = progressColor,
-                trackColor = contentColor.copy(alpha = 0.15f),
-            )
+            if (trackedCategories.isNotEmpty()) {
+                SegmentedSpendingBar(
+                    totalBudget = dailyBudget.dailyAmountMinor,
+                    totalSpent = spentToday,
+                    trackedCategories = trackedCategories,
+                    height = 8.dp,
+                    trackColor = contentColor.copy(alpha = 0.15f),
+                )
+            } else {
+                LinearProgressIndicator(
+                    progress = { progress.coerceAtMost(1f) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(MaterialTheme.shapes.small),
+                    color = progressColor,
+                    trackColor = contentColor.copy(alpha = 0.15f),
+                )
+            }
 
             Spacer(Modifier.height(Dimens.SpacingSm))
 

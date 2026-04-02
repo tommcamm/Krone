@@ -3,14 +3,18 @@ package com.sofato.krone.ui.dashboard.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -107,15 +111,24 @@ fun BudgetBreakdownCard(
 
             Spacer(Modifier.height(Dimens.SpacingSm))
 
-            LinearProgressIndicator(
-                progress = { spentFraction.coerceIn(0f, 1f) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(MaterialTheme.shapes.small),
-                color = progressColor,
-                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-            )
+            if (trackedCategories.isNotEmpty()) {
+                SegmentedSpendingBar(
+                    totalBudget = discretionaryMinor,
+                    totalSpent = totalSpent,
+                    trackedCategories = trackedCategories,
+                    height = 6.dp,
+                )
+            } else {
+                LinearProgressIndicator(
+                    progress = { spentFraction.coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(6.dp)
+                        .clip(MaterialTheme.shapes.small),
+                    color = progressColor,
+                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                )
+            }
             Spacer(Modifier.height(Dimens.SpacingXs))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -141,29 +154,14 @@ fun BudgetBreakdownCard(
                 trackedCategories.forEach { cs ->
                     CategoryBudgetRow(cs = cs, currency = currency)
                 }
-                if (unallocatedDiscretionaryMinor != discretionaryMinor) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 2.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(
-                            text = "Unallocated",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            text = CurrencyFormatter.formatDisplay(unallocatedDiscretionaryMinor, currency),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (unallocatedDiscretionaryMinor < 0) {
-                                MaterialTheme.colorScheme.error
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                        )
-                    }
-                }
+                // Free budget row — unallocated discretionary with its own progress
+                val trackedSpentTotal = trackedCategories.sumOf { it.spentMinor }
+                val freeSpent = (totalSpent - trackedSpentTotal).coerceAtLeast(0)
+                FreeBudgetRow(
+                    spentMinor = freeSpent,
+                    budgetMinor = unallocatedDiscretionaryMinor,
+                    currency = currency,
+                )
             }
 
             AnimatedVisibility(
@@ -292,6 +290,66 @@ private fun CategoryBudgetRow(
     }
     LinearProgressIndicator(
         progress = { catProgress },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(4.dp)
+            .clip(MaterialTheme.shapes.small),
+        color = barColor,
+        trackColor = barColor.copy(alpha = 0.12f),
+    )
+    Spacer(Modifier.height(Dimens.SpacingXs))
+}
+
+@Composable
+private fun FreeBudgetRow(
+    spentMinor: Long,
+    budgetMinor: Long,
+    currency: Currency,
+) {
+    val isOver = budgetMinor > 0 && spentMinor > budgetMinor
+    val barColor = if (isOver) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
+    val progress = if (budgetMinor > 0) {
+        (spentMinor.toFloat() / budgetMinor).coerceIn(0f, 1f)
+    } else 0f
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.outline),
+            )
+        }
+        Text(
+            text = "Free budget",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = if (budgetMinor > 0) {
+                "${CurrencyFormatter.formatDisplay(spentMinor, currency)} / ${CurrencyFormatter.formatDisplay(budgetMinor, currency)}"
+            } else {
+                CurrencyFormatter.formatDisplay(spentMinor, currency) + " spent"
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = if (isOver) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    LinearProgressIndicator(
+        progress = { progress },
         modifier = Modifier
             .fillMaxWidth()
             .height(4.dp)

@@ -92,6 +92,14 @@ class DashboardViewModel @Inject constructor(
         getBudgetOverviewUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    val showMonthlyCard: StateFlow<Boolean> =
+        userPreferencesRepository.showMonthlyCard
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val showDailyCard: StateFlow<Boolean> =
+        userPreferencesRepository.showDailyCard
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     private val _lastDeletedExpense = MutableStateFlow<Expense?>(null)
     val lastDeletedExpense: StateFlow<Expense?> = _lastDeletedExpense.asStateFlow()
 

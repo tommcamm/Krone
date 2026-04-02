@@ -52,6 +52,8 @@ fun DashboardScreen(
     val rollingAvg by viewModel.rollingDailyAverage.collectAsState()
     val lastDeleted by viewModel.lastDeletedExpense.collectAsState()
     val budgetOverview by viewModel.budgetOverview.collectAsState()
+    val showMonthlyCard by viewModel.showMonthlyCard.collectAsState()
+    val showDailyCard by viewModel.showDailyCard.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(lastDeleted) {
@@ -72,45 +74,50 @@ fun DashboardScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             // Monthly budget breakdown
-            item {
-                val currency = homeCurrency
-                val budget = dailyBudget
-                if (currency != null && budget != null) {
-                    val ov = budgetOverview
-                    val trackedCategories = ov
-                        ?.categoryBreakdown
-                        ?.filter { it.allocatedMinor > 0 }
-                        ?: emptyList()
-                    BudgetBreakdownCard(
-                        dailyBudget = budget,
-                        spentToday = totalSpent,
-                        currency = currency,
-                        modifier = Modifier.padding(Dimens.SpacingMd),
-                        trackedCategories = trackedCategories,
-                        totalAllocatedMinor = ov?.totalAllocatedMinor ?: 0L,
-                        unallocatedDiscretionaryMinor = ov?.unallocatedDiscretionaryMinor ?: budget.discretionaryMinor,
-                    )
+            if (showMonthlyCard) {
+                item {
+                    val currency = homeCurrency
+                    val budget = dailyBudget
+                    if (currency != null && budget != null) {
+                        val ov = budgetOverview
+                        val trackedCategories = ov
+                            ?.categoryBreakdown
+                            ?.filter { it.allocatedMinor > 0 }
+                            ?: emptyList()
+                        BudgetBreakdownCard(
+                            dailyBudget = budget,
+                            spentToday = totalSpent,
+                            currency = currency,
+                            modifier = Modifier.padding(Dimens.SpacingMd),
+                            trackedCategories = trackedCategories,
+                            totalAllocatedMinor = ov?.totalAllocatedMinor ?: 0L,
+                            unallocatedDiscretionaryMinor = ov?.unallocatedDiscretionaryMinor
+                                ?: budget.discretionaryMinor,
+                        )
+                    }
                 }
             }
 
             // Daily Budget Hero Card
-            item {
-                val currency = homeCurrency
-                val budget = dailyBudget
-                if (currency != null && budget != null) {
-                    val heroTracked = budgetOverview
-                        ?.categoryBreakdown
-                        ?.filter { it.allocatedMinor > 0 }
-                        ?: emptyList()
-                    DailyBudgetHeroCard(
-                        dailyBudget = budget,
-                        spentToday = totalSpent,
-                        currency = currency,
-                        modifier = Modifier
-                            .padding(horizontal = Dimens.SpacingMd)
-                            .animateContentSize(spring(stiffness = Spring.StiffnessLow)),
-                        trackedCategories = heroTracked,
-                    )
+            if (showDailyCard) {
+                item {
+                    val currency = homeCurrency
+                    val budget = dailyBudget
+                    if (currency != null && budget != null) {
+                        val heroTracked = budgetOverview
+                            ?.categoryBreakdown
+                            ?.filter { it.allocatedMinor > 0 }
+                            ?: emptyList()
+                        DailyBudgetHeroCard(
+                            dailyBudget = budget,
+                            spentToday = totalSpent,
+                            currency = currency,
+                            modifier = Modifier
+                                .padding(horizontal = Dimens.SpacingMd)
+                                .animateContentSize(spring(stiffness = Spring.StiffnessLow)),
+                            trackedCategories = heroTracked,
+                        )
+                    }
                 }
             }
 
