@@ -13,4 +13,5 @@ interface UserPreferencesRepository {
     suspend fun setDarkModeOverride(mode: String)
     suspend fun setHasCompletedOnboarding(completed: Boolean)
     suspend fun setIncomeDay(day: Int)
+    suspend fun clearAll()
 }

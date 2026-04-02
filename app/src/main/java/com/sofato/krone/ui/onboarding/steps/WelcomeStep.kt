@@ -17,9 +17,11 @@ import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.CurrencyExchange
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,10 +34,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sofato.krone.R
 import com.sofato.krone.ui.theme.Dimens
+import androidx.compose.foundation.layout.width
 
 @Composable
 fun WelcomeStep(
     onGetStarted: () -> Unit,
+    onImportBackup: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -110,6 +114,21 @@ fun WelcomeStep(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(text = stringResource(R.string.onboarding_get_started))
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.SpacingSm))
+
+        OutlinedButton(
+            onClick = onImportBackup,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Icon(
+                Icons.Outlined.FileUpload,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(Modifier.width(Dimens.SpacingSm))
+            Text(text = stringResource(R.string.import_backup))
         }
 
         Spacer(modifier = Modifier.height(Dimens.SpacingMd))

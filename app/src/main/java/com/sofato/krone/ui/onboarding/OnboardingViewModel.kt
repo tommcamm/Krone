@@ -1,7 +1,9 @@
 package com.sofato.krone.ui.onboarding
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sofato.krone.data.backup.DatabaseBackupManager
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.Income
@@ -10,6 +12,7 @@ import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.model.SavingsBucket
 import com.sofato.krone.domain.model.SavingsBucketType
 import com.sofato.krone.domain.repository.CurrencyRepository
+import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.domain.usecase.onboarding.CompleteOnboardingUseCase
 import com.sofato.krone.util.CurrencyFormatter
@@ -21,6 +24,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -56,6 +60,8 @@ data class OnboardingResult(
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val completeOnboardingUseCase: CompleteOnboardingUseCase,
+    private val databaseBackupManager: DatabaseBackupManager,
+    private val userPreferencesRepository: UserPreferencesRepository,
     currencyRepository: CurrencyRepository,
     getCategoriesUseCase: GetCategoriesUseCase,
 ) : ViewModel() {
@@ -141,6 +147,7 @@ class OnboardingViewModel @Inject constructor(
 
     sealed interface OnboardingEvent {
         data object Completed : OnboardingEvent
+        data object ImportCompleted : OnboardingEvent
     }
 
     // Navigation
@@ -241,6 +248,14 @@ class OnboardingViewModel @Inject constructor(
             if (index in it.indices) {
                 it[index] = it[index].copy(targetAmountMinor = minor)
             }
+        }
+    }
+
+    fun importBackup(uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            databaseBackupManager.importFrom(uri)
+            userPreferencesRepository.setHasCompletedOnboarding(true)
+            _events.emit(OnboardingEvent.ImportCompleted)
         }
     }
 

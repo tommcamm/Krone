@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import com.sofato.krone.ui.budget.BudgetScreen
 import com.sofato.krone.ui.currency.CurrencySettingsScreen
 import com.sofato.krone.ui.income.ManageSalaryScreen
+import com.sofato.krone.ui.settings.SettingsScreen
 import com.sofato.krone.ui.dashboard.DashboardScreen
 import com.sofato.krone.ui.expenses.AddExpenseScreen
 import com.sofato.krone.ui.expenses.CategoryManagementScreen
@@ -124,6 +125,12 @@ fun KroneNavHost(
         composable<KroneDestination.CurrencySettings> {
             CurrencySettingsScreen(
                 onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable<KroneDestination.Settings> {
+            SettingsScreen(
+                onNavigateToCurrency = { navController.navigate(KroneDestination.CurrencySettings) },
+                onNavigateToCategories = { navController.navigate(KroneDestination.CategoryManagement) },
             )
         }
     }

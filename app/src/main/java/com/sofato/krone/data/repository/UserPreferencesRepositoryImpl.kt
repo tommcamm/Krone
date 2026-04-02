@@ -52,4 +52,8 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setIncomeDay(day: Int) {
         dataStore.edit { it[PreferenceKeys.INCOME_DAY] = day }
     }
+
+    override suspend fun clearAll() {
+        dataStore.edit { it.clear() }
+    }
 }
