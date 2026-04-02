@@ -66,7 +66,7 @@ fun BudgetScreen(
                     modifier = Modifier.padding(top = Dimens.SpacingSm),
                 )
             }
-            items(items = incomeList, key = { it.id }) { income ->
+            items(items = incomeList, key = { "income_${it.id}" }) { income ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -101,7 +101,7 @@ fun BudgetScreen(
             }
         }
 
-        items(items = recurringExpenses, key = { it.id }) { expense ->
+        items(items = recurringExpenses, key = { "recurring_${it.id}" }) { expense ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -130,7 +130,7 @@ fun BudgetScreen(
                 }
                 items(
                     items = ov.categoryBreakdown,
-                    key = { it.category.id },
+                    key = { "cat_${it.category.id}" },
                 ) { categorySpend ->
                     CategoryProgressBar(
                         category = categorySpend.category,

@@ -106,7 +106,7 @@ class OnboardingViewModel @Inject constructor(
 
     private val categories: StateFlow<List<Category>> =
         getCategoriesUseCase()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+            .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // Computed result preview
     val resultPreview: StateFlow<OnboardingResult> =

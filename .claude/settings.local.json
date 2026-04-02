@@ -13,7 +13,10 @@
       "Bash(./gradlew --no-daemon compileGoogleDebugKotlin)",
       "Bash(./gradlew --no-daemon assembleFossDebug assembleGoogleDebug)",
       "Bash(ls:*)",
-      "Bash(./gradlew assembleDebug)"
+      "Bash(./gradlew assembleDebug)",
+      "Bash(find:*)",
+      "Bash(xargs basename:*)",
+      "Bash(grep -E \"\\\\.kt$\")"
     ]
   }
 }
