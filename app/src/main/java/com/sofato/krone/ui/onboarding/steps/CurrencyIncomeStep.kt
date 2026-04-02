@@ -45,21 +45,7 @@ fun CurrencyIncomeStep(
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        Text(
-            text = "Your currency & payday",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-
         Spacer(modifier = Modifier.height(Dimens.SpacingSm))
-
-        Text(
-            text = "Choose your primary currency and the day you receive your salary.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        Spacer(modifier = Modifier.height(Dimens.SpacingLg))
 
         // Currency selector
         Text(

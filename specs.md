@@ -585,12 +585,20 @@ This ensures F-Droid inclusion (which requires no proprietary code) while still 
 
 ### Phase 2 — Budget Engine (Weeks 5–8)
 
-- Onboarding flow (including currency selection and savings goals).
+- Onboarding flow redesign (native Material 3 feel, progressive disclosure, clearer guidance).
 - Monthly budget setup and allocation.
-- Recurring expenses engine (auto-posting, next-date calculation).
+- Recurring expenses engine (auto-posting, next-date calculation, MONTHLY + YEARLY cadence).
 - Savings buckets: CRUD, monthly auto-posting, balance snapshots.
 - Daily budget calculation (income − fixed − savings − spent ÷ remaining days).
 - Dashboard (daily view) with quick-add.
+- Commitments management entrypoint from Budget to edit recurring expenses and savings contributions.
+
+Phase 2 acceptance criteria:
+
+- User can create and edit recurring expenses with monthly or yearly cadence.
+- Auto-post processing advances `nextDate` by cadence (month/year) correctly.
+- Onboarding is guided and understandable, with clear edit points for fixed costs and savings setup.
+- Budget has one obvious "Manage commitments" path to recurring expenses and savings edits.
 
 ### Phase 3 — Multi-Currency & Exchange Rates (Weeks 9–10)
 
@@ -674,6 +682,8 @@ These are explicitly out of scope for v1 but the architecture should not prevent
 - [ ] ML inference < 5ms per prediction on a mid-range device.
 - [ ] Unit test coverage > 80% on domain layer (including currency conversion and savings calculations).
 - [ ] UI tests for onboarding, expense entry, savings bucket creation, and currency switching.
+- [ ] UI tests validate yearly recurring expense creation/editing and due-date advancement.
+- [ ] UI tests validate "Manage commitments" discovery from Budget.
 - [ ] No crashes in 1 week of daily use by 3+ beta testers.
 - [ ] F-Droid build compiles without proprietary dependencies.
 - [ ] APK size < 20 MB (increased from 15 MB to accommodate ONNX Runtime).

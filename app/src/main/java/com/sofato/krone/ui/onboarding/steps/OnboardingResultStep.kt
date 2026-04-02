@@ -59,16 +59,7 @@ fun OnboardingResultStep(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(Dimens.SpacingXl))
-
-        Text(
-            text = "Your daily budget",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-        )
-
-        Spacer(modifier = Modifier.height(Dimens.SpacingXl))
+        Spacer(modifier = Modifier.height(Dimens.SpacingMd))
 
         // Hero daily amount
         val dailyDisplay = if (currency != null) {

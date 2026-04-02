@@ -24,7 +24,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.sofato.krone.domain.model.SavingsBucketType
 import com.sofato.krone.ui.onboarding.OnboardingViewModel
 import com.sofato.krone.ui.theme.Dimens
+import com.sofato.krone.util.CurrencyFormatter
 
 private data class SavingsTemplate(
     val label: String,
@@ -58,6 +58,7 @@ fun SavingsGoalsStep(
 ) {
     val goals by viewModel.savingsGoals.collectAsState()
     val selectedCurrencyCode by viewModel.selectedCurrencyCode.collectAsState()
+    val monthlyTotalMinor = goals.sumOf { it.monthlyContributionMinor }
 
     // Local text state for monthly and target fields
     val monthlyTexts = remember { mutableStateMapOf<Int, String>() }
@@ -66,19 +67,32 @@ fun SavingsGoalsStep(
     Column(
         modifier = modifier.fillMaxSize(),
     ) {
-        Text(
-            text = "Savings goals",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-
         Spacer(modifier = Modifier.height(Dimens.SpacingSm))
 
-        Text(
-            text = "Set aside money each month for your goals.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            ),
+        ) {
+            Column(modifier = Modifier.padding(Dimens.SpacingMd)) {
+                Text(
+                    text = "Planned savings per month",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = "${CurrencyFormatter.formatPlain(monthlyTotalMinor, 2)} $selectedCurrencyCode",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+                Text(
+                    text = "Add at least one bucket to keep savings visible in your budget.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(Dimens.SpacingMd))
 
@@ -96,7 +110,7 @@ fun SavingsGoalsStep(
                             label = template.label,
                             type = template.type,
                             monthlyMinor = 0L,
-                            targetMinor = null,
+                            targetMinor = if (template.type == SavingsBucketType.EMERGENCY_FUND) 0L else null,
                         )
                     },
                     label = { Text(template.label) },
@@ -185,14 +199,6 @@ fun SavingsGoalsStep(
 
         if (goals.isEmpty()) {
             Spacer(modifier = Modifier.weight(1f))
-        }
-
-        // Skip button - proceeds to the result screen without adding savings
-        TextButton(
-            onClick = { viewModel.nextStep() },
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        ) {
-            Text("Skip")
         }
     }
 }

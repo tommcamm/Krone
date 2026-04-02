@@ -33,21 +33,7 @@ fun IncomeStep(
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
     ) {
-        Text(
-            text = "Monthly income",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-
         Spacer(modifier = Modifier.height(Dimens.SpacingSm))
-
-        Text(
-            text = "Enter your monthly take-home pay after tax.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        Spacer(modifier = Modifier.height(Dimens.SpacingLg))
 
         // Income label
         Text(

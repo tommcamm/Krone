@@ -51,6 +51,9 @@ private fun MainApp() {
     val showBottomBar = currentDestination?.let { dest ->
         BottomNavItem.entries.any { dest.hasRoute(it.destination::class) }
     } ?: true
+    val showGlobalFab = showBottomBar && (
+        currentDestination?.hasRoute(KroneDestination.Savings::class) != true
+    )
 
     Scaffold(
         bottomBar = {
@@ -70,7 +73,7 @@ private fun MainApp() {
             }
         },
         floatingActionButton = {
-            if (showBottomBar) {
+            if (showGlobalFab) {
                 FloatingActionButton(
                     onClick = { navController.navigate(KroneDestination.AddExpense) },
                 ) {

@@ -3,8 +3,10 @@ package com.sofato.krone.ui.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sofato.krone.domain.model.Currency
+import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.Income
 import com.sofato.krone.domain.model.RecurringExpense
+import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.model.SavingsBucket
 import com.sofato.krone.domain.model.SavingsBucketType
 import com.sofato.krone.domain.repository.CurrencyRepository
@@ -32,6 +34,7 @@ data class OnboardingFixedExpense(
     val categoryId: Long,
     val iconName: String,
     val colorHex: String,
+    val recurrenceRule: String = RecurrenceRule.MONTHLY,
 )
 
 data class OnboardingSavingsGoal(
@@ -99,6 +102,10 @@ class OnboardingViewModel @Inject constructor(
     // Currencies
     val enabledCurrencies: StateFlow<List<Currency>> =
         currencyRepository.getEnabledCurrencies()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val categories: StateFlow<List<Category>> =
+        getCategoriesUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Computed result preview
@@ -177,6 +184,15 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    fun updateFixedExpenseRecurrence(index: Int, recurrenceRule: String) {
+        val normalized = RecurrenceRule.normalize(recurrenceRule)
+        _fixedExpenses.value = _fixedExpenses.value.toMutableList().also {
+            if (index in it.indices) {
+                it[index] = it[index].copy(recurrenceRule = normalized)
+            }
+        }
+    }
+
     // Step 3 actions
     fun addSavingsGoal(
         label: String,
@@ -231,20 +247,22 @@ class OnboardingViewModel @Inject constructor(
                 currencyCode = currencyCode,
                 label = _incomeLabel.value,
                 isRecurring = true,
-                recurrenceRule = "MONTHLY",
+                recurrenceRule = RecurrenceRule.MONTHLY,
                 startDate = today,
                 createdAt = now,
             )
 
             val recurringExpenses = _fixedExpenses.value
                 .filter { it.amountMinor > 0 }
-                .map { expense ->
+                .mapNotNull { expense ->
+                    val resolvedCategoryId = resolveOnboardingCategoryId(expense)
+                    if (resolvedCategoryId <= 0L) return@mapNotNull null
                     RecurringExpense(
                         amountMinor = expense.amountMinor,
                         currencyCode = currencyCode,
-                        categoryId = expense.categoryId,
+                        categoryId = resolvedCategoryId,
                         label = expense.label,
-                        recurrenceRule = "MONTHLY",
+                        recurrenceRule = expense.recurrenceRule,
                         nextDate = today,
                         isActive = true,
                         createdAt = now,
@@ -275,5 +293,29 @@ class OnboardingViewModel @Inject constructor(
 
             _events.emit(OnboardingEvent.Completed)
         }
+    }
+
+    private fun resolveOnboardingCategoryId(expense: OnboardingFixedExpense): Long {
+        val availableCategories = categories.value
+        if (availableCategories.isEmpty()) {
+            return -1L
+        }
+
+        val byExplicitId = availableCategories.firstOrNull { it.id == expense.categoryId }?.id
+        if (byExplicitId != null) return byExplicitId
+
+        val byIcon = availableCategories.firstOrNull { it.iconName == expense.iconName }?.id
+        if (byIcon != null) return byIcon
+
+        val byName = when (expense.label) {
+            "Transport" -> "Transport"
+            "Subscriptions" -> "Entertainment"
+            else -> "Household"
+        }
+        val byMappedName = availableCategories.firstOrNull { it.name == byName }?.id
+        if (byMappedName != null) return byMappedName
+
+        return availableCategories.firstOrNull { it.name == "Other" }?.id
+            ?: availableCategories.first().id
     }
 }

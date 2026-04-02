@@ -6,6 +6,7 @@ import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.Income
 import com.sofato.krone.domain.model.MonthlySnapshot
 import com.sofato.krone.domain.model.RecurringExpense
+import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.model.SavingsBucket
 import com.sofato.krone.domain.model.SavingsContribution
 import kotlinx.datetime.Clock
@@ -45,12 +46,12 @@ fun Income.toEntity(): IncomeEntity = IncomeEntity(
 // RecurringExpense
 fun RecurringExpenseEntity.toDomain(): RecurringExpense = RecurringExpense(
     id = id, amountMinor = amountMinor, currencyCode = currencyCode,
-    categoryId = categoryId, label = label, recurrenceRule = recurrenceRule,
+    categoryId = categoryId, label = label, recurrenceRule = RecurrenceRule.normalize(recurrenceRule),
     nextDate = nextDate, isActive = isActive, createdAt = createdAt,
 )
 fun RecurringExpense.toEntity(): RecurringExpenseEntity = RecurringExpenseEntity(
     id = id, amountMinor = amountMinor, currencyCode = currencyCode,
-    categoryId = categoryId, label = label, recurrenceRule = recurrenceRule,
+    categoryId = categoryId, label = label, recurrenceRule = RecurrenceRule.normalize(recurrenceRule),
     nextDate = nextDate, isActive = isActive,
     createdAt = if (id == 0L) Clock.System.now() else createdAt,
 )

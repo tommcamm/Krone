@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.RecurringExpense
+import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
@@ -46,6 +47,9 @@ class AddRecurringExpenseViewModel @Inject constructor(
     private val _selectedCategory = MutableStateFlow<Category?>(null)
     val selectedCategory: StateFlow<Category?> = _selectedCategory.asStateFlow()
 
+    private val _recurrenceRule = MutableStateFlow(RecurrenceRule.MONTHLY)
+    val recurrenceRule: StateFlow<String> = _recurrenceRule.asStateFlow()
+
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
@@ -68,6 +72,9 @@ class AddRecurringExpenseViewModel @Inject constructor(
         _amountInput.value = value.filter { it.isDigit() || it == '.' || it == ',' }
     }
     fun onCategorySelected(category: Category) { _selectedCategory.value = category }
+    fun onRecurrenceRuleChanged(value: String) {
+        _recurrenceRule.value = RecurrenceRule.normalize(value)
+    }
 
     fun save() {
         val category = _selectedCategory.value ?: return
@@ -86,7 +93,7 @@ class AddRecurringExpenseViewModel @Inject constructor(
                     currencyCode = currencyCode,
                     categoryId = category.id,
                     label = _label.value.trim(),
-                    recurrenceRule = "MONTHLY",
+                    recurrenceRule = _recurrenceRule.value,
                     nextDate = LocalDate.today(),
                     isActive = true,
                     createdAt = Clock.System.now(),

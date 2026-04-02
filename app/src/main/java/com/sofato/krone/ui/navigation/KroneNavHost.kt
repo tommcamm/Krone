@@ -3,9 +3,11 @@ package com.sofato.krone.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.sofato.krone.ui.budget.BudgetScreen
+import com.sofato.krone.ui.commitments.ManageCommitmentsScreen
 import com.sofato.krone.ui.dashboard.DashboardScreen
 import com.sofato.krone.ui.expenses.AddExpenseScreen
 import com.sofato.krone.ui.expenses.CategoryManagementScreen
@@ -39,7 +41,22 @@ fun KroneNavHost(
         }
         composable<KroneDestination.Budget> {
             BudgetScreen(
+                onManageCommitments = { navController.navigate(KroneDestination.ManageCommitments) },
+            )
+        }
+        composable<KroneDestination.ManageCommitments> {
+            ManageCommitmentsScreen(
+                onNavigateBack = { navController.popBackStack() },
                 onManageRecurring = { navController.navigate(KroneDestination.RecurringExpenseList) },
+                onManageSavings = {
+                    navController.navigate(KroneDestination.Savings) {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
             )
         }
         composable<KroneDestination.Savings> {

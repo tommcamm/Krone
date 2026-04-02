@@ -1,6 +1,7 @@
 package com.sofato.krone.domain.usecase.recurring
 
 import com.sofato.krone.domain.model.Expense
+import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.repository.CategoryRepository
 import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.ExpenseRepository
@@ -8,10 +9,8 @@ import com.sofato.krone.domain.repository.RecurringExpenseRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.util.today
 import kotlinx.coroutines.flow.first
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Clock
-import kotlinx.datetime.plus
 import javax.inject.Inject
 
 class ProcessDueRecurringExpensesUseCase @Inject constructor(
@@ -50,8 +49,11 @@ class ProcessDueRecurringExpensesUseCase @Inject constructor(
             )
             expenseRepository.addExpense(expense)
 
-            // Advance to next month
-            val nextDate = recurring.nextDate.plus(1, DateTimeUnit.MONTH)
+            // Advance date by configured cadence.
+            val nextDate = RecurrenceRule.advanceNextDate(
+                current = recurring.nextDate,
+                recurrenceRule = recurring.recurrenceRule,
+            )
             recurringExpenseRepository.updateNextDate(recurring.id, nextDate)
         }
     }

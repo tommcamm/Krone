@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew --no-daemon tasks --all)",
+      "Bash(curl -s \"https://repo1.maven.org/maven2/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/maven-metadata.xml\")",
+      "Bash(curl -s \"https://repo1.maven.org/maven2/com/google/dagger/hilt-android/maven-metadata.xml\")",
+      "Bash(curl -s \"https://dl.google.com/dl/android/maven2/androidx/room/room-runtime/maven-metadata.xml\")",
+      "Bash(curl -s \"https://dl.google.com/dl/android/maven2/androidx/navigation/navigation-compose/maven-metadata.xml\")",
+      "Bash(curl -s \"https://dl.google.com/dl/android/maven2/androidx/compose/compose-bom/maven-metadata.xml\")",
+      "Bash(curl -s \"https://dl.google.com/dl/android/maven2/androidx/hilt/hilt-navigation-compose/maven-metadata.xml\")",
+      "Bash(./gradlew --no-daemon help)",
+      "Bash(./gradlew --no-daemon compileFossDebugKotlin)",
+      "Bash(./gradlew --no-daemon compileGoogleDebugKotlin)",
+      "Bash(./gradlew --no-daemon assembleFossDebug assembleGoogleDebug)",
+      "Bash(ls:*)"
+    ]
+  }
+}
