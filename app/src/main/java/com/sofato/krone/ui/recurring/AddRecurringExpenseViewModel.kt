@@ -50,6 +50,9 @@ class AddRecurringExpenseViewModel @Inject constructor(
     private val _recurrenceRule = MutableStateFlow(RecurrenceRule.MONTHLY)
     val recurrenceRule: StateFlow<String> = _recurrenceRule.asStateFlow()
 
+    private val _dayOfMonth = MutableStateFlow<Int?>(null)
+    val dayOfMonth: StateFlow<Int?> = _dayOfMonth.asStateFlow()
+
     private val _isSaving = MutableStateFlow(false)
     val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
 
@@ -74,6 +77,12 @@ class AddRecurringExpenseViewModel @Inject constructor(
     fun onCategorySelected(category: Category) { _selectedCategory.value = category }
     fun onRecurrenceRuleChanged(value: String) {
         _recurrenceRule.value = RecurrenceRule.normalize(value)
+        if (RecurrenceRule.normalize(value) == RecurrenceRule.YEARLY) {
+            _dayOfMonth.value = null
+        }
+    }
+    fun onDayOfMonthChanged(day: Int?) {
+        _dayOfMonth.value = day?.coerceIn(1, 31)
     }
 
     fun save() {
@@ -87,6 +96,13 @@ class AddRecurringExpenseViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isSaving.value = true
+            val today = LocalDate.today()
+            val day = _dayOfMonth.value
+            val nextDate = if (day != null && _recurrenceRule.value == RecurrenceRule.MONTHLY) {
+                RecurrenceRule.initialNextDate(day, today)
+            } else {
+                today
+            }
             addRecurringExpenseUseCase(
                 RecurringExpense(
                     amountMinor = amountMinor,
@@ -94,9 +110,10 @@ class AddRecurringExpenseViewModel @Inject constructor(
                     categoryId = category.id,
                     label = _label.value.trim(),
                     recurrenceRule = _recurrenceRule.value,
-                    nextDate = LocalDate.today(),
+                    nextDate = nextDate,
                     isActive = true,
                     createdAt = Clock.System.now(),
+                    dayOfMonth = day,
                 )
             )
             _isSaving.value = false

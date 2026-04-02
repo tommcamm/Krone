@@ -48,12 +48,14 @@ fun RecurringExpenseEntity.toDomain(): RecurringExpense = RecurringExpense(
     id = id, amountMinor = amountMinor, currencyCode = currencyCode,
     categoryId = categoryId, label = label, recurrenceRule = RecurrenceRule.normalize(recurrenceRule),
     nextDate = nextDate, isActive = isActive, createdAt = createdAt,
+    dayOfMonth = dayOfMonth,
 )
 fun RecurringExpense.toEntity(): RecurringExpenseEntity = RecurringExpenseEntity(
     id = id, amountMinor = amountMinor, currencyCode = currencyCode,
     categoryId = categoryId, label = label, recurrenceRule = RecurrenceRule.normalize(recurrenceRule),
     nextDate = nextDate, isActive = isActive,
     createdAt = if (id == 0L) Clock.System.now() else createdAt,
+    dayOfMonth = dayOfMonth,
 )
 
 // SavingsBucket

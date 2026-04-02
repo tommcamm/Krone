@@ -31,8 +31,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.ui.components.CategoryIcon
 import com.sofato.krone.ui.onboarding.OnboardingViewModel
+import com.sofato.krone.ui.recurring.ChargeDayInput
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.CurrencyFormatter
 import kotlin.math.max
@@ -171,6 +173,13 @@ fun FixedExpensesStep(
                                         selected = expense.recurrenceRule == "YEARLY",
                                         onClick = { viewModel.updateFixedExpenseRecurrence(index, "YEARLY") },
                                         label = { Text("Yearly") },
+                                    )
+                                }
+                                if (expense.recurrenceRule == RecurrenceRule.MONTHLY) {
+                                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+                                    ChargeDayInput(
+                                        dayOfMonth = expense.dayOfMonth,
+                                        onDayChanged = { viewModel.updateFixedExpenseDayOfMonth(index, it) },
                                     )
                                 }
                             }

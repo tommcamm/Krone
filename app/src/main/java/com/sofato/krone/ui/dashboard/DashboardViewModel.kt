@@ -77,10 +77,12 @@ class DashboardViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val rollingDailyAverage: StateFlow<Long> =
-        dailyBudget.combine(todaysExpenses) { budget, _ ->
+        combine(dailyBudget, totalSpentToday) { budget, spentToday ->
             if (budget == null || budget.remainingDays <= 0) return@combine 0L
-            val totalDays = budget.remainingDays + (budget.spentSoFarMinor.toFloat() / budget.dailyAmountMinor.coerceAtLeast(1)).toInt()
-            if (totalDays > 0) budget.spentSoFarMinor / totalDays else 0L
+            val totalSpent = budget.spentSoFarMinor + spentToday
+            val period = calculateBudgetPeriodUseCase()
+            val elapsedDays = period.totalDays - budget.remainingDays + 1
+            if (elapsedDays > 0) totalSpent / elapsedDays else 0L
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
     private val _streakDays = MutableStateFlow(0)

@@ -95,6 +95,7 @@ fun DashboardScreen(
                 if (currency != null && budget != null) {
                     BudgetBreakdownCard(
                         dailyBudget = budget,
+                        spentToday = totalSpent,
                         currency = currency,
                         onManageCommitments = onManageCommitments,
                         modifier = Modifier.padding(horizontal = Dimens.SpacingMd),

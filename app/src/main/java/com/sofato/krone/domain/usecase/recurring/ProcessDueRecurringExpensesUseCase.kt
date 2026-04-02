@@ -49,10 +49,11 @@ class ProcessDueRecurringExpensesUseCase @Inject constructor(
             )
             expenseRepository.addExpense(expense)
 
-            // Advance date by configured cadence.
+            // Advance date by configured cadence, respecting charge day.
             val nextDate = RecurrenceRule.advanceNextDate(
                 current = recurring.nextDate,
                 recurrenceRule = recurring.recurrenceRule,
+                dayOfMonth = recurring.dayOfMonth,
             )
             recurringExpenseRepository.updateNextDate(recurring.id, nextDate)
         }
