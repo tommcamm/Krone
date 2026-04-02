@@ -26,7 +26,9 @@
       "Bash($TOOLS/apksigner sign:*)",
       "Bash(/home/tommy/Android/Sdk/build-tools/36.1.0/apksigner verify:*)",
       "Bash(./gradlew assembleFossShare)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(python3 -c \"from PIL import Image; print\\('Pillow available'\\)\")",
+      "Bash(mv mipmap-anydpi:*)"
     ]
   }
 }

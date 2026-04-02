@@ -68,6 +68,16 @@
     <string name="onboarding_savings_step">Savings goals</string>
     <string name="onboarding_result_title">Your daily budget</string>
     <string name="onboarding_get_started">Get started</string>
+    <string name="onboarding_step_counter">Step %1$d of %2$d</string>
+    <string name="onboarding_currency_title">Currency and payday</string>
+    <string name="onboarding_currency_subtitle">Set your baseline and salary date.</string>
+    <string name="onboarding_income_title">Income</string>
+    <string name="onboarding_income_subtitle">Tell us how much comes in each month.</string>
+    <string name="onboarding_expenses_title">Fixed commitments</string>
+    <string name="onboarding_expenses_subtitle">Add monthly and yearly fixed costs.</string>
+    <string name="onboarding_savings_title">Savings goals</string>
+    <string name="onboarding_savings_subtitle">Choose what to save automatically.</string>
+    <string name="onboarding_result_subtitle">Review your daily budget before finishing.</string>
     <string name="income_day_label">Payday (day of month)</string>
     <string name="income_amount_label">Monthly income after tax</string>
     <string name="income_label_hint">Income source name</string>
