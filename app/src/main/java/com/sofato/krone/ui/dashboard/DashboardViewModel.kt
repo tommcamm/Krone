@@ -2,6 +2,7 @@ package com.sofato.krone.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sofato.krone.domain.model.BudgetOverview
 import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.DailyBudget
@@ -10,6 +11,7 @@ import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.domain.usecase.budget.CalculateBudgetPeriodUseCase
 import com.sofato.krone.domain.usecase.budget.CalculateDailyBudgetUseCase
+import com.sofato.krone.domain.usecase.budget.GetBudgetOverviewUseCase
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.domain.usecase.expense.DeleteExpenseUseCase
 import com.sofato.krone.domain.usecase.expense.GetExpensesByDateUseCase
@@ -42,6 +44,7 @@ class DashboardViewModel @Inject constructor(
     private val calculateBudgetPeriodUseCase: CalculateBudgetPeriodUseCase,
     private val processRecurringUseCase: ProcessDueRecurringExpensesUseCase,
     private val processSavingsUseCase: ProcessSavingsContributionsUseCase,
+    getBudgetOverviewUseCase: GetBudgetOverviewUseCase,
     getCategoriesUseCase: GetCategoriesUseCase,
     userPreferencesRepository: UserPreferencesRepository,
     currencyRepository: CurrencyRepository,
@@ -84,6 +87,10 @@ class DashboardViewModel @Inject constructor(
             val elapsedDays = period.totalDays - budget.remainingDays + 1
             if (elapsedDays > 0) totalSpent / elapsedDays else 0L
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+
+    val budgetOverview: StateFlow<BudgetOverview?> =
+        getBudgetOverviewUseCase()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private val _lastDeletedExpense = MutableStateFlow<Expense?>(null)
     val lastDeletedExpense: StateFlow<Expense?> = _lastDeletedExpense.asStateFlow()

@@ -21,7 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,8 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.sofato.krone.domain.model.CategorySpend
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.DailyBudget
+import com.sofato.krone.ui.components.CategoryIcon
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.CurrencyFormatter
 
@@ -42,9 +43,10 @@ fun BudgetBreakdownCard(
     dailyBudget: DailyBudget,
     spentToday: Long,
     currency: Currency,
-    onManageCommitments: () -> Unit,
-    onManageSalary: () -> Unit,
     modifier: Modifier = Modifier,
+    trackedCategories: List<CategorySpend> = emptyList(),
+    totalAllocatedMinor: Long = 0L,
+    unallocatedDiscretionaryMinor: Long = dailyBudget.discretionaryMinor,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
 
@@ -131,6 +133,39 @@ fun BudgetBreakdownCard(
                 )
             }
 
+            // Category budget progress — always visible when there are tracked categories
+            if (trackedCategories.isNotEmpty()) {
+                Spacer(Modifier.height(Dimens.SpacingSm))
+                HorizontalDivider()
+                Spacer(Modifier.height(Dimens.SpacingSm))
+                trackedCategories.forEach { cs ->
+                    CategoryBudgetRow(cs = cs, currency = currency)
+                }
+                if (unallocatedDiscretionaryMinor != discretionaryMinor) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "Unallocated",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = CurrencyFormatter.formatDisplay(unallocatedDiscretionaryMinor, currency),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (unallocatedDiscretionaryMinor < 0) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
+                    }
+                }
+            }
+
             AnimatedVisibility(
                 visible = expanded,
                 enter = expandVertically(),
@@ -169,6 +204,32 @@ fun BudgetBreakdownCard(
                         currency = currency,
                         fontWeight = FontWeight.SemiBold,
                     )
+
+                    // Show per-category allocations within discretionary
+                    if (trackedCategories.isNotEmpty()) {
+                        trackedCategories.forEach { cs ->
+                            BreakdownRow(
+                                label = "  ${cs.category.name}",
+                                amount = -cs.allocatedMinor,
+                                currency = currency,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        BreakdownRow(
+                            label = "  Unallocated",
+                            amount = unallocatedDiscretionaryMinor,
+                            currency = currency,
+                            color = if (unallocatedDiscretionaryMinor < 0) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
+                        Spacer(Modifier.height(Dimens.SpacingXs))
+                        HorizontalDivider()
+                        Spacer(Modifier.height(Dimens.SpacingXs))
+                    }
+
                     BreakdownRow(
                         label = "Spent so far",
                         amount = -totalSpent,
@@ -183,24 +244,62 @@ fun BudgetBreakdownCard(
                         color = if (isOverBudget) MaterialTheme.colorScheme.error
                         else androidx.compose.ui.graphics.Color.Unspecified,
                     )
-
-                    Spacer(Modifier.height(Dimens.SpacingSm))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                    ) {
-                        TextButton(onClick = onManageSalary) {
-                            Text("Edit income")
-                        }
-                        TextButton(onClick = onManageCommitments) {
-                            Text("Edit fixed costs")
-                        }
-                    }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun CategoryBudgetRow(
+    cs: CategorySpend,
+    currency: Currency,
+) {
+    val catProgress = if (cs.allocatedMinor > 0) {
+        (cs.spentMinor.toFloat() / cs.allocatedMinor).coerceIn(0f, 1f)
+    } else 0f
+    val catOverBudget = cs.allocatedMinor > 0 && cs.spentMinor > cs.allocatedMinor
+    val categoryColor = try {
+        androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(cs.category.colorHex))
+    } catch (_: Exception) {
+        MaterialTheme.colorScheme.primary
+    }
+    val barColor = if (catOverBudget) MaterialTheme.colorScheme.error else categoryColor
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
+    ) {
+        CategoryIcon(
+            iconName = cs.category.iconName,
+            colorHex = cs.category.colorHex,
+            size = 24.dp,
+            iconSize = 14.dp,
+        )
+        Text(
+            text = cs.category.name,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            text = "${CurrencyFormatter.formatDisplay(cs.spentMinor, currency)} / ${CurrencyFormatter.formatDisplay(cs.allocatedMinor, currency)}",
+            style = MaterialTheme.typography.bodySmall,
+            color = if (catOverBudget) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    LinearProgressIndicator(
+        progress = { catProgress },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(4.dp)
+            .clip(MaterialTheme.shapes.small),
+        color = barColor,
+        trackColor = barColor.copy(alpha = 0.12f),
+    )
+    Spacer(Modifier.height(Dimens.SpacingXs))
 }
 
 @Composable

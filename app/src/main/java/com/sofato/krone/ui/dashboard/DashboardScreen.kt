@@ -42,8 +42,6 @@ fun DashboardScreen(
     onAddExpense: (categoryId: Long?) -> Unit,
     onExpenseClick: (Long) -> Unit,
     onViewAllExpenses: () -> Unit,
-    onManageCommitments: () -> Unit,
-    onManageSalary: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val expenses by viewModel.todaysExpenses.collectAsState()
@@ -53,6 +51,7 @@ fun DashboardScreen(
     val categories by viewModel.categories.collectAsState()
     val rollingAvg by viewModel.rollingDailyAverage.collectAsState()
     val lastDeleted by viewModel.lastDeletedExpense.collectAsState()
+    val budgetOverview by viewModel.budgetOverview.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(lastDeleted) {
@@ -77,13 +76,19 @@ fun DashboardScreen(
                 val currency = homeCurrency
                 val budget = dailyBudget
                 if (currency != null && budget != null) {
+                    val ov = budgetOverview
+                    val trackedCategories = ov
+                        ?.categoryBreakdown
+                        ?.filter { it.allocatedMinor > 0 }
+                        ?: emptyList()
                     BudgetBreakdownCard(
                         dailyBudget = budget,
                         spentToday = totalSpent,
                         currency = currency,
-                        onManageCommitments = onManageCommitments,
-                        onManageSalary = onManageSalary,
                         modifier = Modifier.padding(Dimens.SpacingMd),
+                        trackedCategories = trackedCategories,
+                        totalAllocatedMinor = ov?.totalAllocatedMinor ?: 0L,
+                        unallocatedDiscretionaryMinor = ov?.unallocatedDiscretionaryMinor ?: budget.discretionaryMinor,
                     )
                 }
             }
@@ -93,6 +98,10 @@ fun DashboardScreen(
                 val currency = homeCurrency
                 val budget = dailyBudget
                 if (currency != null && budget != null) {
+                    val heroTracked = budgetOverview
+                        ?.categoryBreakdown
+                        ?.filter { it.allocatedMinor > 0 }
+                        ?: emptyList()
                     DailyBudgetHeroCard(
                         dailyBudget = budget,
                         spentToday = totalSpent,
@@ -100,6 +109,7 @@ fun DashboardScreen(
                         modifier = Modifier
                             .padding(horizontal = Dimens.SpacingMd)
                             .animateContentSize(spring(stiffness = Spring.StiffnessLow)),
+                        trackedCategories = heroTracked,
                     )
                 }
             }
