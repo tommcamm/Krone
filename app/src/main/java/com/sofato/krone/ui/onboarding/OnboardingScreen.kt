@@ -34,8 +34,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.sofato.krone.R
 import com.sofato.krone.ui.onboarding.steps.CurrencyIncomeStep
 import com.sofato.krone.ui.onboarding.steps.FixedExpensesStep
 import com.sofato.krone.ui.onboarding.steps.IncomeStep
@@ -52,18 +54,18 @@ fun OnboardingScreen(
     val currentStep by viewModel.currentStep.collectAsState()
     val isWelcomeStep = currentStep == 0
     val stepTitle = when (currentStep) {
-        1 -> "Currency and payday"
-        2 -> "Income"
-        3 -> "Fixed commitments"
-        4 -> "Savings goals"
-        else -> "Your plan"
+        1 -> stringResource(R.string.onboarding_currency_title)
+        2 -> stringResource(R.string.onboarding_income_title)
+        3 -> stringResource(R.string.onboarding_expenses_title)
+        4 -> stringResource(R.string.onboarding_savings_title)
+        else -> stringResource(R.string.onboarding_result_title)
     }
     val stepSubtitle = when (currentStep) {
-        1 -> "Set your baseline and salary date."
-        2 -> "Tell us how much comes in each month."
-        3 -> "Add monthly and yearly fixed costs."
-        4 -> "Choose what to save automatically."
-        else -> "Review your daily budget before finishing."
+        1 -> stringResource(R.string.onboarding_currency_subtitle)
+        2 -> stringResource(R.string.onboarding_income_subtitle)
+        3 -> stringResource(R.string.onboarding_expenses_subtitle)
+        4 -> stringResource(R.string.onboarding_savings_subtitle)
+        else -> stringResource(R.string.onboarding_result_subtitle)
     }
 
     val context = LocalContext.current
@@ -108,7 +110,7 @@ fun OnboardingScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "Step $currentStep of ${viewModel.totalSteps - 1}",
+                            text = stringResource(R.string.onboarding_step_counter, currentStep, viewModel.totalSteps - 1),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -118,7 +120,7 @@ fun OnboardingScreen(
                         ) {
                             if (currentStep in 3..4) {
                                 TextButton(onClick = { viewModel.nextStep() }) {
-                                    Text("Skip")
+                                    Text(stringResource(R.string.skip))
                                 }
                             }
                         }
@@ -181,15 +183,11 @@ fun OnboardingScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingMd),
                     ) {
-                        if (currentStep > 1) {
-                            OutlinedButton(
-                                onClick = { viewModel.previousStep() },
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                Text("Back")
-                            }
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f))
+                        OutlinedButton(
+                            onClick = { viewModel.previousStep() },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(stringResource(R.string.back))
                         }
 
                         Button(
@@ -202,7 +200,7 @@ fun OnboardingScreen(
                             },
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text(if (currentStep == 5) "Get started" else "Next")
+                            Text(stringResource(if (currentStep == 5) R.string.onboarding_get_started else R.string.next))
                         }
                     }
                 }
