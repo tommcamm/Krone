@@ -177,6 +177,7 @@ fun DashboardScreen(
                         onDismiss = { viewModel.deleteExpense(expense) },
                         onClick = { onExpenseClick(expense.id) },
                         modifier = Modifier.animateItem(),
+                        homeCurrency = homeCurrency,
                     )
                     HorizontalDivider(modifier = Modifier.padding(start = 68.dp))
                 }

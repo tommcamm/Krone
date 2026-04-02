@@ -3,16 +3,19 @@ package com.sofato.krone.domain.usecase.expense
 import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.Expense
+import com.sofato.krone.domain.repository.ExchangeRateRepository
 import com.sofato.krone.domain.repository.ExpenseRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import javax.inject.Inject
+import kotlin.math.roundToLong
 
 class AddExpenseUseCase @Inject constructor(
     private val expenseRepository: ExpenseRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
+    private val exchangeRateRepository: ExchangeRateRepository,
 ) {
     suspend operator fun invoke(
         amountMinor: Long,
@@ -28,10 +31,15 @@ class AddExpenseUseCase @Inject constructor(
             homeAmount = amountMinor
             rateUsed = 1.0
         } else {
-            // Phase 1: no exchange rate fetching. Use 1:1 placeholder.
-            // Full conversion comes in Phase 3.
-            rateUsed = 1.0
-            homeAmount = amountMinor
+            val rate = exchangeRateRepository.getRate(currency.code, homeCurrencyCode)
+            if (rate != null) {
+                rateUsed = rate.rate
+                homeAmount = (amountMinor * rateUsed).roundToLong()
+            } else {
+                // No cached rate available — store with fallback so we don't block the user.
+                rateUsed = 0.0
+                homeAmount = 0
+            }
         }
 
         val expense = Expense(

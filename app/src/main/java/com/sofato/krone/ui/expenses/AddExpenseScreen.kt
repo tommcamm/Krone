@@ -70,6 +70,7 @@ import com.sofato.krone.ui.theme.Dimens
 fun AddExpenseScreen(
     onNavigateBack: () -> Unit,
     onManageCategories: () -> Unit,
+    onManageCurrencies: () -> Unit,
     viewModel: AddExpenseViewModel = hiltViewModel(),
 ) {
     val amountInput by viewModel.amountInput.collectAsState()
@@ -79,6 +80,9 @@ fun AddExpenseScreen(
     val categories by viewModel.categories.collectAsState()
     val enabledCurrencies by viewModel.enabledCurrencies.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
+    val convertedAmountText by viewModel.convertedAmountText.collectAsState()
+    val rateFreshness by viewModel.rateFreshness.collectAsState()
+    val isForeignCurrency by viewModel.isForeignCurrency.collectAsState()
     var showCurrencyPicker by remember { mutableStateOf(false) }
 
     val focusRequester = remember { FocusRequester() }
@@ -167,6 +171,45 @@ fun AddExpenseScreen(
                             }
                         },
                     )
+                    if (convertedAmountText != null) {
+                        Spacer(Modifier.height(Dimens.SpacingXs))
+                        Text(
+                            text = convertedAmountText!!,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    if (isForeignCurrency) {
+                        Spacer(Modifier.height(Dimens.SpacingXs))
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            val dotColor = when (rateFreshness) {
+                                RateFreshness.FRESH -> MaterialTheme.colorScheme.tertiary
+                                RateFreshness.STALE -> Color(0xFFF59E0B)
+                                RateFreshness.UNAVAILABLE -> MaterialTheme.colorScheme.error
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(dotColor, CircleShape),
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = when (rateFreshness) {
+                                    RateFreshness.FRESH -> stringResource(R.string.rate_fresh)
+                                    RateFreshness.STALE -> stringResource(R.string.rate_stale)
+                                    RateFreshness.UNAVAILABLE -> stringResource(R.string.rates_unavailable)
+                                },
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                 }
             }
 
@@ -243,6 +286,7 @@ fun AddExpenseScreen(
                 showCurrencyPicker = false
             },
             onDismiss = { showCurrencyPicker = false },
+            onManageCurrencies = onManageCurrencies,
         )
     }
 }

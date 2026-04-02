@@ -21,4 +21,5 @@ sealed interface KroneDestination {
     @Serializable data class EditSavingsBucket(val bucketId: Long) : KroneDestination
     @Serializable data class SavingsBucketDetail(val bucketId: Long) : KroneDestination
     @Serializable data object ManageSalary : KroneDestination
+    @Serializable data object CurrencySettings : KroneDestination
 }

@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ fun CurrencyPickerBottomSheet(
     selectedCode: String,
     onCurrencySelected: (Currency) -> Unit,
     onDismiss: () -> Unit,
+    onManageCurrencies: (() -> Unit)? = null,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -70,6 +72,18 @@ fun CurrencyPickerBottomSheet(
                             tint = MaterialTheme.colorScheme.primary,
                         )
                     }
+                }
+            }
+            if (onManageCurrencies != null) {
+                Spacer(Modifier.height(8.dp))
+                TextButton(
+                    onClick = {
+                        onDismiss()
+                        onManageCurrencies()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.manage_currencies))
                 }
             }
             Spacer(Modifier.height(32.dp))

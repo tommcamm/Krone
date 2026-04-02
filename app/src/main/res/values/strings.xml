@@ -99,4 +99,19 @@
     <string name="recurring_deactivated">Recurring expense deactivated</string>
     <string name="recurring_label_hint">Expense name</string>
     <string name="no_recurring_expenses">No recurring expenses</string>
+
+    <!-- Currency settings -->
+    <string name="currency_settings">Currencies</string>
+    <string name="manage_currencies">Manage currencies</string>
+    <string name="home_currency">Home</string>
+    <string name="rates_updated">Rates updated %s</string>
+    <string name="rates_unavailable">Rates unavailable</string>
+    <string name="refresh_rates">Refresh rates</string>
+    <string name="currency_enable_failed">Could not fetch rates for</string>
+    <string name="rates_refresh_failed">Could not refresh exchange rates. Check your connection.</string>
+    <string name="rate_fresh">Rate is up to date</string>
+    <string name="rate_stale">Rate may be outdated</string>
+
+    <!-- Manage salary -->
+    <string name="manage_salary">Manage income</string>
 </resources>
