@@ -1,5 +1,6 @@
 package com.sofato.krone.ui.navigation
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.sofato.krone.R
 import com.sofato.krone.ui.onboarding.OnboardingScreen
+import com.sofato.krone.ui.theme.KroneTheme
 
 @Composable
 fun KroneApp(
@@ -27,18 +29,29 @@ fun KroneApp(
 ) {
     val isLoading by appViewModel.isLoading.collectAsState()
     val hasCompletedOnboarding by appViewModel.hasCompletedOnboarding.collectAsState()
+    val darkModeOverride by appViewModel.darkModeOverride.collectAsState()
+    val isDynamicColorEnabled by appViewModel.isDynamicColorEnabled.collectAsState()
 
-    if (isLoading) {
-        Box(Modifier.fillMaxSize())
-        return
+    val systemDark = isSystemInDarkTheme()
+    val darkTheme = when (darkModeOverride) {
+        "light" -> false
+        "dark" -> true
+        else -> systemDark
     }
 
-    if (!hasCompletedOnboarding) {
-        OnboardingScreen(
-            onComplete = { appViewModel.onOnboardingComplete() },
-        )
-    } else {
-        MainApp()
+    KroneTheme(darkTheme = darkTheme, dynamicColor = isDynamicColorEnabled) {
+        if (isLoading) {
+            Box(Modifier.fillMaxSize())
+            return@KroneTheme
+        }
+
+        if (!hasCompletedOnboarding) {
+            OnboardingScreen(
+                onComplete = { appViewModel.onOnboardingComplete() },
+            )
+        } else {
+            MainApp()
+        }
     }
 }
 
@@ -52,6 +65,8 @@ private fun MainApp() {
         BottomNavItem.entries.any { dest.hasRoute(it.destination::class) }
     } ?: true
     val isSavingsTab = currentDestination?.hasRoute(KroneDestination.Savings::class) == true
+    val isSettingsTab = currentDestination?.hasRoute(KroneDestination.Settings::class) == true
+    val showFab = showBottomBar && !isSettingsTab
 
     Scaffold(
         bottomBar = {
@@ -71,7 +86,7 @@ private fun MainApp() {
             }
         },
         floatingActionButton = {
-            if (showBottomBar) {
+            if (showFab) {
                 FloatingActionButton(
                     onClick = {
                         if (isSavingsTab) {

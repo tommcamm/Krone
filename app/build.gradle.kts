@@ -25,6 +25,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("share") {
+            storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -32,6 +41,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        create("share") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("share")
+            matchingFallbacks += "release"
         }
     }
 

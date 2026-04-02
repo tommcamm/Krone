@@ -1,5 +1,8 @@
 package com.sofato.krone.ui.onboarding
 
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,6 +33,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.ui.onboarding.steps.CurrencyIncomeStep
@@ -62,10 +66,24 @@ fun OnboardingScreen(
         else -> "Review your daily budget before finishing."
     }
 
+    val context = LocalContext.current
+
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        uri?.let { viewModel.importBackup(it) }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 OnboardingViewModel.OnboardingEvent.Completed -> onComplete()
+                OnboardingViewModel.OnboardingEvent.ImportCompleted -> {
+                    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                    intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                    Runtime.getRuntime().exit(0)
+                }
             }
         }
     }
@@ -144,7 +162,10 @@ fun OnboardingScreen(
                     label = "onboarding_step",
                 ) { step ->
                     when (step) {
-                        0 -> WelcomeStep(onGetStarted = { viewModel.nextStep() })
+                        0 -> WelcomeStep(
+                            onGetStarted = { viewModel.nextStep() },
+                            onImportBackup = { importLauncher.launch(arrayOf("*/*")) },
+                        )
                         1 -> CurrencyIncomeStep(viewModel = viewModel)
                         2 -> IncomeStep(viewModel = viewModel)
                         3 -> FixedExpensesStep(viewModel = viewModel)

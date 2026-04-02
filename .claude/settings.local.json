@@ -20,7 +20,13 @@
       "Bash(./gradlew compileDebugKotlin)",
       "Bash(./gradlew compileFossDebugKotlin)",
       "Bash(./gradlew assembleFossDebug)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(./gradlew assembleFossRelease)",
+      "Bash(/home/tommy/Android/Sdk/build-tools/36.1.0/zipalign -v -p 4 /home/tommy/Documents/AndroidProjects/Krone/app/build/outputs/apk/foss/release/app-foss-release-unsigned.apk /home/tommy/Documents/AndroidProjects/Krone/app/build/outputs/apk/foss/release/app-foss-release-aligned.apk)",
+      "Bash($TOOLS/apksigner sign:*)",
+      "Bash(/home/tommy/Android/Sdk/build-tools/36.1.0/apksigner verify:*)",
+      "Bash(./gradlew assembleFossShare)",
+      "Bash(curl:*)"
     ]
   }
 }
