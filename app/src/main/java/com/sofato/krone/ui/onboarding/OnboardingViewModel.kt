@@ -63,7 +63,7 @@ class OnboardingViewModel @Inject constructor(
     private val _currentStep = MutableStateFlow(0)
     val currentStep: StateFlow<Int> = _currentStep.asStateFlow()
 
-    val totalSteps = 5 // 0=currency, 1=income, 2=expenses, 3=savings, 4=result
+    val totalSteps = 6 // 0=welcome, 1=currency, 2=income, 3=expenses, 4=savings, 5=result
 
     // Step 0: Currency & payday
     private val _selectedCurrencyCode = MutableStateFlow("DKK")
@@ -145,7 +145,7 @@ class OnboardingViewModel @Inject constructor(
 
     // Navigation
     fun nextStep() {
-        if (_currentStep.value < 4) {
+        if (_currentStep.value < 5) {
             _currentStep.value += 1
         }
     }

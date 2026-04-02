@@ -37,6 +37,7 @@ import com.sofato.krone.ui.onboarding.steps.FixedExpensesStep
 import com.sofato.krone.ui.onboarding.steps.IncomeStep
 import com.sofato.krone.ui.onboarding.steps.OnboardingResultStep
 import com.sofato.krone.ui.onboarding.steps.SavingsGoalsStep
+import com.sofato.krone.ui.onboarding.steps.WelcomeStep
 import com.sofato.krone.ui.theme.Dimens
 
 @Composable
@@ -45,18 +46,19 @@ fun OnboardingScreen(
     viewModel: OnboardingViewModel = hiltViewModel(),
 ) {
     val currentStep by viewModel.currentStep.collectAsState()
+    val isWelcomeStep = currentStep == 0
     val stepTitle = when (currentStep) {
-        0 -> "Currency and payday"
-        1 -> "Income"
-        2 -> "Fixed commitments"
-        3 -> "Savings goals"
+        1 -> "Currency and payday"
+        2 -> "Income"
+        3 -> "Fixed commitments"
+        4 -> "Savings goals"
         else -> "Your plan"
     }
     val stepSubtitle = when (currentStep) {
-        0 -> "Set your baseline and salary date."
-        1 -> "Tell us how much comes in each month."
-        2 -> "Add monthly and yearly fixed costs."
-        3 -> "Choose what to save automatically."
+        1 -> "Set your baseline and salary date."
+        2 -> "Tell us how much comes in each month."
+        3 -> "Add monthly and yearly fixed costs."
+        4 -> "Choose what to save automatically."
         else -> "Review your daily budget before finishing."
     }
 
@@ -79,49 +81,51 @@ fun OnboardingScreen(
                     .padding(innerPadding)
                     .padding(Dimens.SpacingLg),
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(Dimens.MinTouchTarget),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = "Step ${currentStep + 1} of ${viewModel.totalSteps}",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Box(
-                        modifier = Modifier.width(88.dp),
-                        contentAlignment = Alignment.CenterEnd,
+                if (!isWelcomeStep) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(Dimens.MinTouchTarget),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if (currentStep in 2..3) {
-                            TextButton(onClick = { viewModel.nextStep() }) {
-                                Text("Skip")
+                        Text(
+                            text = "Step $currentStep of ${viewModel.totalSteps - 1}",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Box(
+                            modifier = Modifier.width(88.dp),
+                            contentAlignment = Alignment.CenterEnd,
+                        ) {
+                            if (currentStep in 3..4) {
+                                TextButton(onClick = { viewModel.nextStep() }) {
+                                    Text("Skip")
+                                }
                             }
                         }
                     }
+
+                    LinearProgressIndicator(
+                        progress = { currentStep.toFloat() / (viewModel.totalSteps - 1).toFloat() },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    Spacer(modifier = Modifier.height(Dimens.SpacingMd))
+
+                    Text(
+                        text = stepTitle,
+                        style = MaterialTheme.typography.headlineSmall,
+                    )
+                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+                    Text(
+                        text = stepSubtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+
+                    Spacer(modifier = Modifier.height(Dimens.SpacingMd))
                 }
-
-                LinearProgressIndicator(
-                    progress = { (currentStep + 1).toFloat() / viewModel.totalSteps.toFloat() },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                Spacer(modifier = Modifier.height(Dimens.SpacingMd))
-
-                Text(
-                    text = stepTitle,
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-                Text(
-                    text = stepSubtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Spacer(modifier = Modifier.height(Dimens.SpacingMd))
 
                 AnimatedContent(
                     targetState = currentStep,
@@ -140,42 +144,45 @@ fun OnboardingScreen(
                     label = "onboarding_step",
                 ) { step ->
                     when (step) {
-                        0 -> CurrencyIncomeStep(viewModel = viewModel)
-                        1 -> IncomeStep(viewModel = viewModel)
-                        2 -> FixedExpensesStep(viewModel = viewModel)
-                        3 -> SavingsGoalsStep(viewModel = viewModel)
-                        4 -> OnboardingResultStep(viewModel = viewModel)
+                        0 -> WelcomeStep(onGetStarted = { viewModel.nextStep() })
+                        1 -> CurrencyIncomeStep(viewModel = viewModel)
+                        2 -> IncomeStep(viewModel = viewModel)
+                        3 -> FixedExpensesStep(viewModel = viewModel)
+                        4 -> SavingsGoalsStep(viewModel = viewModel)
+                        5 -> OnboardingResultStep(viewModel = viewModel)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(Dimens.SpacingMd))
+                if (!isWelcomeStep) {
+                    Spacer(modifier = Modifier.height(Dimens.SpacingMd))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingMd),
-                ) {
-                    if (currentStep > 0) {
-                        OutlinedButton(
-                            onClick = { viewModel.previousStep() },
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingMd),
+                    ) {
+                        if (currentStep > 1) {
+                            OutlinedButton(
+                                onClick = { viewModel.previousStep() },
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text("Back")
+                            }
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+
+                        Button(
+                            onClick = {
+                                if (currentStep == 5) {
+                                    viewModel.complete()
+                                } else {
+                                    viewModel.nextStep()
+                                }
+                            },
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text("Back")
+                            Text(if (currentStep == 5) "Get started" else "Next")
                         }
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-
-                    Button(
-                        onClick = {
-                            if (currentStep == 4) {
-                                viewModel.complete()
-                            } else {
-                                viewModel.nextStep()
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text(if (currentStep == 4) "Get started" else "Next")
                     }
                 }
             }

@@ -3,6 +3,9 @@ package com.sofato.krone.data.repository
 import com.sofato.krone.data.db.dao.CategoryDao
 import com.sofato.krone.data.db.dao.CurrencyDao
 import com.sofato.krone.data.db.dao.ExpenseDao
+import com.sofato.krone.data.db.dao.projections.CategoryTotal
+import com.sofato.krone.data.db.dao.projections.CurrencyTotal
+import com.sofato.krone.data.db.dao.projections.DailyTotal
 import com.sofato.krone.data.db.entity.ExpenseEntity
 import com.sofato.krone.data.db.entity.toDomain
 import com.sofato.krone.domain.model.Category
@@ -52,6 +55,15 @@ class ExpenseRepositoryImpl @Inject constructor(
 
     override fun getTotalDiscretionaryAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?> =
         expenseDao.getTotalDiscretionaryAmountBetween(startDate, endDate)
+
+    override fun getDailyTotals(startDate: LocalDate, endDate: LocalDate): Flow<List<DailyTotal>> =
+        expenseDao.getDailyTotals(startDate, endDate)
+
+    override fun getCategoryTotals(startDate: LocalDate, endDate: LocalDate): Flow<List<CategoryTotal>> =
+        expenseDao.getCategoryTotals(startDate, endDate)
+
+    override fun getCurrencyTotals(startDate: LocalDate, endDate: LocalDate): Flow<List<CurrencyTotal>> =
+        expenseDao.getCurrencyTotals(startDate, endDate)
 
     private suspend fun ExpenseEntity.toDomain(): Expense? {
         val category = categoryDao.getCategoryById(categoryId)?.toDomain() ?: return null

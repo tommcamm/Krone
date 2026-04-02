@@ -52,7 +52,6 @@ fun DashboardScreen(
     val dailyBudget by viewModel.dailyBudget.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val rollingAvg by viewModel.rollingDailyAverage.collectAsState()
-    val streak by viewModel.streakDays.collectAsState()
     val lastDeleted by viewModel.lastDeletedExpense.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -73,22 +72,6 @@ fun DashboardScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            // Daily Budget Hero Card
-            item {
-                val currency = homeCurrency
-                val budget = dailyBudget
-                if (currency != null && budget != null) {
-                    DailyBudgetHeroCard(
-                        dailyBudget = budget,
-                        spentToday = totalSpent,
-                        currency = currency,
-                        modifier = Modifier
-                            .padding(Dimens.SpacingMd)
-                            .animateContentSize(spring(stiffness = Spring.StiffnessLow)),
-                    )
-                }
-            }
-
             // Monthly budget breakdown
             item {
                 val currency = homeCurrency
@@ -100,7 +83,23 @@ fun DashboardScreen(
                         currency = currency,
                         onManageCommitments = onManageCommitments,
                         onManageSalary = onManageSalary,
-                        modifier = Modifier.padding(horizontal = Dimens.SpacingMd),
+                        modifier = Modifier.padding(Dimens.SpacingMd),
+                    )
+                }
+            }
+
+            // Daily Budget Hero Card
+            item {
+                val currency = homeCurrency
+                val budget = dailyBudget
+                if (currency != null && budget != null) {
+                    DailyBudgetHeroCard(
+                        dailyBudget = budget,
+                        spentToday = totalSpent,
+                        currency = currency,
+                        modifier = Modifier
+                            .padding(horizontal = Dimens.SpacingMd)
+                            .animateContentSize(spring(stiffness = Spring.StiffnessLow)),
                     )
                 }
             }
@@ -125,10 +124,13 @@ fun DashboardScreen(
             // Stats row
             item {
                 val currency = homeCurrency
-                if (currency != null) {
+                val budget = dailyBudget
+                if (currency != null && budget != null) {
+                    val monthlyRemaining = budget.discretionaryMinor - budget.spentSoFarMinor - totalSpent
                     StatsRow(
                         dailyAverage = rollingAvg,
-                        streakDays = streak,
+                        monthlyRemaining = monthlyRemaining,
+                        remainingDays = budget.remainingDays,
                         currency = currency,
                         modifier = Modifier.padding(horizontal = Dimens.SpacingMd, vertical = Dimens.SpacingSm),
                     )

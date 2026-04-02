@@ -85,9 +85,6 @@ class DashboardViewModel @Inject constructor(
             if (elapsedDays > 0) totalSpent / elapsedDays else 0L
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
-    private val _streakDays = MutableStateFlow(0)
-    val streakDays: StateFlow<Int> = _streakDays.asStateFlow()
-
     private val _lastDeletedExpense = MutableStateFlow<Expense?>(null)
     val lastDeletedExpense: StateFlow<Expense?> = _lastDeletedExpense.asStateFlow()
 

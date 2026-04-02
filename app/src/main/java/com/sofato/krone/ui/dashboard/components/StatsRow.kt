@@ -11,8 +11,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.CurrencyFormatter
@@ -20,10 +20,14 @@ import com.sofato.krone.util.CurrencyFormatter
 @Composable
 fun StatsRow(
     dailyAverage: Long,
-    streakDays: Int,
+    monthlyRemaining: Long,
+    remainingDays: Int,
     currency: Currency,
     modifier: Modifier = Modifier,
 ) {
+    val projectedOverspend = (dailyAverage * remainingDays) - monthlyRemaining
+    val onTrack = projectedOverspend <= 0
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
@@ -55,14 +59,15 @@ fun StatsRow(
         ) {
             Column(modifier = Modifier.padding(Dimens.SpacingMd)) {
                 Text(
-                    text = "Under budget",
+                    text = "Month pace",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = if (streakDays > 0) "$streakDays days" else "—",
+                    text = if (onTrack) "On track" else "Over by ${CurrencyFormatter.formatDisplay(projectedOverspend, currency)}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
+                    color = if (onTrack) Color.Unspecified else MaterialTheme.colorScheme.error,
                 )
             }
         }
