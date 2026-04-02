@@ -1,0 +1,102 @@
+<resources>
+    <string name="app_name">Krone</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_budget">Budget</string>
+    <string name="nav_savings">Savings</string>
+    <string name="nav_insights">Insights</string>
+
+    <!-- Expense entry -->
+    <string name="add_expense">Add Expense</string>
+    <string name="edit_expense">Edit Expense</string>
+    <string name="amount_hint">Amount</string>
+    <string name="note_hint">Note (optional)</string>
+    <string name="select_category">Select a category</string>
+    <string name="select_currency">Select currency</string>
+    <string name="select_date">Select date</string>
+
+    <!-- Category management -->
+    <string name="categories">Categories</string>
+    <string name="add_category">Add Category</string>
+    <string name="edit_category">Edit Category</string>
+    <string name="category_name">Category name</string>
+    <string name="select_icon">Select icon</string>
+    <string name="select_color">Select color</string>
+
+    <!-- Common actions -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="undo">Undo</string>
+    <string name="close">Close</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
+    <string name="manage">Manage</string>
+
+    <!-- Feedback -->
+    <string name="expense_deleted">Expense deleted</string>
+    <string name="expense_saved">Expense saved</string>
+    <string name="category_archived">Category archived</string>
+    <string name="coming_soon">Coming Soon</string>
+
+    <!-- Dashboard -->
+    <string name="todays_spending">Today\'s spending</string>
+    <string name="no_expenses_today">No expenses today</string>
+    <string name="recent_expenses">Recent expenses</string>
+    <string name="daily_budget_hero">You can spend</string>
+    <string name="daily_budget_today">today</string>
+    <string name="rolling_average">Daily average</string>
+    <string name="streak_counter">%d days under budget</string>
+    <string name="quick_add">Quick add</string>
+    <string name="todays_expenses">Today\'s expenses</string>
+    <string name="view_all">View all</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome">Welcome to Krone</string>
+    <string name="onboarding_currency_step">Your currency &amp; payday</string>
+    <string name="onboarding_income_step">Monthly income</string>
+    <string name="onboarding_expenses_step">Fixed monthly expenses</string>
+    <string name="onboarding_savings_step">Savings goals</string>
+    <string name="onboarding_result_title">Your daily budget</string>
+    <string name="onboarding_get_started">Get started</string>
+    <string name="income_day_label">Payday (day of month)</string>
+    <string name="income_amount_label">Monthly income after tax</string>
+    <string name="income_label_hint">Income source name</string>
+    <string name="onboarding_expenses_hint">Enter amounts for your fixed costs</string>
+    <string name="onboarding_savings_hint">Set up your savings goals (optional)</string>
+
+    <!-- Budget -->
+    <string name="budget_overview">Budget overview</string>
+    <string name="budget_income">Income</string>
+    <string name="budget_fixed">Fixed expenses</string>
+    <string name="budget_savings">Savings</string>
+    <string name="budget_discretionary">Discretionary</string>
+    <string name="budget_category_breakdown">Category breakdown</string>
+    <string name="budget_no_data">Complete onboarding to see your budget</string>
+
+    <!-- Savings -->
+    <string name="savings_total">Total saved</string>
+    <string name="savings_monthly">Monthly contributions</string>
+    <string name="add_savings_bucket">Add savings goal</string>
+    <string name="edit_savings_bucket">Edit savings goal</string>
+    <string name="savings_target">Target amount</string>
+    <string name="savings_monthly_contribution">Monthly contribution</string>
+    <string name="savings_deadline">Target date</string>
+    <string name="savings_label_hint">Goal name</string>
+    <string name="savings_type">Type</string>
+    <string name="savings_no_buckets">No savings goals yet</string>
+    <string name="savings_bucket_detail">Savings detail</string>
+    <string name="savings_contributions">Contributions</string>
+    <string name="savings_current_balance">Current balance</string>
+
+    <!-- Recurring expenses -->
+    <string name="recurring_expenses">Recurring expenses</string>
+    <string name="add_recurring_expense">Add recurring expense</string>
+    <string name="edit_recurring_expense">Edit recurring expense</string>
+    <string name="next_payment">Next payment</string>
+    <string name="recurring_deactivated">Recurring expense deactivated</string>
+    <string name="recurring_label_hint">Expense name</string>
+    <string name="no_recurring_expenses">No recurring expenses</string>
+</resources>
