@@ -95,6 +95,17 @@ dependencies {
     // DataStore
     implementation(libs.androidx.datastore.preferences)
 
+    // Ktor
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
+
     // KotlinX
     implementation(libs.kotlinx.datetime)
     implementation(libs.kotlinx.coroutines.android)

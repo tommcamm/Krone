@@ -41,6 +41,7 @@ fun ExpenseListScreen(
     viewModel: ExpenseListViewModel = hiltViewModel(),
 ) {
     val groupedExpenses by viewModel.groupedExpenses.collectAsState()
+    val homeCurrency by viewModel.homeCurrency.collectAsState()
 
     Scaffold(
         topBar = {
@@ -82,6 +83,7 @@ fun ExpenseListScreen(
                         onDismiss = { viewModel.deleteExpense(expense) },
                         onClick = { onExpenseClick(expense.id) },
                         modifier = Modifier.animateItem(),
+                        homeCurrency = homeCurrency,
                     )
                     HorizontalDivider(modifier = Modifier.padding(start = 68.dp))
                 }

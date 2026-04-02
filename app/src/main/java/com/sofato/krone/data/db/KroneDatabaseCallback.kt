@@ -29,6 +29,18 @@ class KroneDatabaseCallback : RoomDatabase.Callback() {
             CurrencySeed("EUR", "Euro", "€", 2, SymbolPosition.BEFORE, true, 1),
             CurrencySeed("USD", "US Dollar", "$", 2, SymbolPosition.BEFORE, true, 2),
             CurrencySeed("NZD", "New Zealand Dollar", "NZ$", 2, SymbolPosition.BEFORE, false, 3),
+            CurrencySeed("GBP", "British Pound", "£", 2, SymbolPosition.BEFORE, false, 4),
+            CurrencySeed("SEK", "Swedish Krona", "kr", 2, SymbolPosition.AFTER, false, 5),
+            CurrencySeed("NOK", "Norwegian Krone", "kr", 2, SymbolPosition.AFTER, false, 6),
+            CurrencySeed("CHF", "Swiss Franc", "CHF", 2, SymbolPosition.BEFORE, false, 7),
+            CurrencySeed("PLN", "Polish Zloty", "zł", 2, SymbolPosition.AFTER, false, 8),
+            CurrencySeed("CZK", "Czech Koruna", "Kč", 2, SymbolPosition.AFTER, false, 9),
+            CurrencySeed("ISK", "Icelandic Króna", "kr", 0, SymbolPosition.AFTER, false, 10),
+            CurrencySeed("TRY", "Turkish Lira", "₺", 2, SymbolPosition.BEFORE, false, 11),
+            CurrencySeed("JPY", "Japanese Yen", "¥", 0, SymbolPosition.BEFORE, false, 12),
+            CurrencySeed("CAD", "Canadian Dollar", "CA$", 2, SymbolPosition.BEFORE, false, 13),
+            CurrencySeed("AUD", "Australian Dollar", "A$", 2, SymbolPosition.BEFORE, false, 14),
+            CurrencySeed("THB", "Thai Baht", "฿", 2, SymbolPosition.BEFORE, false, 15),
         )
 
         for (c in currencies) {

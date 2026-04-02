@@ -3,6 +3,7 @@ package com.sofato.krone.data.db.entity
 import com.sofato.krone.domain.model.BudgetAllocation
 import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.Currency
+import com.sofato.krone.domain.model.ExchangeRate
 import com.sofato.krone.domain.model.Income
 import com.sofato.krone.domain.model.MonthlySnapshot
 import com.sofato.krone.domain.model.RecurringExpense
@@ -19,6 +20,16 @@ fun CurrencyEntity.toDomain(): Currency = Currency(
 fun Currency.toEntity(): CurrencyEntity = CurrencyEntity(
     code = code, name = name, symbol = symbol, decimalPlaces = decimalPlaces,
     symbolPosition = symbolPosition, isEnabled = isEnabled, sortOrder = sortOrder,
+)
+
+// ExchangeRate
+fun ExchangeRateEntity.toDomain(): ExchangeRate = ExchangeRate(
+    baseCode = baseCode, targetCode = targetCode, rate = rate,
+    fetchedAt = fetchedAt, source = source,
+)
+fun ExchangeRate.toEntity(): ExchangeRateEntity = ExchangeRateEntity(
+    baseCode = baseCode, targetCode = targetCode, rate = rate,
+    fetchedAt = fetchedAt, source = source,
 )
 
 // Category

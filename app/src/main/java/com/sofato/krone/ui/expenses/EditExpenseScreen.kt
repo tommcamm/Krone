@@ -56,6 +56,7 @@ import com.sofato.krone.ui.theme.Dimens
 @Composable
 fun EditExpenseScreen(
     onNavigateBack: () -> Unit,
+    onManageCurrencies: () -> Unit,
     viewModel: EditExpenseViewModel = hiltViewModel(),
 ) {
     val amountInput by viewModel.amountInput.collectAsState()
@@ -64,6 +65,8 @@ fun EditExpenseScreen(
     val noteInput by viewModel.noteInput.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val enabledCurrencies by viewModel.enabledCurrencies.collectAsState()
+    val convertedAmountText by viewModel.convertedAmountText.collectAsState()
+    val isForeignCurrency by viewModel.isForeignCurrency.collectAsState()
     var showCurrencyPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -119,6 +122,15 @@ fun EditExpenseScreen(
                         onClick = { showCurrencyPicker = true },
                     )
                 }
+            }
+
+            // Conversion preview
+            if (convertedAmountText != null) {
+                Text(
+                    text = convertedAmountText!!,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
 
             // Category picker
@@ -186,6 +198,7 @@ fun EditExpenseScreen(
                 showCurrencyPicker = false
             },
             onDismiss = { showCurrencyPicker = false },
+            onManageCurrencies = onManageCurrencies,
         )
     }
 }

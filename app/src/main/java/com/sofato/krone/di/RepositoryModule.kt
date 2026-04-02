@@ -1,5 +1,6 @@
 package com.sofato.krone.di
 
+import com.sofato.krone.data.repository.ExchangeRateRepositoryImpl
 import com.sofato.krone.data.repository.BudgetAllocationRepositoryImpl
 import com.sofato.krone.data.repository.CategoryRepositoryImpl
 import com.sofato.krone.data.repository.CurrencyRepositoryImpl
@@ -13,6 +14,7 @@ import com.sofato.krone.data.repository.UserPreferencesRepositoryImpl
 import com.sofato.krone.domain.repository.BudgetAllocationRepository
 import com.sofato.krone.domain.repository.CategoryRepository
 import com.sofato.krone.domain.repository.CurrencyRepository
+import com.sofato.krone.domain.repository.ExchangeRateRepository
 import com.sofato.krone.domain.repository.ExpenseRepository
 import com.sofato.krone.domain.repository.IncomeRepository
 import com.sofato.krone.domain.repository.MonthlySnapshotRepository
@@ -59,4 +61,7 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindMonthlySnapshotRepository(impl: MonthlySnapshotRepositoryImpl): MonthlySnapshotRepository
+
+    @Binds @Singleton
+    abstract fun bindExchangeRateRepository(impl: ExchangeRateRepositoryImpl): ExchangeRateRepository
 }

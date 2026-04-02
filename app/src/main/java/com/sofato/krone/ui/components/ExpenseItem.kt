@@ -13,8 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.Expense
 import com.sofato.krone.util.CurrencyFormatter
 
@@ -23,7 +25,10 @@ fun ExpenseItem(
     expense: Expense,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    homeCurrency: Currency? = null,
 ) {
+    val isForeign = homeCurrency != null && expense.currency.code != homeCurrency.code
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -55,9 +60,20 @@ fun ExpenseItem(
             }
         }
         Spacer(Modifier.width(12.dp))
-        Text(
-            text = CurrencyFormatter.formatDisplay(expense.amount, expense.currency),
-            style = MaterialTheme.typography.titleMedium,
-        )
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = CurrencyFormatter.formatDisplay(expense.amount, expense.currency),
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.End,
+            )
+            if (isForeign && expense.homeAmount > 0) {
+                Text(
+                    text = "\u2248 ${CurrencyFormatter.formatDisplay(expense.homeAmount, homeCurrency!!)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.End,
+                )
+            }
+        }
     }
 }

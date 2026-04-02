@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.Expense
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,6 +28,7 @@ fun SwipeToDismissExpenseItem(
     onDismiss: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    homeCurrency: Currency? = null,
 ) {
     val dismissState = rememberSwipeToDismissBoxState()
 
@@ -57,7 +59,7 @@ fun SwipeToDismissExpenseItem(
         },
     ) {
         Box(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
-            ExpenseItem(expense = expense, onClick = onClick)
+            ExpenseItem(expense = expense, onClick = onClick, homeCurrency = homeCurrency)
         }
     }
 }
