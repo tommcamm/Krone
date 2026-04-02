@@ -14,7 +14,7 @@ import com.sofato.krone.ui.expenses.AddExpenseScreen
 import com.sofato.krone.ui.expenses.CategoryManagementScreen
 import com.sofato.krone.ui.expenses.EditExpenseScreen
 import com.sofato.krone.ui.expenses.ExpenseListScreen
-import com.sofato.krone.ui.insights.InsightsPlaceholderScreen
+import com.sofato.krone.ui.insights.InsightsScreen
 import com.sofato.krone.ui.recurring.AddRecurringExpenseScreen
 import com.sofato.krone.ui.recurring.EditRecurringExpenseScreen
 import com.sofato.krone.ui.recurring.RecurringExpenseListScreen
@@ -56,7 +56,7 @@ fun KroneNavHost(
             )
         }
         composable<KroneDestination.Insights> {
-            InsightsPlaceholderScreen()
+            InsightsScreen()
         }
         composable<KroneDestination.AddExpense> {
             AddExpenseScreen(

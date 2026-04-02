@@ -33,6 +33,7 @@ fun DailyBudgetHeroCard(
     modifier: Modifier = Modifier,
 ) {
     val remainingToday = (dailyBudget.dailyAmountMinor - spentToday).coerceAtLeast(0)
+    val isOverDaily = spentToday > dailyBudget.dailyAmountMinor
     val progress = if (dailyBudget.dailyAmountMinor > 0) {
         (spentToday.toFloat() / dailyBudget.dailyAmountMinor).coerceIn(0f, 1.5f)
     } else 0f
@@ -43,17 +44,28 @@ fun DailyBudgetHeroCard(
         else -> MaterialTheme.colorScheme.error
     }
 
+    val containerColor = if (isOverDaily) {
+        MaterialTheme.colorScheme.errorContainer
+    } else {
+        MaterialTheme.colorScheme.primaryContainer
+    }
+    val contentColor = if (isOverDaily) {
+        MaterialTheme.colorScheme.onErrorContainer
+    } else {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            containerColor = containerColor,
         ),
     ) {
         Column(modifier = Modifier.padding(Dimens.SpacingLg)) {
             Text(
                 text = "You can spend",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = contentColor,
             )
             Spacer(Modifier.height(4.dp))
             AnimatedContent(
@@ -64,17 +76,17 @@ fun DailyBudgetHeroCard(
                     text = CurrencyFormatter.formatDisplay(amount, currency),
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Bold,
-                    color = if (spentToday > dailyBudget.dailyAmountMinor) {
+                    color = if (isOverDaily) {
                         MaterialTheme.colorScheme.error
                     } else {
-                        MaterialTheme.colorScheme.onPrimaryContainer
+                        contentColor
                     },
                 )
             }
             Text(
                 text = "today",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = contentColor,
             )
 
             Spacer(Modifier.height(Dimens.SpacingMd))
@@ -86,7 +98,7 @@ fun DailyBudgetHeroCard(
                     .height(8.dp)
                     .clip(MaterialTheme.shapes.small),
                 color = progressColor,
-                trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
+                trackColor = contentColor.copy(alpha = 0.15f),
             )
 
             Spacer(Modifier.height(Dimens.SpacingSm))
@@ -98,15 +110,23 @@ fun DailyBudgetHeroCard(
                 Text(
                     text = "Spent: ${CurrencyFormatter.formatDisplay(spentToday, currency)} / ${CurrencyFormatter.formatDisplay(dailyBudget.dailyAmountMinor, currency)}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                    color = contentColor.copy(alpha = 0.7f),
                 )
                 Text(
                     text = "${dailyBudget.remainingDays} days left",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                    color = contentColor.copy(alpha = 0.7f),
                 )
             }
 
+            if (isOverDaily) {
+                Spacer(Modifier.height(Dimens.SpacingSm))
+                Text(
+                    text = "You've spent over today's budget. Tomorrow's allowance will adjust.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = contentColor.copy(alpha = 0.7f),
+                )
+            }
         }
     }
 }

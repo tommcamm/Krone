@@ -5,6 +5,9 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import com.sofato.krone.data.db.dao.projections.CategoryTotal
+import com.sofato.krone.data.db.dao.projections.CurrencyTotal
+import com.sofato.krone.data.db.dao.projections.DailyTotal
 import com.sofato.krone.data.db.entity.ExpenseEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
@@ -44,4 +47,26 @@ interface ExpenseDao {
 
     @Query("SELECT COUNT(*) FROM expense")
     suspend fun getExpenseCount(): Int
+
+    @Query(
+        "SELECT date, SUM(homeAmountMinor) AS totalMinor " +
+            "FROM expense WHERE date BETWEEN :startDate AND :endDate " +
+            "GROUP BY date ORDER BY date ASC",
+    )
+    fun getDailyTotals(startDate: LocalDate, endDate: LocalDate): Flow<List<DailyTotal>>
+
+    @Query(
+        "SELECT categoryId, SUM(homeAmountMinor) AS totalMinor " +
+            "FROM expense WHERE date BETWEEN :startDate AND :endDate " +
+            "GROUP BY categoryId ORDER BY totalMinor DESC",
+    )
+    fun getCategoryTotals(startDate: LocalDate, endDate: LocalDate): Flow<List<CategoryTotal>>
+
+    @Query(
+        "SELECT currencyCode, SUM(amountMinor) AS originalTotalMinor, " +
+            "SUM(homeAmountMinor) AS homeTotalMinor " +
+            "FROM expense WHERE date BETWEEN :startDate AND :endDate " +
+            "GROUP BY currencyCode ORDER BY homeTotalMinor DESC",
+    )
+    fun getCurrencyTotals(startDate: LocalDate, endDate: LocalDate): Flow<List<CurrencyTotal>>
 }

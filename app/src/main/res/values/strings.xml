@@ -53,6 +53,13 @@
     <string name="todays_expenses">Today\'s expenses</string>
     <string name="view_all">View all</string>
 
+    <!-- Welcome -->
+    <string name="welcome_tagline">Manage your spending, all in one place.</string>
+    <string name="welcome_feature_offline">Works offline -- no internet required</string>
+    <string name="welcome_feature_privacy">Your data stays on your device</string>
+    <string name="welcome_feature_currency">Multi-currency support</string>
+    <string name="welcome_feature_foss">Free and open source</string>
+
     <!-- Onboarding -->
     <string name="onboarding_welcome">Welcome to Krone</string>
     <string name="onboarding_currency_step">Your currency &amp; payday</string>
@@ -114,4 +121,24 @@
 
     <!-- Manage salary -->
     <string name="manage_salary">Manage income</string>
+
+    <!-- Insights -->
+    <string name="insights_text_insights_title">Key insights</string>
+    <string name="insights_streak_days_format">%d days under budget</string>
+    <string name="insights_streak_longest_format">Longest: %d days</string>
+    <string name="insights_heatmap_title">Spending heatmap</string>
+    <string name="insights_donut_title">Spending by category</string>
+    <string name="insights_cumulative_title">Spending pace</string>
+    <string name="insights_cumulative_subtitle">Actual vs. ideal budget line</string>
+    <string name="insights_comparison_title">Category comparison</string>
+    <string name="insights_comparison_subtitle">This period vs. last period</string>
+    <string name="insights_trend_title">Spending trend</string>
+    <string name="insights_savings_ratio_title">Savings vs. spending</string>
+    <string name="insights_currency_breakdown_title">Multi-currency breakdown</string>
+    <string name="insights_spent_more_format">You spent %1$d%% more on %2$s this month</string>
+    <string name="insights_spent_less_format">You spent %1$d%% less on %2$s this month</string>
+    <string name="insights_overall_up_format">Your spending is up %d%% compared to last month</string>
+    <string name="insights_overall_down_format">Your spending is down %d%% compared to last month</string>
+    <string name="insights_streak_callout_format">You\'ve been under budget for %d days in a row!</string>
+    <string name="insights_top_category_format">Your biggest expense category is %s</string>
 </resources>

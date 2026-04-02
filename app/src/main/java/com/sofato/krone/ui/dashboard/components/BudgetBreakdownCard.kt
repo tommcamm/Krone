@@ -52,10 +52,17 @@ fun BudgetBreakdownCard(
     val fixedMinor = dailyBudget.totalFixedMinor
     val savingsMinor = dailyBudget.totalSavingsMinor
     val discretionaryMinor = dailyBudget.discretionaryMinor
-    val committedTotal = fixedMinor + savingsMinor
-    val committedFraction = if (incomeMinor > 0) {
-        committedTotal.toFloat() / incomeMinor
+    val totalSpent = dailyBudget.spentSoFarMinor + spentToday
+    val monthlyRemaining = discretionaryMinor - totalSpent
+    val isOverBudget = monthlyRemaining < 0
+    val spentFraction = if (discretionaryMinor > 0) {
+        totalSpent.toFloat() / discretionaryMinor
     } else 0f
+    val progressColor = when {
+        spentFraction < 0.7f -> MaterialTheme.colorScheme.primary
+        spentFraction < 1.0f -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.error
+    }
 
     Card(
         modifier = modifier
@@ -74,14 +81,18 @@ fun BudgetBreakdownCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Monthly budget",
+                        text = if (isOverBudget) "Over budget" else "Left this month",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    val displayAmount = kotlin.math.abs(monthlyRemaining)
+                    val prefix = if (isOverBudget) "−\u2009" else ""
                     Text(
-                        text = "${CurrencyFormatter.formatDisplay(discretionaryMinor, currency)} free",
+                        text = prefix + CurrencyFormatter.formatDisplay(displayAmount, currency),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
+                        color = if (isOverBudget) MaterialTheme.colorScheme.error
+                        else androidx.compose.ui.graphics.Color.Unspecified,
                     )
                 }
                 Icon(
@@ -95,13 +106,13 @@ fun BudgetBreakdownCard(
             Spacer(Modifier.height(Dimens.SpacingSm))
 
             LinearProgressIndicator(
-                progress = { committedFraction.coerceIn(0f, 1f) },
+                progress = { spentFraction.coerceIn(0f, 1f) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(MaterialTheme.shapes.small),
-                color = MaterialTheme.colorScheme.tertiary,
-                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                color = progressColor,
+                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
             )
             Spacer(Modifier.height(Dimens.SpacingXs))
             Row(
@@ -109,14 +120,14 @@ fun BudgetBreakdownCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "Committed",
+                    text = "Spent: ${CurrencyFormatter.formatDisplay(totalSpent, currency)}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.tertiary,
+                    color = progressColor,
                 )
                 Text(
-                    text = "Free to spend",
+                    text = "of ${CurrencyFormatter.formatDisplay(discretionaryMinor, currency)}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -160,9 +171,17 @@ fun BudgetBreakdownCard(
                     )
                     BreakdownRow(
                         label = "Spent so far",
-                        amount = -(dailyBudget.spentSoFarMinor + spentToday),
+                        amount = -totalSpent,
                         currency = currency,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    BreakdownRow(
+                        label = "Remaining",
+                        amount = monthlyRemaining,
+                        currency = currency,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isOverBudget) MaterialTheme.colorScheme.error
+                        else androidx.compose.ui.graphics.Color.Unspecified,
                     )
 
                     Spacer(Modifier.height(Dimens.SpacingSm))
