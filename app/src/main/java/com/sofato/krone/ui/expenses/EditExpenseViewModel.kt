@@ -164,7 +164,9 @@ class EditExpenseViewModel @Inject constructor(
         _amountInput.value = value.filter { it.isDigit() || it == '.' || it == ',' }
     }
 
-    fun onCategorySelected(category: Category) { _selectedCategory.value = category }
+    fun onCategorySelected(category: Category) {
+        _selectedCategory.value = if (_selectedCategory.value?.id == category.id) null else category
+    }
     fun onCurrencySelected(currency: Currency) { _selectedCurrency.value = currency }
     fun onNoteChanged(value: String) { _noteInput.value = value }
     fun onDateSelected(date: LocalDate) { _selectedDate.value = date }
@@ -172,7 +174,6 @@ class EditExpenseViewModel @Inject constructor(
     fun save() {
         val original = _expense.value ?: return
         val currency = _selectedCurrency.value ?: return
-        val category = _selectedCategory.value ?: return
         val amountText = _amountInput.value.replace(",", ".")
         val amountDouble = amountText.toDoubleOrNull() ?: return
         if (amountDouble <= 0) return
@@ -180,6 +181,7 @@ class EditExpenseViewModel @Inject constructor(
         val amountMinor = (amountDouble * 10.0.pow(currency.decimalPlaces)).roundToLong()
 
         viewModelScope.launch {
+            val category = _selectedCategory.value ?: resolveOtherCategory() ?: return@launch
             val updated = original.copy(
                 amount = amountMinor,
                 currency = currency,
@@ -190,6 +192,11 @@ class EditExpenseViewModel @Inject constructor(
             updateExpenseUseCase(updated)
             _events.emit(EditExpenseEvent.Saved)
         }
+    }
+
+    private suspend fun resolveOtherCategory(): Category? {
+        return categories.first { it.isNotEmpty() }
+            .find { it.iconName == "MoreHoriz" && !it.isCustom }
     }
 
     fun delete() {

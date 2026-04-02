@@ -262,7 +262,7 @@ fun AddExpenseScreen(
         ) {
             Button(
                 onClick = viewModel::save,
-                enabled = amountInput.isNotBlank() && selectedCategory != null && !isSaving,
+                enabled = amountInput.isNotBlank() && !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Dimens.SpacingMd, vertical = Dimens.SpacingSm)

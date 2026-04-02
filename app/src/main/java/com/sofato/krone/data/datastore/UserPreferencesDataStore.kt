@@ -14,4 +14,6 @@ object PreferenceKeys {
     val DARK_MODE_OVERRIDE = stringPreferencesKey("dark_mode_override")
     val HAS_COMPLETED_ONBOARDING = booleanPreferencesKey("has_completed_onboarding")
     val INCOME_DAY = intPreferencesKey("income_day")
+    val SHOW_MONTHLY_CARD = booleanPreferencesKey("show_monthly_card")
+    val SHOW_DAILY_CARD = booleanPreferencesKey("show_daily_card")
 }

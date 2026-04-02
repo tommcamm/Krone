@@ -33,6 +33,14 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         prefs[PreferenceKeys.INCOME_DAY] ?: 1
     }
 
+    override val showMonthlyCard: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[PreferenceKeys.SHOW_MONTHLY_CARD] ?: true
+    }
+
+    override val showDailyCard: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[PreferenceKeys.SHOW_DAILY_CARD] ?: true
+    }
+
     override suspend fun setHomeCurrencyCode(code: String) {
         dataStore.edit { it[PreferenceKeys.HOME_CURRENCY_CODE] = code }
     }
@@ -51,6 +59,14 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setIncomeDay(day: Int) {
         dataStore.edit { it[PreferenceKeys.INCOME_DAY] = day }
+    }
+
+    override suspend fun setShowMonthlyCard(show: Boolean) {
+        dataStore.edit { it[PreferenceKeys.SHOW_MONTHLY_CARD] = show }
+    }
+
+    override suspend fun setShowDailyCard(show: Boolean) {
+        dataStore.edit { it[PreferenceKeys.SHOW_DAILY_CARD] = show }
     }
 
     override suspend fun clearAll() {

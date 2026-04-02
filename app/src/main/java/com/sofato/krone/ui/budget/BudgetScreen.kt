@@ -54,6 +54,8 @@ fun BudgetScreen(
                     totalSavings = ov.totalSavingsMinor,
                     discretionary = ov.discretionaryMinor,
                     currency = curr,
+                    categoryBreakdown = ov.categoryBreakdown,
+                    unallocatedDiscretionaryMinor = ov.unallocatedDiscretionaryMinor,
                 )
             }
         }

@@ -19,7 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.sofato.krone.domain.model.CategorySpend
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.CurrencyFormatter
@@ -32,10 +34,15 @@ fun BudgetOverviewCard(
     discretionary: Long,
     currency: Currency,
     modifier: Modifier = Modifier,
+    categoryBreakdown: List<CategorySpend> = emptyList(),
+    unallocatedDiscretionaryMinor: Long = discretionary,
 ) {
     val fixedColor = MaterialTheme.colorScheme.error
     val savingsColor = MaterialTheme.colorScheme.tertiary
-    val discretionaryColor = MaterialTheme.colorScheme.primary
+    val unallocatedColor = MaterialTheme.colorScheme.primary
+
+    // Categories that have a budget allocation
+    val allocatedCategories = categoryBreakdown.filter { it.allocatedMinor > 0 }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -53,11 +60,31 @@ fun BudgetOverviewCard(
             )
             Spacer(Modifier.height(Dimens.SpacingMd))
 
-            // Stacked horizontal bar
+            // Segmented horizontal bar
             val total = (totalFixed + totalSavings + discretionary).coerceAtLeast(1L)
-            val fixedFraction = totalFixed.toFloat() / total
-            val savingsFraction = totalSavings.toFloat() / total
-            val discretionaryFraction = discretionary.toFloat() / total
+
+            data class BarSegment(val amount: Long, val color: Color, val label: String)
+
+            val segments = mutableListOf<BarSegment>()
+            segments.add(BarSegment(totalFixed, fixedColor, "Fixed expenses"))
+            segments.add(BarSegment(totalSavings, savingsColor, "Savings"))
+
+            // Break discretionary into category allocations + unallocated
+            if (allocatedCategories.isNotEmpty()) {
+                for (cs in allocatedCategories) {
+                    val catColor = try {
+                        Color(android.graphics.Color.parseColor(cs.category.colorHex))
+                    } catch (_: Exception) {
+                        unallocatedColor
+                    }
+                    segments.add(BarSegment(cs.allocatedMinor, catColor, cs.category.name))
+                }
+                if (unallocatedDiscretionaryMinor > 0) {
+                    segments.add(BarSegment(unallocatedDiscretionaryMinor, unallocatedColor, "Free budget"))
+                }
+            } else {
+                segments.add(BarSegment(discretionary, unallocatedColor, "Discretionary"))
+            }
 
             Row(
                 modifier = Modifier
@@ -65,35 +92,21 @@ fun BudgetOverviewCard(
                     .height(12.dp)
                     .clip(MaterialTheme.shapes.small),
             ) {
-                if (fixedFraction > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .weight(fixedFraction)
-                            .height(12.dp)
-                            .background(fixedColor),
-                    )
-                }
-                if (savingsFraction > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .weight(savingsFraction)
-                            .height(12.dp)
-                            .background(savingsColor),
-                    )
-                }
-                if (discretionaryFraction > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .weight(discretionaryFraction)
-                            .height(12.dp)
-                            .background(discretionaryColor),
-                    )
+                for (segment in segments) {
+                    if (segment.amount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .weight(segment.amount.toFloat() / total)
+                                .height(12.dp)
+                                .background(segment.color),
+                        )
+                    }
                 }
             }
 
             Spacer(Modifier.height(Dimens.SpacingMd))
 
-            // Legend with amounts
+            // Legend
             LegendRow(
                 color = fixedColor,
                 label = "Fixed expenses",
@@ -106,18 +119,42 @@ fun BudgetOverviewCard(
                 amount = CurrencyFormatter.formatDisplay(totalSavings, currency),
             )
             Spacer(Modifier.height(Dimens.SpacingXs))
-            LegendRow(
-                color = discretionaryColor,
-                label = "Discretionary",
-                amount = CurrencyFormatter.formatDisplay(discretionary, currency),
-            )
+
+            if (allocatedCategories.isNotEmpty()) {
+                for (cs in allocatedCategories) {
+                    val catColor = try {
+                        Color(android.graphics.Color.parseColor(cs.category.colorHex))
+                    } catch (_: Exception) {
+                        unallocatedColor
+                    }
+                    LegendRow(
+                        color = catColor,
+                        label = cs.category.name,
+                        amount = CurrencyFormatter.formatDisplay(cs.allocatedMinor, currency),
+                    )
+                    Spacer(Modifier.height(Dimens.SpacingXs))
+                }
+                if (unallocatedDiscretionaryMinor > 0) {
+                    LegendRow(
+                        color = unallocatedColor,
+                        label = "Free budget",
+                        amount = CurrencyFormatter.formatDisplay(unallocatedDiscretionaryMinor, currency),
+                    )
+                }
+            } else {
+                LegendRow(
+                    color = unallocatedColor,
+                    label = "Discretionary",
+                    amount = CurrencyFormatter.formatDisplay(discretionary, currency),
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun LegendRow(
-    color: androidx.compose.ui.graphics.Color,
+    color: Color,
     label: String,
     amount: String,
 ) {

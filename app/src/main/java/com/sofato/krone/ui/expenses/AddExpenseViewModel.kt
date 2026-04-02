@@ -164,7 +164,7 @@ class AddExpenseViewModel @Inject constructor(
     }
 
     fun onCategorySelected(category: Category) {
-        _selectedCategory.value = category
+        _selectedCategory.value = if (_selectedCategory.value?.id == category.id) null else category
     }
 
     fun onCurrencySelected(currency: Currency) {
@@ -181,7 +181,6 @@ class AddExpenseViewModel @Inject constructor(
 
     fun save() {
         val currency = _selectedCurrency.value ?: return
-        val category = _selectedCategory.value ?: return
         val amountText = _amountInput.value.replace(",", ".")
         val amountDouble = amountText.toDoubleOrNull() ?: return
         if (amountDouble <= 0) return
@@ -190,6 +189,11 @@ class AddExpenseViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isSaving.value = true
+            val category = _selectedCategory.value ?: resolveOtherCategory()
+            if (category == null) {
+                _isSaving.value = false
+                return@launch
+            }
             addExpenseUseCase(
                 amountMinor = amountMinor,
                 currency = currency,
@@ -200,6 +204,11 @@ class AddExpenseViewModel @Inject constructor(
             _isSaving.value = false
             _events.emit(AddExpenseEvent.Saved)
         }
+    }
+
+    private suspend fun resolveOtherCategory(): Category? {
+        return categories.first { it.isNotEmpty() }
+            .find { it.iconName == "MoreHoriz" && !it.isCustom }
     }
 
     sealed interface AddExpenseEvent {
