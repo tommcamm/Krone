@@ -9,6 +9,8 @@ data class BudgetOverview(
     val spentMinor: Long,
     val categoryBreakdown: List<CategorySpend>,
     val currencyCode: String,
+    val totalAllocatedMinor: Long = 0L,
+    val unallocatedDiscretionaryMinor: Long = discretionaryMinor,
 )
 
 data class CategorySpend(

@@ -1,7 +1,6 @@
 package com.sofato.krone.ui.budget
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +27,7 @@ import com.sofato.krone.util.CurrencyFormatter
 fun BudgetScreen(
     onManageCommitments: () -> Unit,
     onManageSalary: () -> Unit,
+    onManageBudgets: () -> Unit,
     viewModel: BudgetViewModel = hiltViewModel(),
 ) {
     val overview by viewModel.budgetOverview.collectAsState()
@@ -127,16 +127,25 @@ fun BudgetScreen(
             }
         }
 
-        // Category breakdown
+        // Category budget breakdown
         overview?.let { ov ->
-            if (ov.categoryBreakdown.isNotEmpty()) {
-                item(key = "category_header") {
+            item(key = "category_header") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text(
-                        text = "Category breakdown",
+                        text = "Category budgets",
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = Dimens.SpacingSm),
                     )
+                    TextButton(onClick = onManageBudgets) {
+                        Text("Manage budgets")
+                    }
                 }
+            }
+
+            if (ov.categoryBreakdown.isNotEmpty()) {
                 items(
                     items = ov.categoryBreakdown,
                     key = { "cat_${it.category.id}" },
@@ -147,6 +156,33 @@ fun BudgetScreen(
                         allocatedMinor = categorySpend.allocatedMinor,
                         currency = curr,
                     )
+                }
+            }
+
+            // Unallocated discretionary
+            if (ov.totalAllocatedMinor > 0) {
+                item(key = "unallocated") {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = Dimens.SpacingXs),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "Unallocated",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = CurrencyFormatter.formatDisplay(ov.unallocatedDiscretionaryMinor, curr),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (ov.unallocatedDiscretionaryMinor < 0) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        )
+                    }
                 }
             }
         }

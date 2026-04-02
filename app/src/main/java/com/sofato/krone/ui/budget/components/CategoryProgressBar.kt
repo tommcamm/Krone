@@ -34,11 +34,13 @@ fun CategoryProgressBar(
         MaterialTheme.colorScheme.primary
     }
 
+    val isOverBudget = allocatedMinor > 0 && spentMinor > allocatedMinor
     val progress = if (allocatedMinor > 0) {
         (spentMinor.toFloat() / allocatedMinor).coerceIn(0f, 1f)
     } else {
         0f
     }
+    val progressColor = if (isOverBudget) MaterialTheme.colorScheme.error else categoryColor
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -62,17 +64,21 @@ fun CategoryProgressBar(
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    text = CurrencyFormatter.formatDisplay(spentMinor, currency) + " spent",
+                    text = if (allocatedMinor > 0) {
+                        "${CurrencyFormatter.formatDisplay(spentMinor, currency)} of ${CurrencyFormatter.formatDisplay(allocatedMinor, currency)}"
+                    } else {
+                        "${CurrencyFormatter.formatDisplay(spentMinor, currency)} spent"
+                    },
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isOverBudget) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             if (allocatedMinor > 0) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = categoryColor,
-                    trackColor = categoryColor.copy(alpha = 0.12f),
+                    color = progressColor,
+                    trackColor = progressColor.copy(alpha = 0.12f),
                     strokeCap = StrokeCap.Round,
                 )
             } else {
