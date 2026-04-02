@@ -170,7 +170,7 @@ fun BudgetBreakdownCard(
                         onClick = onManageCommitments,
                         modifier = Modifier.align(Alignment.End),
                     ) {
-                        Text("Manage commitments")
+                        Text("Edit fixed costs")
                     }
                 }
             }
