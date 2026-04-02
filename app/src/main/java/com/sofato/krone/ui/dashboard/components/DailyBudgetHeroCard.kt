@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,6 +33,7 @@ fun DailyBudgetHeroCard(
     currency: Currency,
     modifier: Modifier = Modifier,
 ) {
+    val remainingToday = (dailyBudget.dailyAmountMinor - spentToday).coerceAtLeast(0)
     val progress = if (dailyBudget.dailyAmountMinor > 0) {
         (spentToday.toFloat() / dailyBudget.dailyAmountMinor).coerceIn(0f, 1.5f)
     } else 0f
@@ -56,14 +58,18 @@ fun DailyBudgetHeroCard(
             )
             Spacer(Modifier.height(4.dp))
             AnimatedContent(
-                targetState = dailyBudget.dailyAmountMinor,
+                targetState = remainingToday,
                 label = "daily_budget",
             ) { amount ->
                 Text(
-                    text = CurrencyFormatter.formatDisplay(amount.coerceAtLeast(0), currency),
+                    text = CurrencyFormatter.formatDisplay(amount, currency),
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = if (spentToday > dailyBudget.dailyAmountMinor) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    },
                 )
             }
             Text(
@@ -91,7 +97,7 @@ fun DailyBudgetHeroCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "Spent: ${CurrencyFormatter.formatDisplay(spentToday, currency)}",
+                    text = "Spent: ${CurrencyFormatter.formatDisplay(spentToday, currency)} / ${CurrencyFormatter.formatDisplay(dailyBudget.dailyAmountMinor, currency)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                 )
@@ -99,6 +105,33 @@ fun DailyBudgetHeroCard(
                     text = "${dailyBudget.remainingDays} days left",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                )
+            }
+
+            val monthRemaining = dailyBudget.discretionaryMinor - dailyBudget.spentSoFarMinor - spentToday
+
+            Spacer(Modifier.height(Dimens.SpacingXs))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f))
+            Spacer(Modifier.height(Dimens.SpacingSm))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = "Month remaining",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                )
+                Text(
+                    text = CurrencyFormatter.formatDisplay(monthRemaining.coerceAtLeast(0), currency),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (monthRemaining <= 0L) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    },
                 )
             }
         }

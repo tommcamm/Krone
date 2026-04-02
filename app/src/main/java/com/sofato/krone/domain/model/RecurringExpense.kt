@@ -13,4 +13,5 @@ data class RecurringExpense(
     val nextDate: LocalDate,
     val isActive: Boolean,
     val createdAt: Instant,
+    val dayOfMonth: Int? = null,
 )

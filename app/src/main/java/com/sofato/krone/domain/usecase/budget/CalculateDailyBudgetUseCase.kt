@@ -10,9 +10,12 @@ import com.sofato.krone.util.today
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
 import javax.inject.Inject
 
 class CalculateDailyBudgetUseCase @Inject constructor(
@@ -30,18 +33,29 @@ class CalculateDailyBudgetUseCase @Inject constructor(
         val currencyCode = userPreferencesRepository.homeCurrencyCode.first()
         emit(Triple(period, today, currencyCode))
     }.flatMapLatest { (period, today, currencyCode) ->
+        val yesterday = today.minus(1, DateTimeUnit.DAY)
+        val spentBeforeTodayEnd = if (yesterday >= period.startDate) {
+            period.startDate
+        } else {
+            // First day of period — no prior days
+            null
+        }
         combine(
             incomeRepository.getTotalRecurringIncomeMinor(),
             recurringExpenseRepository.getTotalActiveRecurringMinor(),
             savingsBucketRepository.getTotalMonthlyContributionsMinor(),
-            expenseRepository.getTotalHomeAmountBetween(period.startDate, today),
-        ) { income, fixed, savings, spent ->
+            if (spentBeforeTodayEnd != null) {
+                expenseRepository.getTotalHomeAmountBetween(spentBeforeTodayEnd, yesterday)
+            } else {
+                flowOf(0L)
+            },
+        ) { income, fixed, savings, spentBeforeToday ->
             val totalIncome = income ?: 0L
             val totalFixed = fixed ?: 0L
             val totalSavings = savings ?: 0L
-            val spentSoFar = spent ?: 0L
+            val priorSpent = spentBeforeToday ?: 0L
             val discretionary = totalIncome - totalFixed - totalSavings
-            val remaining = discretionary - spentSoFar
+            val remaining = discretionary - priorSpent
             val remainingDays = period.remainingDaysFrom(today)
             val daily = if (remainingDays > 0) remaining / remainingDays else 0L
 
@@ -50,7 +64,7 @@ class CalculateDailyBudgetUseCase @Inject constructor(
                 totalIncomeMinor = totalIncome,
                 totalFixedMinor = totalFixed,
                 totalSavingsMinor = totalSavings,
-                spentSoFarMinor = spentSoFar,
+                spentSoFarMinor = priorSpent,
                 remainingDays = remainingDays,
                 discretionaryMinor = discretionary,
                 currencyCode = currencyCode,

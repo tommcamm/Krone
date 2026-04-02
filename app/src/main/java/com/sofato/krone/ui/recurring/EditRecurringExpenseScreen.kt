@@ -57,6 +57,7 @@ fun EditRecurringExpenseScreen(
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val recurrenceRule by viewModel.recurrenceRule.collectAsState()
+    val dayOfMonth by viewModel.dayOfMonth.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -124,6 +125,13 @@ fun EditRecurringExpenseScreen(
                     selected = recurrenceRule == RecurrenceRule.YEARLY,
                     onClick = { viewModel.onRecurrenceRuleChanged(RecurrenceRule.YEARLY) },
                     label = { Text("Yearly") },
+                )
+            }
+
+            if (recurrenceRule == RecurrenceRule.MONTHLY) {
+                ChargeDayInput(
+                    dayOfMonth = dayOfMonth,
+                    onDayChanged = viewModel::onDayOfMonthChanged,
                 )
             }
 

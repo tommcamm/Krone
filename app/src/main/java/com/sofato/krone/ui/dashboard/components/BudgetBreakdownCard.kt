@@ -40,6 +40,7 @@ import com.sofato.krone.util.CurrencyFormatter
 @Composable
 fun BudgetBreakdownCard(
     dailyBudget: DailyBudget,
+    spentToday: Long,
     currency: Currency,
     onManageCommitments: () -> Unit,
     modifier: Modifier = Modifier,
@@ -158,7 +159,7 @@ fun BudgetBreakdownCard(
                     )
                     BreakdownRow(
                         label = "Spent so far",
-                        amount = -dailyBudget.spentSoFarMinor,
+                        amount = -(dailyBudget.spentSoFarMinor + spentToday),
                         currency = currency,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

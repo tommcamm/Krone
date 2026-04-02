@@ -44,7 +44,7 @@ import com.sofato.krone.data.db.entity.SavingsContributionEntity
         MonthlySnapshotEntity::class,
         MlModelMetadataEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)

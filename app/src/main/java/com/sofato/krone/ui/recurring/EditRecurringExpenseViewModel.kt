@@ -51,6 +51,9 @@ class EditRecurringExpenseViewModel @Inject constructor(
     private val _recurrenceRule = MutableStateFlow(RecurrenceRule.MONTHLY)
     val recurrenceRule: StateFlow<String> = _recurrenceRule.asStateFlow()
 
+    private val _dayOfMonth = MutableStateFlow<Int?>(null)
+    val dayOfMonth: StateFlow<Int?> = _dayOfMonth.asStateFlow()
+
     private val _events = MutableSharedFlow<Event>()
     val events = _events.asSharedFlow()
 
@@ -61,6 +64,7 @@ class EditRecurringExpenseViewModel @Inject constructor(
             _label.value = loaded.label
             _amountInput.value = CurrencyFormatter.formatPlain(loaded.amountMinor, 2)
             _recurrenceRule.value = RecurrenceRule.normalize(loaded.recurrenceRule)
+            _dayOfMonth.value = loaded.dayOfMonth
             // Find matching category once categories load
             val cats = categories.value
             _selectedCategory.value = cats.find { it.id == loaded.categoryId }
@@ -74,6 +78,12 @@ class EditRecurringExpenseViewModel @Inject constructor(
     fun onCategorySelected(category: Category) { _selectedCategory.value = category }
     fun onRecurrenceRuleChanged(value: String) {
         _recurrenceRule.value = RecurrenceRule.normalize(value)
+        if (RecurrenceRule.normalize(value) == RecurrenceRule.YEARLY) {
+            _dayOfMonth.value = null
+        }
+    }
+    fun onDayOfMonthChanged(day: Int?) {
+        _dayOfMonth.value = day?.coerceIn(1, 31)
     }
 
     fun save() {
@@ -92,6 +102,7 @@ class EditRecurringExpenseViewModel @Inject constructor(
                     amountMinor = amountMinor,
                     categoryId = category.id,
                     recurrenceRule = _recurrenceRule.value,
+                    dayOfMonth = _dayOfMonth.value,
                 )
             )
             _events.emit(Event.Saved)

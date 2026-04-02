@@ -35,6 +35,7 @@ data class OnboardingFixedExpense(
     val iconName: String,
     val colorHex: String,
     val recurrenceRule: String = RecurrenceRule.MONTHLY,
+    val dayOfMonth: Int? = null,
 )
 
 data class OnboardingSavingsGoal(
@@ -188,7 +189,16 @@ class OnboardingViewModel @Inject constructor(
         val normalized = RecurrenceRule.normalize(recurrenceRule)
         _fixedExpenses.value = _fixedExpenses.value.toMutableList().also {
             if (index in it.indices) {
-                it[index] = it[index].copy(recurrenceRule = normalized)
+                val dayOfMonth = if (normalized == RecurrenceRule.YEARLY) null else it[index].dayOfMonth
+                it[index] = it[index].copy(recurrenceRule = normalized, dayOfMonth = dayOfMonth)
+            }
+        }
+    }
+
+    fun updateFixedExpenseDayOfMonth(index: Int, day: Int?) {
+        _fixedExpenses.value = _fixedExpenses.value.toMutableList().also {
+            if (index in it.indices) {
+                it[index] = it[index].copy(dayOfMonth = day?.coerceIn(1, 31))
             }
         }
     }
@@ -257,15 +267,21 @@ class OnboardingViewModel @Inject constructor(
                 .mapNotNull { expense ->
                     val resolvedCategoryId = resolveOnboardingCategoryId(expense)
                     if (resolvedCategoryId <= 0L) return@mapNotNull null
+                    val nextDate = if (expense.dayOfMonth != null && expense.recurrenceRule == RecurrenceRule.MONTHLY) {
+                        RecurrenceRule.initialNextDate(expense.dayOfMonth, today)
+                    } else {
+                        today
+                    }
                     RecurringExpense(
                         amountMinor = expense.amountMinor,
                         currencyCode = currencyCode,
                         categoryId = resolvedCategoryId,
                         label = expense.label,
                         recurrenceRule = expense.recurrenceRule,
-                        nextDate = today,
+                        nextDate = nextDate,
                         isActive = true,
                         createdAt = now,
+                        dayOfMonth = expense.dayOfMonth,
                     )
                 }
 
