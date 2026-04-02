@@ -26,7 +26,7 @@ import com.sofato.krone.util.CurrencyFormatter
 
 @Composable
 fun BudgetScreen(
-    onManageRecurring: () -> Unit,
+    onManageCommitments: () -> Unit,
     viewModel: BudgetViewModel = hiltViewModel(),
 ) {
     val overview by viewModel.budgetOverview.collectAsState()
@@ -95,8 +95,8 @@ fun BudgetScreen(
                     text = "Fixed expenses",
                     style = MaterialTheme.typography.titleMedium,
                 )
-                TextButton(onClick = onManageRecurring) {
-                    Text("Manage")
+                TextButton(onClick = onManageCommitments) {
+                    Text("Manage commitments")
                 }
             }
         }

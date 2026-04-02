@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.RecurringExpense
+import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.CurrencyFormatter
 
@@ -144,7 +145,7 @@ private fun SwipeToDismissRecurringItem(
                         style = MaterialTheme.typography.bodyLarge,
                     )
                     Text(
-                        text = "Next: ${expense.nextDate}",
+                        text = "${recurrenceLabel(expense.recurrenceRule)} · Next: ${expense.nextDate}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -155,5 +156,12 @@ private fun SwipeToDismissRecurringItem(
                 )
             }
         }
+    }
+}
+
+private fun recurrenceLabel(rule: String): String {
+    return when (RecurrenceRule.normalize(rule)) {
+        RecurrenceRule.YEARLY -> "Yearly"
+        else -> "Monthly"
     }
 }

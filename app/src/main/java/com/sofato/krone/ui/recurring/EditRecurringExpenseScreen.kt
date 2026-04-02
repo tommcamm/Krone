@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +41,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.domain.model.Category
+import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.ui.components.CategoryIcon
 import com.sofato.krone.ui.theme.Dimens
 
@@ -52,6 +55,7 @@ fun EditRecurringExpenseScreen(
     val amountInput by viewModel.amountInput.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val categories by viewModel.categories.collectAsState()
+    val recurrenceRule by viewModel.recurrenceRule.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -95,12 +99,31 @@ fun EditRecurringExpenseScreen(
             OutlinedTextField(
                 value = amountInput,
                 onValueChange = viewModel::onAmountChanged,
-                label = { Text("Monthly amount") },
+                label = { Text("Amount") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = MaterialTheme.typography.headlineMedium,
             )
+
+            Text(
+                text = "Frequency",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSm)) {
+                FilterChip(
+                    selected = recurrenceRule == RecurrenceRule.MONTHLY,
+                    onClick = { viewModel.onRecurrenceRuleChanged(RecurrenceRule.MONTHLY) },
+                    label = { Text("Monthly") },
+                )
+                FilterChip(
+                    selected = recurrenceRule == RecurrenceRule.YEARLY,
+                    onClick = { viewModel.onRecurrenceRuleChanged(RecurrenceRule.YEARLY) },
+                    label = { Text("Yearly") },
+                )
+            }
 
             Text(
                 text = "Category",

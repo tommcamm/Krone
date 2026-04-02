@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.RecurringExpense
+import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.repository.RecurringExpenseRepository
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.ui.navigation.KroneDestination
@@ -47,6 +48,9 @@ class EditRecurringExpenseViewModel @Inject constructor(
     private val _selectedCategory = MutableStateFlow<Category?>(null)
     val selectedCategory: StateFlow<Category?> = _selectedCategory.asStateFlow()
 
+    private val _recurrenceRule = MutableStateFlow(RecurrenceRule.MONTHLY)
+    val recurrenceRule: StateFlow<String> = _recurrenceRule.asStateFlow()
+
     private val _events = MutableSharedFlow<Event>()
     val events = _events.asSharedFlow()
 
@@ -56,6 +60,7 @@ class EditRecurringExpenseViewModel @Inject constructor(
             _expense.value = loaded
             _label.value = loaded.label
             _amountInput.value = CurrencyFormatter.formatPlain(loaded.amountMinor, 2)
+            _recurrenceRule.value = RecurrenceRule.normalize(loaded.recurrenceRule)
             // Find matching category once categories load
             val cats = categories.value
             _selectedCategory.value = cats.find { it.id == loaded.categoryId }
@@ -67,6 +72,9 @@ class EditRecurringExpenseViewModel @Inject constructor(
         _amountInput.value = value.filter { it.isDigit() || it == '.' || it == ',' }
     }
     fun onCategorySelected(category: Category) { _selectedCategory.value = category }
+    fun onRecurrenceRuleChanged(value: String) {
+        _recurrenceRule.value = RecurrenceRule.normalize(value)
+    }
 
     fun save() {
         val original = _expense.value ?: return
@@ -83,6 +91,7 @@ class EditRecurringExpenseViewModel @Inject constructor(
                     label = _label.value.trim(),
                     amountMinor = amountMinor,
                     categoryId = category.id,
+                    recurrenceRule = _recurrenceRule.value,
                 )
             )
             _events.emit(Event.Saved)
