@@ -1,13 +1,16 @@
 package com.sofato.krone.ui.expenses
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.domain.usecase.expense.AddExpenseUseCase
+import com.sofato.krone.ui.navigation.KroneDestination
 import com.sofato.krone.util.today
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -26,11 +29,14 @@ import kotlin.math.roundToLong
 
 @HiltViewModel
 class AddExpenseViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     getCategoriesUseCase: GetCategoriesUseCase,
     private val addExpenseUseCase: AddExpenseUseCase,
     private val currencyRepository: CurrencyRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
+
+    private val initialCategoryId: Long = savedStateHandle.toRoute<KroneDestination.AddExpense>().categoryId
 
     val categories: StateFlow<List<Category>> =
         getCategoriesUseCase()
@@ -66,6 +72,11 @@ class AddExpenseViewModel @Inject constructor(
             val homeCode = userPreferencesRepository.homeCurrencyCode.first()
             val currencies = currencyRepository.getEnabledCurrencies().first()
             _selectedCurrency.value = currencies.find { it.code == homeCode } ?: currencies.firstOrNull()
+
+            if (initialCategoryId > 0) {
+                val allCategories = categories.first { it.isNotEmpty() }
+                _selectedCategory.value = allCategories.find { it.id == initialCategoryId }
+            }
         }
     }
 

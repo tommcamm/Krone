@@ -1,5 +1,6 @@
 package com.sofato.krone.ui.expenses
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,6 +46,7 @@ fun ExpenseListScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.recent_expenses)) },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.close))

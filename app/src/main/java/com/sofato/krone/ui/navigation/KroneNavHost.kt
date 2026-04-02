@@ -34,9 +34,12 @@ fun KroneNavHost(
     ) {
         composable<KroneDestination.Dashboard> {
             DashboardScreen(
-                onAddExpense = { navController.navigate(KroneDestination.AddExpense) },
+                onAddExpense = { categoryId ->
+                    navController.navigate(KroneDestination.AddExpense(categoryId = categoryId ?: -1L))
+                },
                 onExpenseClick = { id -> navController.navigate(KroneDestination.EditExpense(id)) },
                 onViewAllExpenses = { navController.navigate(KroneDestination.ExpenseList) },
+                onManageCommitments = { navController.navigate(KroneDestination.ManageCommitments) },
             )
         }
         composable<KroneDestination.Budget> {
@@ -81,7 +84,7 @@ fun KroneNavHost(
         composable<KroneDestination.ExpenseList> {
             ExpenseListScreen(
                 onExpenseClick = { id -> navController.navigate(KroneDestination.EditExpense(id)) },
-                onAddExpense = { navController.navigate(KroneDestination.AddExpense) },
+                onAddExpense = { navController.navigate(KroneDestination.AddExpense()) },
                 onNavigateBack = { navController.popBackStack() },
             )
         }

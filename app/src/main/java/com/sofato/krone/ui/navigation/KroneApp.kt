@@ -77,7 +77,7 @@ private fun MainApp() {
                         if (isSavingsTab) {
                             navController.navigate(KroneDestination.AddSavingsBucket)
                         } else {
-                            navController.navigate(KroneDestination.AddExpense)
+                            navController.navigate(KroneDestination.AddExpense())
                         }
                     },
                 ) {

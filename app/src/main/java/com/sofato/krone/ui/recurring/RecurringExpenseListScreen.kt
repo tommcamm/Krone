@@ -1,5 +1,6 @@
 package com.sofato.krone.ui.recurring
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -58,6 +59,7 @@ fun RecurringExpenseListScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Recurring Expenses") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")

@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.ui.components.SwipeToDismissExpenseItem
+import com.sofato.krone.ui.dashboard.components.BudgetBreakdownCard
 import com.sofato.krone.ui.dashboard.components.DailyBudgetHeroCard
 import com.sofato.krone.ui.dashboard.components.QuickAddRow
 import com.sofato.krone.ui.dashboard.components.StatsRow
@@ -38,9 +39,10 @@ import com.sofato.krone.ui.theme.Dimens
 
 @Composable
 fun DashboardScreen(
-    onAddExpense: () -> Unit,
+    onAddExpense: (categoryId: Long?) -> Unit,
     onExpenseClick: (Long) -> Unit,
     onViewAllExpenses: () -> Unit,
+    onManageCommitments: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val expenses by viewModel.todaysExpenses.collectAsState()
@@ -86,6 +88,20 @@ fun DashboardScreen(
                 }
             }
 
+            // Monthly budget breakdown
+            item {
+                val currency = homeCurrency
+                val budget = dailyBudget
+                if (currency != null && budget != null) {
+                    BudgetBreakdownCard(
+                        dailyBudget = budget,
+                        currency = currency,
+                        onManageCommitments = onManageCommitments,
+                        modifier = Modifier.padding(horizontal = Dimens.SpacingMd),
+                    )
+                }
+            }
+
             // Quick add row
             if (categories.isNotEmpty()) {
                 item {
@@ -97,7 +113,7 @@ fun DashboardScreen(
                     )
                     QuickAddRow(
                         categories = categories,
-                        onCategoryClick = { onAddExpense() },
+                        onCategoryClick = { category -> onAddExpense(category.id) },
                         modifier = Modifier.padding(vertical = Dimens.SpacingXs),
                     )
                 }
