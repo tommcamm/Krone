@@ -65,9 +65,12 @@ class EditRecurringExpenseViewModel @Inject constructor(
             _amountInput.value = CurrencyFormatter.formatPlain(loaded.amountMinor, 2)
             _recurrenceRule.value = RecurrenceRule.normalize(loaded.recurrenceRule)
             _dayOfMonth.value = loaded.dayOfMonth
-            // Find matching category once categories load
-            val cats = categories.value
-            _selectedCategory.value = cats.find { it.id == loaded.categoryId }
+            // Wait for categories to load, then resolve the matching category
+            categories.collect { cats ->
+                if (cats.isNotEmpty() && _selectedCategory.value == null) {
+                    _selectedCategory.value = cats.find { it.id == loaded.categoryId }
+                }
+            }
         }
     }
 

@@ -1,16 +1,19 @@
 package com.sofato.krone.ui.savings
 
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -20,19 +23,26 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.domain.model.SavingsBucketType
@@ -60,95 +70,161 @@ fun EditSavingsBucketScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text("Edit Savings Bucket") },
+            title = { Text("Edit savings bucket") },
             windowInsets = WindowInsets(0, 0, 0, 0),
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             },
+            actions = {
+                IconButton(onClick = viewModel::deactivate) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Deactivate",
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
         )
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
-                .padding(Dimens.SpacingMd),
-            verticalArrangement = Arrangement.spacedBy(Dimens.SpacingMd),
+                .imePadding(),
         ) {
-            OutlinedTextField(
-                value = label,
-                onValueChange = viewModel::onLabelChanged,
-                label = { Text("Label") },
-                singleLine = true,
+            // Amount hero section
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
                 modifier = Modifier.fillMaxWidth(),
-            )
-
-            Text(
-                text = "Type",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
-                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
             ) {
-                SavingsBucketType.entries.forEach { type ->
-                    FilterChip(
-                        selected = type == selectedType,
-                        onClick = { viewModel.onTypeSelected(type) },
-                        label = {
-                            Text(type.name.lowercase().replaceFirstChar { it.uppercase() }.replace('_', ' '))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimens.SpacingLg, horizontal = Dimens.SpacingMd),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = "Monthly contribution",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(Dimens.SpacingSm))
+                    BasicTextField(
+                        value = monthlyInput,
+                        onValueChange = viewModel::onMonthlyContributionChanged,
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = TextStyle(
+                            fontSize = MaterialTheme.typography.displayMedium.fontSize,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center,
+                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        decorationBox = { innerTextField ->
+                            Box(contentAlignment = Alignment.Center) {
+                                if (monthlyInput.isEmpty()) {
+                                    Text(
+                                        text = "0",
+                                        style = MaterialTheme.typography.displayMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                    )
+                                }
+                                innerTextField()
+                            }
                         },
                     )
                 }
             }
 
+            Spacer(Modifier.height(Dimens.SpacingMd))
+
+            // Label field
             OutlinedTextField(
-                value = monthlyInput,
-                onValueChange = viewModel::onMonthlyContributionChanged,
-                label = { Text("Monthly contribution") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                value = label,
+                onValueChange = viewModel::onLabelChanged,
+                label = { Text("Bucket name") },
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.SpacingMd),
             )
 
+            Spacer(Modifier.height(Dimens.SpacingMd))
+
+            // Target amount (optional)
             OutlinedTextField(
                 value = targetInput,
                 onValueChange = viewModel::onTargetAmountChanged,
                 label = { Text("Target amount (optional)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.SpacingMd),
             )
 
-            Spacer(Modifier.height(Dimens.SpacingSm))
+            Spacer(Modifier.height(Dimens.SpacingMd))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.SpacingMd))
+            Spacer(Modifier.height(Dimens.SpacingMd))
 
-            Button(
-                onClick = viewModel::save,
-                enabled = label.isNotBlank() && monthlyInput.isNotBlank(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-            ) {
-                Text("Save", style = MaterialTheme.typography.labelLarge)
+            // Type section
+            Column(modifier = Modifier.padding(horizontal = Dimens.SpacingMd)) {
+                Text(
+                    text = "Type",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(Dimens.SpacingSm))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
+                ) {
+                    SavingsBucketType.entries.forEach { type ->
+                        FilterChip(
+                            selected = type == selectedType,
+                            onClick = { viewModel.onTypeSelected(type) },
+                            label = { Text(type.displayName) },
+                        )
+                    }
+                }
             }
 
-            OutlinedButton(
-                onClick = viewModel::deactivate,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
-                ),
-            ) {
-                Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-                Text("Deactivate")
-            }
+            Spacer(Modifier.height(Dimens.SpacingXl))
+        }
 
-            Spacer(Modifier.height(Dimens.SpacingXxl))
+        // Bottom action buttons
+        Surface(tonalElevation = 3.dp, shadowElevation = 3.dp) {
+            Column(
+                modifier = Modifier.padding(horizontal = Dimens.SpacingMd, vertical = Dimens.SpacingSm),
+                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
+            ) {
+                Button(
+                    onClick = viewModel::save,
+                    enabled = label.isNotBlank() && monthlyInput.isNotBlank(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = MaterialTheme.shapes.large,
+                ) {
+                    Text("Save", style = MaterialTheme.typography.titleMedium)
+                }
+                OutlinedButton(
+                    onClick = viewModel::deactivate,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = MaterialTheme.shapes.large,
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                    Text("Deactivate")
+                }
+            }
         }
     }
 }

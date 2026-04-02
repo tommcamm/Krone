@@ -43,6 +43,7 @@ fun BudgetBreakdownCard(
     spentToday: Long,
     currency: Currency,
     onManageCommitments: () -> Unit,
+    onManageSalary: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -166,11 +167,16 @@ fun BudgetBreakdownCard(
 
                     Spacer(Modifier.height(Dimens.SpacingSm))
 
-                    TextButton(
-                        onClick = onManageCommitments,
-                        modifier = Modifier.align(Alignment.End),
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
                     ) {
-                        Text("Edit fixed costs")
+                        TextButton(onClick = onManageSalary) {
+                            Text("Edit income")
+                        }
+                        TextButton(onClick = onManageCommitments) {
+                            Text("Edit fixed costs")
+                        }
                     }
                 }
             }

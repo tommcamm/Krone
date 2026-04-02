@@ -70,7 +70,7 @@ fun SavingsBucketCard(
                         onClick = {},
                         label = {
                             Text(
-                                text = bucket.type.name.lowercase().replaceFirstChar { it.uppercase() }.replace('_', ' '),
+                                text = bucket.type.displayName,
                                 style = MaterialTheme.typography.labelSmall,
                             )
                         },

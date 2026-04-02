@@ -7,6 +7,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.sofato.krone.ui.budget.BudgetScreen
+import com.sofato.krone.ui.income.ManageSalaryScreen
 import com.sofato.krone.ui.dashboard.DashboardScreen
 import com.sofato.krone.ui.expenses.AddExpenseScreen
 import com.sofato.krone.ui.expenses.CategoryManagementScreen
@@ -39,11 +40,13 @@ fun KroneNavHost(
                 onExpenseClick = { id -> navController.navigate(KroneDestination.EditExpense(id)) },
                 onViewAllExpenses = { navController.navigate(KroneDestination.ExpenseList) },
                 onManageCommitments = { navController.navigate(KroneDestination.RecurringExpenseList) },
+                onManageSalary = { navController.navigate(KroneDestination.ManageSalary) },
             )
         }
         composable<KroneDestination.Budget> {
             BudgetScreen(
                 onManageCommitments = { navController.navigate(KroneDestination.RecurringExpenseList) },
+                onManageSalary = { navController.navigate(KroneDestination.ManageSalary) },
             )
         }
         composable<KroneDestination.Savings> {
@@ -108,6 +111,11 @@ fun KroneNavHost(
             SavingsBucketDetailScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onEdit = { id -> navController.navigate(KroneDestination.EditSavingsBucket(id)) },
+            )
+        }
+        composable<KroneDestination.ManageSalary> {
+            ManageSalaryScreen(
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }
