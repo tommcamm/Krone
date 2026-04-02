@@ -12,7 +12,8 @@
       "Bash(./gradlew --no-daemon compileFossDebugKotlin)",
       "Bash(./gradlew --no-daemon compileGoogleDebugKotlin)",
       "Bash(./gradlew --no-daemon assembleFossDebug assembleGoogleDebug)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(./gradlew assembleDebug)"
     ]
   }
 }

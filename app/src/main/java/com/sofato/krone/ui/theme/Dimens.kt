@@ -19,4 +19,5 @@ object Dimens {
 
     val CardElevation = 1.dp
     val BottomNavHeight = 80.dp
+    val FabSpacerHeight = 88.dp
 }

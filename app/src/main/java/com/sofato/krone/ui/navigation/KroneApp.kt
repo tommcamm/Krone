@@ -51,9 +51,7 @@ private fun MainApp() {
     val showBottomBar = currentDestination?.let { dest ->
         BottomNavItem.entries.any { dest.hasRoute(it.destination::class) }
     } ?: true
-    val showGlobalFab = showBottomBar && (
-        currentDestination?.hasRoute(KroneDestination.Savings::class) != true
-    )
+    val isSavingsTab = currentDestination?.hasRoute(KroneDestination.Savings::class) == true
 
     Scaffold(
         bottomBar = {
@@ -73,13 +71,23 @@ private fun MainApp() {
             }
         },
         floatingActionButton = {
-            if (showGlobalFab) {
+            if (showBottomBar) {
                 FloatingActionButton(
-                    onClick = { navController.navigate(KroneDestination.AddExpense) },
+                    onClick = {
+                        if (isSavingsTab) {
+                            navController.navigate(KroneDestination.AddSavingsBucket)
+                        } else {
+                            navController.navigate(KroneDestination.AddExpense)
+                        }
+                    },
                 ) {
                     Icon(
                         Icons.Default.Add,
-                        contentDescription = stringResource(R.string.add_expense),
+                        contentDescription = if (isSavingsTab) {
+                            stringResource(R.string.add_savings_bucket)
+                        } else {
+                            stringResource(R.string.add_expense)
+                        },
                     )
                 }
             }
