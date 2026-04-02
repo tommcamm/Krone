@@ -61,7 +61,6 @@ fun KroneNavHost(
         }
         composable<KroneDestination.Savings> {
             SavingsScreen(
-                onAddBucket = { navController.navigate(KroneDestination.AddSavingsBucket) },
                 onBucketClick = { id -> navController.navigate(KroneDestination.SavingsBucketDetail(id)) },
             )
         }

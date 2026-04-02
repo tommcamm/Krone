@@ -142,6 +142,6 @@ fun BudgetScreen(
             }
         }
 
-        item { Spacer(Modifier.height(Dimens.SpacingXxl)) }
+        item { Spacer(Modifier.height(Dimens.FabSpacerHeight)) }
     }
 }

@@ -163,7 +163,7 @@ fun DashboardScreen(
                 }
             }
 
-            item { Spacer(Modifier.height(88.dp)) }
+            item { Spacer(Modifier.height(Dimens.FabSpacerHeight)) }
         }
 
         SnackbarHost(
