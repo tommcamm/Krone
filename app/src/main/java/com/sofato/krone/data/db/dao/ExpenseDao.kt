@@ -36,6 +36,9 @@ interface ExpenseDao {
     @Query("SELECT SUM(homeAmountMinor) FROM expense WHERE date BETWEEN :startDate AND :endDate")
     fun getTotalHomeAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?>
 
+    @Query("SELECT SUM(homeAmountMinor) FROM expense WHERE date BETWEEN :startDate AND :endDate AND isRecurringInstance = 0")
+    fun getTotalDiscretionaryAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?>
+
     @Query("SELECT * FROM expense ORDER BY createdAt DESC LIMIT :limit")
     fun getRecentExpenses(limit: Int): Flow<List<ExpenseEntity>>
 

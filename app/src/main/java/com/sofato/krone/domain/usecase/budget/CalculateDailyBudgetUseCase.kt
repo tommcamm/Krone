@@ -45,7 +45,7 @@ class CalculateDailyBudgetUseCase @Inject constructor(
             recurringExpenseRepository.getTotalActiveRecurringMinor(),
             savingsBucketRepository.getTotalMonthlyContributionsMinor(),
             if (spentBeforeTodayEnd != null) {
-                expenseRepository.getTotalHomeAmountBetween(spentBeforeTodayEnd, yesterday)
+                expenseRepository.getTotalDiscretionaryAmountBetween(spentBeforeTodayEnd, yesterday)
             } else {
                 flowOf(0L)
             },
