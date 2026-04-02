@@ -50,6 +50,9 @@ class ExpenseRepositoryImpl @Inject constructor(
     override fun getTotalHomeAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?> =
         expenseDao.getTotalHomeAmountBetween(startDate, endDate)
 
+    override fun getTotalDiscretionaryAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?> =
+        expenseDao.getTotalDiscretionaryAmountBetween(startDate, endDate)
+
     private suspend fun ExpenseEntity.toDomain(): Expense? {
         val category = categoryDao.getCategoryById(categoryId)?.toDomain() ?: return null
         val currency = currencyDao.getCurrencyByCode(currencyCode)?.toDomain() ?: return null

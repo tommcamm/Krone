@@ -65,7 +65,7 @@ class DashboardViewModel @Inject constructor(
 
     val totalSpentToday: StateFlow<Long> =
         todaysExpenses
-            .map { expenses -> expenses.sumOf { it.homeAmount } }
+            .map { expenses -> expenses.filter { !it.isRecurringInstance }.sumOf { it.homeAmount } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
     val dailyBudget: StateFlow<DailyBudget?> =

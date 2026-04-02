@@ -13,4 +13,5 @@ interface ExpenseRepository {
     suspend fun updateExpense(expense: Expense)
     suspend fun deleteExpense(id: Long)
     fun getTotalHomeAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?>
+    fun getTotalDiscretionaryAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?>
 }

@@ -16,7 +16,9 @@
       "Bash(./gradlew assembleDebug)",
       "Bash(find:*)",
       "Bash(xargs basename:*)",
-      "Bash(grep -E \"\\\\.kt$\")"
+      "Bash(grep -E \"\\\\.kt$\")",
+      "Bash(./gradlew compileDebugKotlin)",
+      "Bash(./gradlew compileFossDebugKotlin)"
     ]
   }
 }
