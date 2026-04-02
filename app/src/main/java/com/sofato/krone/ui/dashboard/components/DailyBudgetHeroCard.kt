@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -108,32 +107,6 @@ fun DailyBudgetHeroCard(
                 )
             }
 
-            val monthRemaining = dailyBudget.discretionaryMinor - dailyBudget.spentSoFarMinor - spentToday
-
-            Spacer(Modifier.height(Dimens.SpacingXs))
-            HorizontalDivider(color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f))
-            Spacer(Modifier.height(Dimens.SpacingSm))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(
-                    text = "Month remaining",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                )
-                Text(
-                    text = CurrencyFormatter.formatDisplay(monthRemaining.coerceAtLeast(0), currency),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (monthRemaining <= 0L) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    },
-                )
-            }
         }
     }
 }
