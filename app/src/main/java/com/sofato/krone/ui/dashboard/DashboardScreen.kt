@@ -43,6 +43,7 @@ fun DashboardScreen(
     onExpenseClick: (Long) -> Unit,
     onViewAllExpenses: () -> Unit,
     onManageCommitments: () -> Unit,
+    onManageSalary: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val expenses by viewModel.todaysExpenses.collectAsState()
@@ -98,6 +99,7 @@ fun DashboardScreen(
                         spentToday = totalSpent,
                         currency = currency,
                         onManageCommitments = onManageCommitments,
+                        onManageSalary = onManageSalary,
                         modifier = Modifier.padding(horizontal = Dimens.SpacingMd),
                     )
                 }

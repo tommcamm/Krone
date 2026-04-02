@@ -32,6 +32,12 @@ interface RecurringExpenseDao {
     @Query("UPDATE recurring_expense SET nextDate = :nextDate WHERE id = :id")
     suspend fun updateNextDate(id: Long, nextDate: LocalDate)
 
-    @Query("SELECT SUM(amountMinor) FROM recurring_expense WHERE isActive = 1")
+    @Query("""
+        SELECT SUM(
+            CASE WHEN recurrenceRule = 'YEARLY' THEN amountMinor / 12
+                 ELSE amountMinor
+            END
+        ) FROM recurring_expense WHERE isActive = 1
+    """)
     fun getTotalActiveRecurringMinor(): Flow<Long?>
 }

@@ -27,6 +27,7 @@ import com.sofato.krone.util.CurrencyFormatter
 @Composable
 fun BudgetScreen(
     onManageCommitments: () -> Unit,
+    onManageSalary: () -> Unit,
     viewModel: BudgetViewModel = hiltViewModel(),
 ) {
     val overview by viewModel.budgetOverview.collectAsState()
@@ -60,11 +61,19 @@ fun BudgetScreen(
         // Income section
         if (incomeList.isNotEmpty()) {
             item(key = "income_header") {
-                Text(
-                    text = "Income",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = Dimens.SpacingSm),
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Income",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    TextButton(onClick = onManageSalary) {
+                        Text("Manage salary")
+                    }
+                }
             }
             items(items = incomeList, key = { "income_${it.id}" }) { income ->
                 Row(

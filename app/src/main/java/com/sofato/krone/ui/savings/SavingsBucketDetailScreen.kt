@@ -158,7 +158,7 @@ fun SavingsBucketDetailScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Text(
-                                text = b.type.name.lowercase().replaceFirstChar { it.uppercase() }.replace('_', ' '),
+                                text = b.type.displayName,
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                         }
