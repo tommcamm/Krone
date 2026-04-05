@@ -3,7 +3,6 @@ package com.sofato.krone.ui.currency
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sofato.krone.domain.model.Defaults
-import com.sofato.krone.data.worker.ExchangeRateSyncScheduler
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.ExchangeRate
 import com.sofato.krone.domain.repository.CurrencyRepository
@@ -34,7 +33,6 @@ class CurrencySettingsViewModel @Inject constructor(
     private val currencyRepository: CurrencyRepository,
     private val exchangeRateRepository: ExchangeRateRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
-    private val syncScheduler: ExchangeRateSyncScheduler,
 ) : ViewModel() {
 
     private val _homeCurrencyCode = MutableStateFlow(Defaults.HOME_CURRENCY_CODE)

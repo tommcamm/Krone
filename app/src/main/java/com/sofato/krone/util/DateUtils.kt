@@ -18,11 +18,6 @@ fun LocalDate.endOfMonth(): LocalDate {
     return nextMonth.minus(1, DateTimeUnit.DAY)
 }
 
-fun LocalDate.daysRemainingInMonth(): Int {
-    val end = endOfMonth()
-    return end.day - day + 1
-}
-
 fun calculateBudgetPeriod(
     incomeDay: Int,
     referenceDate: LocalDate = LocalDate.today(),

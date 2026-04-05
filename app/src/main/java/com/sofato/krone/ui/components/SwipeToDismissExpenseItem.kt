@@ -13,6 +13,7 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -29,18 +30,19 @@ fun SwipeToDismissExpenseItem(
     homeCurrency: Currency? = null,
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
-        positionalThreshold = { totalDistance -> totalDistance * 0.4f },
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onDismiss()
-            }
-            // Always return false so the box animates back to Settled.
-            // The actual item removal happens via the list reacting to the delete.
-            // This prevents a stale EndToStart state from re-triggering onDismiss
-            // when an item is restored via undo.
-            false
-        },
+        positionalThreshold = { totalDistance -> totalDistance * 0.6f },
     )
+
+    // Only delete once the swipe fully settles at EndToStart (i.e. the user
+    // dragged past the 60 % threshold AND released). Then snap back so the
+    // row resets — the actual removal is driven by the list reacting to the
+    // delete, which also avoids re-triggering on undo/restore.
+    LaunchedEffect(dismissState.currentValue) {
+        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+            dismissState.snapTo(SwipeToDismissBoxValue.Settled)
+            onDismiss()
+        }
+    }
 
     SwipeToDismissBox(
         state = dismissState,

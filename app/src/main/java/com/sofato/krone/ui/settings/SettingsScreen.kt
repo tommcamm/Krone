@@ -1,7 +1,7 @@
 package com.sofato.krone.ui.settings
 
 import android.content.Intent
-import android.net.Uri as AndroidUri
+import androidx.core.net.toUri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -79,8 +79,6 @@ fun SettingsScreen(
 
     val exportSuccessMsg = stringResource(R.string.export_success)
     val exportFailedMsg = stringResource(R.string.export_failed)
-    val importSuccessMsg = stringResource(R.string.import_success)
-
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/octet-stream"),
     ) { uri ->
@@ -306,7 +304,7 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_source_code),
                     subtitle = stringResource(R.string.settings_source_code_subtitle),
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, AndroidUri.parse("https://github.com/tommcamm/Krone"))
+                        val intent = Intent(Intent.ACTION_VIEW, "https://github.com/tommcamm/Krone".toUri())
                         context.startActivity(intent)
                     },
                     showChevron = true,

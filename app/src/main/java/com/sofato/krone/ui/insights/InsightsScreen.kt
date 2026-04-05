@@ -2,7 +2,6 @@ package com.sofato.krone.ui.insights
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.R
@@ -332,7 +332,7 @@ private fun InsightData.toTextInsight(): TextInsight {
 
 private fun parseColor(hex: String): Color {
     return try {
-        Color(android.graphics.Color.parseColor(if (hex.startsWith("#")) hex else "#$hex"))
+        Color((if (hex.startsWith("#")) hex else "#$hex").toColorInt())
     } catch (_: Exception) {
         Color.Gray
     }

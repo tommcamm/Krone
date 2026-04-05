@@ -17,21 +17,11 @@ fun CurrencyEntity.toDomain(): Currency = Currency(
     code = code, name = name, symbol = symbol, decimalPlaces = decimalPlaces,
     symbolPosition = symbolPosition, isEnabled = isEnabled, sortOrder = sortOrder,
 )
-fun Currency.toEntity(): CurrencyEntity = CurrencyEntity(
-    code = code, name = name, symbol = symbol, decimalPlaces = decimalPlaces,
-    symbolPosition = symbolPosition, isEnabled = isEnabled, sortOrder = sortOrder,
-)
-
 // ExchangeRate
 fun ExchangeRateEntity.toDomain(): ExchangeRate = ExchangeRate(
     baseCode = baseCode, targetCode = targetCode, rate = rate,
     fetchedAt = fetchedAt, source = source,
 )
-fun ExchangeRate.toEntity(): ExchangeRateEntity = ExchangeRateEntity(
-    baseCode = baseCode, targetCode = targetCode, rate = rate,
-    fetchedAt = fetchedAt, source = source,
-)
-
 // Category
 fun CategoryEntity.toDomain(): Category = Category(
     id = id, name = name, iconName = iconName, colorHex = colorHex,

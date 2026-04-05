@@ -1,9 +1,7 @@
 package com.sofato.krone.domain.usecase.insights
 
-import com.sofato.krone.domain.model.MonthlySnapshot
 import com.sofato.krone.domain.repository.ExpenseRepository
 import com.sofato.krone.domain.repository.MonthlySnapshotRepository
-import com.sofato.krone.domain.usecase.budget.CalculateBudgetPeriodUseCase
 import com.sofato.krone.util.today
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -14,7 +12,6 @@ import javax.inject.Inject
 class GetSpendingTrendUseCase @Inject constructor(
     private val monthlySnapshotRepository: MonthlySnapshotRepository,
     private val expenseRepository: ExpenseRepository,
-    private val calculateBudgetPeriod: CalculateBudgetPeriodUseCase,
 ) {
     data class MonthlyTrend(
         val month: String,

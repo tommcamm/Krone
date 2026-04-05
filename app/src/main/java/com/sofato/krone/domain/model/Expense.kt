@@ -2,8 +2,6 @@ package com.sofato.krone.domain.model
 
 import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
-import kotlin.math.pow
-
 data class Expense(
     val id: Long = 0,
     val amount: Long,
@@ -16,10 +14,4 @@ data class Expense(
     val createdAt: Instant,
     val isRecurringInstance: Boolean = false,
     val recurringExpenseId: Long? = null,
-) {
-    val displayAmount: Double
-        get() = amount.toDouble() / 10.0.pow(currency.decimalPlaces)
-
-    val displayHomeAmount: Double
-        get() = homeAmount.toDouble() / 10.0.pow(currency.decimalPlaces)
-}
+)

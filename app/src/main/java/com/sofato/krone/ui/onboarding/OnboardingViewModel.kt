@@ -12,7 +12,6 @@ import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.model.SavingsBucket
 import com.sofato.krone.domain.model.SavingsBucketType
 import com.sofato.krone.domain.repository.CurrencyRepository
-import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.domain.usecase.onboarding.CompleteOnboardingUseCase
 import com.sofato.krone.util.CurrencyFormatter
@@ -61,7 +60,6 @@ data class OnboardingResult(
 class OnboardingViewModel @Inject constructor(
     private val completeOnboardingUseCase: CompleteOnboardingUseCase,
     private val databaseBackupManager: DatabaseBackupManager,
-    private val userPreferencesRepository: UserPreferencesRepository,
     currencyRepository: CurrencyRepository,
     getCategoriesUseCase: GetCategoriesUseCase,
 ) : ViewModel() {
