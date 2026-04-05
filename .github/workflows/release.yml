@@ -58,31 +58,25 @@ jobs:
         run: |
           printf 'VERSION_NAME=${{ steps.next.outputs.name }}\nVERSION_CODE=${{ steps.next.outputs.code }}\n' > version.properties
 
-      - name: Generate debug keystore
-        run: |
-          mkdir -p ~/.android
-          keytool -genkeypair \
-            -alias androiddebugkey \
-            -keypass android \
-            -keystore ~/.android/debug.keystore \
-            -storepass android \
-            -dname "CN=Android Debug,O=Android,C=US" \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000
+      - name: Decode release keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > krone-release.jks
 
       - name: Run unit tests
         run: ./gradlew testFossDebugUnitTest
 
-      - name: Build FOSS Share APK
-        run: ./gradlew assembleFossShare
+      - name: Build FOSS Release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleFossRelease
 
       - name: Rename APK
         id: apk
         run: |
           VERSION="${{ steps.next.outputs.name }}"
-          APK_SRC=$(find app/build/outputs/apk/foss/share -name "*.apk" | head -1)
-          APK_DEST="app/build/outputs/apk/foss/share/Krone-v${VERSION}-foss.apk"
+          APK_SRC=$(find app/build/outputs/apk/foss/release -name "*.apk" | head -1)
+          APK_DEST="app/build/outputs/apk/foss/release/Krone-v${VERSION}-foss.apk"
           mv "$APK_SRC" "$APK_DEST"
           echo "path=$APK_DEST" >> "$GITHUB_OUTPUT"
 
@@ -111,4 +105,4 @@ jobs:
             3. Install and enjoy!
 
             ---
-            *Built with release optimizations (minified via R8). Signed with a CI debug key for easy distribution.*
+            *Built with release optimizations (minified via R8). Signed with the official Krone release key.*

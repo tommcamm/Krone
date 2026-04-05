@@ -14,6 +14,11 @@
 .cxx
 local.properties
 
+# Signing
+*.jks
+*.keystore
+*.b64
+
 # Build artifacts
 *.apk
 *.aab
