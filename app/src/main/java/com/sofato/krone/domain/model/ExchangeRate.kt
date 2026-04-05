@@ -1,6 +1,6 @@
 package com.sofato.krone.domain.model
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class ExchangeRate(
     val baseCode: String,

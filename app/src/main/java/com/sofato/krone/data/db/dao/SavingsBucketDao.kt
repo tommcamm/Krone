@@ -6,7 +6,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.sofato.krone.data.db.entity.SavingsBucketEntity
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Dao
 interface SavingsBucketDao {

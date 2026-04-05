@@ -8,8 +8,8 @@ import com.sofato.krone.data.network.FrankfurterApi
 import com.sofato.krone.domain.model.ExchangeRate
 import com.sofato.krone.domain.repository.ExchangeRateRepository
 import kotlinx.coroutines.flow.first
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import javax.inject.Inject
 
 class ExchangeRateRepositoryImpl @Inject constructor(

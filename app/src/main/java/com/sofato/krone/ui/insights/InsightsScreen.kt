@@ -165,7 +165,7 @@ fun InsightsScreen(
                     val cumulativeData = dailySpending.map { ds ->
                         cumulative += ds.totalMinor
                         LineChartData(
-                            label = ds.date.dayOfMonth.toString(),
+                            label = ds.date.day.toString(),
                             value = cumulative,
                         )
                     }
@@ -175,7 +175,7 @@ fun InsightsScreen(
                         val idealAmount = budget.discretionaryMinor *
                             (index + 1) / budget.remainingDays.coerceAtLeast(1).toLong()
                         LineChartData(
-                            label = ds.date.dayOfMonth.toString(),
+                            label = ds.date.day.toString(),
                             value = idealAmount.coerceAtLeast(0L),
                         )
                     }

@@ -2,7 +2,7 @@ package com.sofato.krone.domain.repository
 
 import com.sofato.krone.domain.model.SavingsBucket
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 interface SavingsBucketRepository {
     fun getActiveBuckets(): Flow<List<SavingsBucket>>

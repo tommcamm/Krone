@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
+import kotlinx.datetime.number
 import javax.inject.Inject
 
 class GetCategoryTrendUseCase @Inject constructor(
@@ -38,7 +39,7 @@ class GetCategoryTrendUseCase @Inject constructor(
             val categoryMap = categories.associate { it.id to it }
 
             months.mapIndexed { index, (start, _) ->
-                val monthLabel = "${start.year}-${start.monthNumber.toString().padStart(2, '0')}"
+                val monthLabel = "${start.year}-${start.month.number.toString().padStart(2, '0')}"
                 val totals = allTotals[index]
                 val categoryAmounts = totals.mapNotNull { ct ->
                     val cat = categoryMap[ct.categoryId] ?: return@mapNotNull null

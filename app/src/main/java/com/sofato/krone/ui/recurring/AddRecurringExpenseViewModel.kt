@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.LocalDate
 import javax.inject.Inject
 import kotlin.math.pow
@@ -51,7 +51,7 @@ class AddRecurringExpenseViewModel @Inject constructor(
     private val _recurrenceRule = MutableStateFlow(RecurrenceRule.MONTHLY)
     val recurrenceRule: StateFlow<String> = _recurrenceRule.asStateFlow()
 
-    private val _dayOfMonth = MutableStateFlow<Int?>(LocalDate.today().dayOfMonth)
+    private val _dayOfMonth = MutableStateFlow<Int?>(LocalDate.today().day)
     val dayOfMonth: StateFlow<Int?> = _dayOfMonth.asStateFlow()
 
     private val _isSaving = MutableStateFlow(false)

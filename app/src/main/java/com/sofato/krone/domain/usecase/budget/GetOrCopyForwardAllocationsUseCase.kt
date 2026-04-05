@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
 import javax.inject.Inject
 
 class GetOrCopyForwardAllocationsUseCase @Inject constructor(
@@ -28,15 +29,15 @@ class GetOrCopyForwardAllocationsUseCase @Inject constructor(
     companion object {
         fun computePreviousMonth(month: String): String {
             val date = LocalDate.parse("$month-01")
-            val prev = if (date.monthNumber == 1) {
+            val prev = if (date.month.number == 1) {
                 LocalDate(date.year - 1, 12, 1)
             } else {
-                LocalDate(date.year, date.monthNumber - 1, 1)
+                LocalDate(date.year, date.month.number - 1, 1)
             }
-            return "${prev.year}-${prev.monthNumber.toString().padStart(2, '0')}"
+            return "${prev.year}-${prev.month.number.toString().padStart(2, '0')}"
         }
 
         fun formatMonth(date: LocalDate): String =
-            "${date.year}-${date.monthNumber.toString().padStart(2, '0')}"
+            "${date.year}-${date.month.number.toString().padStart(2, '0')}"
     }
 }

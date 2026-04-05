@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import com.sofato.krone.data.db.entity.ExchangeRateEntity
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Dao
 interface ExchangeRateDao {

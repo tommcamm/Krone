@@ -11,7 +11,7 @@ import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.util.today
 import kotlinx.coroutines.flow.first
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import javax.inject.Inject
 import kotlin.math.roundToLong
 

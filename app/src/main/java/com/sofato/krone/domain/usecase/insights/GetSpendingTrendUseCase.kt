@@ -8,6 +8,7 @@ import com.sofato.krone.util.today
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
 import javax.inject.Inject
 
 class GetSpendingTrendUseCase @Inject constructor(
@@ -24,12 +25,12 @@ class GetSpendingTrendUseCase @Inject constructor(
 
     operator fun invoke(): Flow<List<MonthlyTrend>> {
         val today = LocalDate.today()
-        val currentMonth = "${today.year}-${today.monthNumber.toString().padStart(2, '0')}"
+        val currentMonth = "${today.year}-${today.month.number.toString().padStart(2, '0')}"
 
         return combine(
             monthlySnapshotRepository.getAllSnapshots(),
             expenseRepository.getTotalHomeAmountBetween(
-                LocalDate(today.year, today.monthNumber, 1),
+                LocalDate(today.year, today.month, 1),
                 today,
             ),
         ) { snapshots, currentMonthSpent ->

@@ -3,7 +3,7 @@ package com.sofato.krone.data.db.converter
 import androidx.room.TypeConverter
 import com.sofato.krone.domain.model.SavingsBucketType
 import com.sofato.krone.domain.model.SymbolPosition
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 
 class Converters {

@@ -7,7 +7,7 @@ import com.sofato.krone.domain.repository.ExchangeRateRepository
 import com.sofato.krone.domain.repository.ExpenseRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.first
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.LocalDate
 import javax.inject.Inject
 import kotlin.math.roundToLong

@@ -96,7 +96,7 @@ class DatabaseBackupManager @Inject constructor(
             database.openHelper.writableDatabase
 
             if (prefsJson != null) {
-                val jsonObj = Json.parseToJsonElement(prefsJson!!).jsonObject
+                val jsonObj = Json.parseToJsonElement(prefsJson).jsonObject
                 val prefsMap = jsonObj.mapValues { it.value.jsonPrimitive.content }
                 userPreferencesRepository.restoreFromBackupData(prefsMap)
             } else {

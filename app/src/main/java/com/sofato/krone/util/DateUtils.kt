@@ -1,6 +1,6 @@
 package com.sofato.krone.util
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -20,7 +20,7 @@ fun LocalDate.endOfMonth(): LocalDate {
 
 fun LocalDate.daysRemainingInMonth(): Int {
     val end = endOfMonth()
-    return end.dayOfMonth - dayOfMonth + 1
+    return end.day - day + 1
 }
 
 fun calculateBudgetPeriod(
@@ -28,14 +28,14 @@ fun calculateBudgetPeriod(
     referenceDate: LocalDate = LocalDate.today(),
 ): com.sofato.krone.domain.model.BudgetPeriod {
     val clampedDay = { year: Int, month: kotlinx.datetime.Month ->
-        val lastDay = LocalDate(year, month, 1).endOfMonth().dayOfMonth
+        val lastDay = LocalDate(year, month, 1).endOfMonth().day
         incomeDay.coerceAtMost(lastDay)
     }
 
     val startDate: LocalDate
     val endDate: LocalDate
 
-    if (referenceDate.dayOfMonth >= incomeDay.coerceAtMost(referenceDate.endOfMonth().dayOfMonth)) {
+    if (referenceDate.day >= incomeDay.coerceAtMost(referenceDate.endOfMonth().day)) {
         // Current period started this month
         startDate = LocalDate(referenceDate.year, referenceDate.month, clampedDay(referenceDate.year, referenceDate.month))
         val nextMonth = startDate.plus(1, DateTimeUnit.MONTH)

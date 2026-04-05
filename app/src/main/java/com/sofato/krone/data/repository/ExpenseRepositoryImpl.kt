@@ -12,7 +12,7 @@ import com.sofato.krone.domain.model.Expense
 import com.sofato.krone.domain.repository.ExpenseRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.LocalDate
 import javax.inject.Inject
 

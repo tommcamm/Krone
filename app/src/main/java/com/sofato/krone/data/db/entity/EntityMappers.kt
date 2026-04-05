@@ -10,7 +10,7 @@ import com.sofato.krone.domain.model.RecurringExpense
 import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.model.SavingsBucket
 import com.sofato.krone.domain.model.SavingsContribution
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 // Currency
 fun CurrencyEntity.toDomain(): Currency = Currency(

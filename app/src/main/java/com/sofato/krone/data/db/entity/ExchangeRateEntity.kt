@@ -3,7 +3,7 @@ package com.sofato.krone.data.db.entity
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Entity(
     tableName = "exchange_rate",

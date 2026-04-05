@@ -7,7 +7,7 @@ import com.sofato.krone.domain.model.SavingsBucket
 import com.sofato.krone.domain.repository.SavingsBucketRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import javax.inject.Inject
 
 class SavingsBucketRepositoryImpl @Inject constructor(

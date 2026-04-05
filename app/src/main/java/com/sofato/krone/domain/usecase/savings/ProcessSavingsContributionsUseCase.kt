@@ -6,7 +6,7 @@ import com.sofato.krone.domain.repository.SavingsContributionRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.util.today
 import kotlinx.coroutines.flow.first
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.datetime.LocalDate
 import javax.inject.Inject
 
@@ -18,7 +18,7 @@ class ProcessSavingsContributionsUseCase @Inject constructor(
     suspend operator fun invoke() {
         val today = LocalDate.today()
         val incomeDay = userPreferencesRepository.incomeDay.first()
-        if (today.dayOfMonth != incomeDay) return
+        if (today.day != incomeDay) return
 
         val buckets = savingsBucketRepository.getActiveBuckets().first()
         for (bucket in buckets) {

@@ -2,6 +2,7 @@ package com.sofato.krone.domain.model
 
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
 import kotlinx.datetime.plus
 
 object RecurrenceRule {
@@ -21,7 +22,7 @@ object RecurrenceRule {
             else -> current.plus(1, DateTimeUnit.MONTH)
         }
         if (dayOfMonth == null) return base
-        return clampToDay(base.year, base.monthNumber, dayOfMonth)
+        return clampToDay(base.year, base.month.number, dayOfMonth)
     }
 
     /**
@@ -29,12 +30,12 @@ object RecurrenceRule {
      * If the day hasn't occurred yet this month, use this month; otherwise, next month.
      */
     fun initialNextDate(dayOfMonth: Int, today: LocalDate): LocalDate {
-        val thisMonth = clampToDay(today.year, today.monthNumber, dayOfMonth)
+        val thisMonth = clampToDay(today.year, today.month.number, dayOfMonth)
         return if (thisMonth >= today) {
             thisMonth
         } else {
             val nextMonth = today.plus(1, DateTimeUnit.MONTH)
-            clampToDay(nextMonth.year, nextMonth.monthNumber, dayOfMonth)
+            clampToDay(nextMonth.year, nextMonth.month.number, dayOfMonth)
         }
     }
 

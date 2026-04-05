@@ -2,7 +2,7 @@ package com.sofato.krone.data.db.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Entity(tableName = "ml_model_metadata")
 data class MlModelMetadataEntity(
