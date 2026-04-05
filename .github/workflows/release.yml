@@ -11,6 +11,10 @@ on:
           - patch
           - minor
           - major
+      changelog:
+        description: 'What changed in this release (supports markdown)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -97,12 +101,11 @@ jobs:
           generate_release_notes: true
           files: ${{ steps.apk.outputs.path }}
           body: |
-            ## Krone v${{ steps.next.outputs.name }}
+            ## What's changed
 
-            ### Installation
+            ${{ inputs.changelog }}
+
+            ## Installation
             1. Download `Krone-v${{ steps.next.outputs.name }}-foss.apk` below
             2. Enable "Install from unknown sources" if prompted
             3. Install and enjoy!
-
-            ---
-            *Built with release optimizations (minified via R8). Signed with the official Krone release key.*
