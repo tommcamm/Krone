@@ -1,3 +1,5 @@
+@file:Suppress("KotlinConstantConditions")
+
 package com.sofato.krone.ui.settings
 
 import android.content.Intent
