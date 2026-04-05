@@ -29,7 +29,7 @@ import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -302,7 +302,7 @@ fun SettingsScreen(
 
             item {
                 SettingsClickRow(
-                    icon = Icons.Outlined.OpenInNew,
+                    icon = Icons.AutoMirrored.Outlined.OpenInNew,
                     title = stringResource(R.string.settings_source_code),
                     subtitle = stringResource(R.string.settings_source_code_subtitle),
                     onClick = {
