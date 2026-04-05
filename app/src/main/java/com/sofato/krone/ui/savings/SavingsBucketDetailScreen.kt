@@ -59,9 +59,9 @@ fun SavingsBucketDetailScreen(
     val b = bucket ?: return
     val curr = currency ?: return
 
-    val hasTarget = b.targetAmountMinor != null && b.targetAmountMinor > 0
-    val progress = if (hasTarget) {
-        (b.currentBalanceMinor.toFloat() / b.targetAmountMinor!!).coerceIn(0f, 1f)
+    val targetAmount = b.targetAmountMinor?.takeIf { it > 0 }
+    val progress = if (targetAmount != null) {
+        (b.currentBalanceMinor.toFloat() / targetAmount).coerceIn(0f, 1f)
     } else {
         0f
     }
@@ -97,7 +97,7 @@ fun SavingsBucketDetailScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = Dimens.CardElevation),
                 ) {
                     Column(modifier = Modifier.padding(Dimens.SpacingMd)) {
-                        if (hasTarget) {
+                        if (targetAmount != null) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingMd),
@@ -113,7 +113,7 @@ fun SavingsBucketDetailScreen(
                                         style = MaterialTheme.typography.headlineSmall,
                                     )
                                     Text(
-                                        text = "of ${CurrencyFormatter.formatDisplay(b.targetAmountMinor!!, curr)}",
+                                        text = "of ${CurrencyFormatter.formatDisplay(targetAmount, curr)}",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )

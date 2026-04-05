@@ -321,8 +321,8 @@ fun AddExpenseScreen(
 
     if (showDatePicker) {
         val today = LocalDate.today()
-        val todayMillis = today.toEpochDays().toLong() * 86_400_000L
-        val selectedMillis = selectedDate.toEpochDays().toLong() * 86_400_000L
+        val todayMillis = today.toEpochDays() * 86_400_000L
+        val selectedMillis = selectedDate.toEpochDays() * 86_400_000L
         val datePickerState = rememberDatePickerState(
             initialSelectedDateMillis = selectedMillis,
             selectableDates = object : SelectableDates {

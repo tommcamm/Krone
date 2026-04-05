@@ -28,9 +28,10 @@ fun SavingsBucketCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val hasTarget = bucket.targetAmountMinor != null && bucket.targetAmountMinor > 0
-    val progress = if (hasTarget) {
-        (bucket.currentBalanceMinor.toFloat() / bucket.targetAmountMinor!!).coerceIn(0f, 1f)
+    val targetAmount = bucket.targetAmountMinor?.takeIf { it > 0 }
+    val hasTarget = targetAmount != null
+    val progress = if (targetAmount != null) {
+        (bucket.currentBalanceMinor.toFloat() / targetAmount).coerceIn(0f, 1f)
     } else {
         0f
     }
@@ -87,9 +88,9 @@ fun SavingsBucketCard(
                     text = CurrencyFormatter.formatDisplay(bucket.currentBalanceMinor, currency),
                     style = MaterialTheme.typography.titleSmall,
                 )
-                if (hasTarget) {
+                if (targetAmount != null) {
                     Text(
-                        text = "of ${CurrencyFormatter.formatDisplay(bucket.targetAmountMinor!!, currency)}",
+                        text = "of ${CurrencyFormatter.formatDisplay(targetAmount, currency)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

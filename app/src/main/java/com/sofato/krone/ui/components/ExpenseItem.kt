@@ -68,7 +68,7 @@ fun ExpenseItem(
             )
             if (isForeign && expense.homeAmount > 0) {
                 Text(
-                    text = "\u2248 ${CurrencyFormatter.formatDisplay(expense.homeAmount, homeCurrency!!)}",
+                    text = "\u2248 ${CurrencyFormatter.formatDisplay(expense.homeAmount, homeCurrency)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.End,
