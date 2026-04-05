@@ -1,16 +1,12 @@
 package com.sofato.krone.data.backup
 
+import com.google.common.truth.Truth.assertThat
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayInputStream
@@ -47,9 +43,10 @@ class BackupFormatTest {
         val zipBytes = createZipBackup(dbContent, prefsMap)
         val entries = readZipEntries(zipBytes)
 
-        assertTrue("ZIP must contain ${DatabaseBackupManager.DB_ENTRY}", entries.containsKey(DatabaseBackupManager.DB_ENTRY))
-        assertTrue("ZIP must contain ${DatabaseBackupManager.PREFS_ENTRY}", entries.containsKey(DatabaseBackupManager.PREFS_ENTRY))
-        assertEquals(2, entries.size)
+        assertThat(entries.keys).containsExactly(
+            DatabaseBackupManager.DB_ENTRY,
+            DatabaseBackupManager.PREFS_ENTRY,
+        )
     }
 
     @Test
@@ -72,7 +69,7 @@ class BackupFormatTest {
         val restored = Json.parseToJsonElement(json).jsonObject
             .mapValues { it.value.jsonPrimitive.content }
 
-        assertEquals(originalPrefs, restored)
+        assertThat(restored).isEqualTo(originalPrefs)
     }
 
     @Test
@@ -83,43 +80,35 @@ class BackupFormatTest {
         val zipBytes = createZipBackup(dbContent, prefsMap)
         val entries = readZipEntries(zipBytes)
 
-        val restoredDb = entries[DatabaseBackupManager.DB_ENTRY]!!
-        assertTrue("Database content must survive round-trip", dbContent.contentEquals(restoredDb))
+        assertThat(entries[DatabaseBackupManager.DB_ENTRY]).isEqualTo(dbContent)
     }
 
     @Test
     fun `legacy SQLite file is detected by magic bytes`() {
-        // Real SQLite files start with "SQLite format 3\000"
         val sqliteMagic = "SQLite format 3\u0000".toByteArray()
         val fakeDb = sqliteMagic + ByteArray(100)
 
-        assertTrue("First 4 bytes should be SQLi",
-            fakeDb[0] == 0x53.toByte() &&
-            fakeDb[1] == 0x51.toByte() &&
-            fakeDb[2] == 0x4C.toByte() &&
-            fakeDb[3] == 0x69.toByte()
-        )
+        // "SQLi" = 0x53, 0x51, 0x4C, 0x69
+        assertThat(fakeDb[0]).isEqualTo(0x53.toByte())
+        assertThat(fakeDb[1]).isEqualTo(0x51.toByte())
+        assertThat(fakeDb[2]).isEqualTo(0x4C.toByte())
+        assertThat(fakeDb[3]).isEqualTo(0x69.toByte())
     }
 
     @Test
     fun `ZIP file is not detected as legacy SQLite format`() {
         val zipBytes = createZipBackup(ByteArray(16), mapOf("key" to "value"))
 
-        // ZIP files start with PK (0x50, 0x4B)
-        assertFalse("ZIP should not match SQLite magic",
-            zipBytes[0] == 0x53.toByte() &&
-            zipBytes[1] == 0x51.toByte() &&
-            zipBytes[2] == 0x4C.toByte() &&
-            zipBytes[3] == 0x69.toByte()
-        )
+        // ZIP files start with PK (0x50, 0x4B), not SQLi
+        assertThat(zipBytes[0]).isNotEqualTo(0x53.toByte())
     }
 
     @Test
     fun `preferences JSON handles all supported data types`() {
         val prefs = mapOf(
-            "home_currency_code" to "EUR",      // string
-            "dynamic_color_enabled" to "true",   // boolean as string
-            "income_day" to "15",                // int as string
+            "home_currency_code" to "EUR",
+            "dynamic_color_enabled" to "true",
+            "income_day" to "15",
         )
 
         val json = Json.encodeToString(
@@ -128,9 +117,9 @@ class BackupFormatTest {
         )
         val parsed = Json.parseToJsonElement(json).jsonObject
 
-        assertEquals("EUR", parsed["home_currency_code"]?.jsonPrimitive?.content)
-        assertEquals("true", parsed["dynamic_color_enabled"]?.jsonPrimitive?.content)
-        assertEquals("15", parsed["income_day"]?.jsonPrimitive?.content)
+        assertThat(parsed["home_currency_code"]?.jsonPrimitive?.content).isEqualTo("EUR")
+        assertThat(parsed["dynamic_color_enabled"]?.jsonPrimitive?.content).isEqualTo("true")
+        assertThat(parsed["income_day"]?.jsonPrimitive?.content).isEqualTo("15")
     }
 
     @Test
@@ -141,7 +130,8 @@ class BackupFormatTest {
             JsonObject(emptyPrefs.mapValues { JsonPrimitive(it.value) }),
         )
         val parsed = Json.parseToJsonElement(json).jsonObject
-        assertTrue("Empty prefs should produce empty JSON object", parsed.isEmpty())
+
+        assertThat(parsed).isEmpty()
     }
 
     @Test
@@ -155,13 +145,12 @@ class BackupFormatTest {
         val zipBytes = baos.toByteArray()
         val entries = readZipEntries(zipBytes)
 
-        assertNotNull("DB entry should exist", entries[DatabaseBackupManager.DB_ENTRY])
-        assertNull("Prefs entry should be absent", entries[DatabaseBackupManager.PREFS_ENTRY])
+        assertThat(entries).containsKey(DatabaseBackupManager.DB_ENTRY)
+        assertThat(entries).doesNotContainKey(DatabaseBackupManager.PREFS_ENTRY)
     }
 
     @Test
     fun `large database content handles correctly in ZIP`() {
-        // Simulate a realistic database size (~1MB)
         val dbContent = ByteArray(1_000_000) { (it % 256).toByte() }
         val prefsMap = mapOf("home_currency_code" to "DKK")
 
@@ -169,11 +158,9 @@ class BackupFormatTest {
         val entries = readZipEntries(zipBytes)
 
         val restoredDb = entries[DatabaseBackupManager.DB_ENTRY]!!
-        assertEquals("Large DB size must be preserved", dbContent.size, restoredDb.size)
-        assertTrue("Large DB content must match", dbContent.contentEquals(restoredDb))
-
-        // ZIP should compress the repetitive data significantly
-        assertTrue("ZIP should compress repetitive data", zipBytes.size < dbContent.size)
+        assertThat(restoredDb).hasLength(dbContent.size)
+        assertThat(restoredDb).isEqualTo(dbContent)
+        assertThat(zipBytes.size).isLessThan(dbContent.size)
     }
 
     // --- Helpers ---

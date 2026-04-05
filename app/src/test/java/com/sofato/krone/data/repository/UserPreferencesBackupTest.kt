@@ -1,16 +1,10 @@
 package com.sofato.krone.data.repository
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.MutablePreferences
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.preferencesOf
+import com.google.common.truth.Truth.assertThat
 import com.sofato.krone.data.datastore.PreferenceKeys
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.sofato.krone.testutil.FakeDataStore
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -41,13 +35,15 @@ class UserPreferencesBackupTest {
 
         val backup = repository.getBackupData()
 
-        assertEquals("SEK", backup["home_currency_code"])
-        assertEquals("false", backup["dynamic_color_enabled"])
-        assertEquals("dark", backup["dark_mode_override"])
-        assertEquals("true", backup["has_completed_onboarding"])
-        assertEquals("25", backup["income_day"])
-        assertEquals("false", backup["show_monthly_card"])
-        assertEquals("true", backup["show_daily_card"])
+        assertThat(backup).containsExactly(
+            "home_currency_code", "SEK",
+            "dynamic_color_enabled", "false",
+            "dark_mode_override", "dark",
+            "has_completed_onboarding", "true",
+            "income_day", "25",
+            "show_monthly_card", "false",
+            "show_daily_card", "true",
+        )
     }
 
     @Test
@@ -60,13 +56,11 @@ class UserPreferencesBackupTest {
 
         val backup = repository.getBackupData()
 
-        assertEquals(1, backup.size)
-        assertEquals("DKK", backup["home_currency_code"])
+        assertThat(backup).containsExactly("home_currency_code", "DKK")
     }
 
     @Test
     fun `restoreFromBackupData sets all values and clears previous state`() = runTest {
-        // Set some initial state
         fakeDataStore.updateData {
             val mutable = it.toMutablePreferences()
             mutable[PreferenceKeys.HOME_CURRENCY_CODE] = "DKK"
@@ -74,20 +68,20 @@ class UserPreferencesBackupTest {
             mutable
         }
 
-        val backupData = mapOf(
-            "home_currency_code" to "SEK",
-            "has_completed_onboarding" to "true",
-            "income_day" to "15",
+        repository.restoreFromBackupData(
+            mapOf(
+                "home_currency_code" to "SEK",
+                "has_completed_onboarding" to "true",
+                "income_day" to "15",
+            ),
         )
 
-        repository.restoreFromBackupData(backupData)
-
         val prefs = fakeDataStore.data.first()
-        assertEquals("SEK", prefs[PreferenceKeys.HOME_CURRENCY_CODE])
-        assertEquals(true, prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING])
-        assertEquals(15, prefs[PreferenceKeys.INCOME_DAY])
+        assertThat(prefs[PreferenceKeys.HOME_CURRENCY_CODE]).isEqualTo("SEK")
+        assertThat(prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING]).isTrue()
+        assertThat(prefs[PreferenceKeys.INCOME_DAY]).isEqualTo(15)
         // Previously set SHOW_DAILY_CARD should be cleared
-        assertTrue(prefs[PreferenceKeys.SHOW_DAILY_CARD] == null)
+        assertThat(prefs[PreferenceKeys.SHOW_DAILY_CARD]).isNull()
     }
 
     @Test
@@ -118,13 +112,13 @@ class UserPreferencesBackupTest {
 
         // Verify all values match original
         val prefs = fakeDataStore.data.first()
-        assertEquals("EUR", prefs[PreferenceKeys.HOME_CURRENCY_CODE])
-        assertEquals(false, prefs[PreferenceKeys.DYNAMIC_COLOR_ENABLED])
-        assertEquals("light", prefs[PreferenceKeys.DARK_MODE_OVERRIDE])
-        assertEquals(true, prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING])
-        assertEquals(28, prefs[PreferenceKeys.INCOME_DAY])
-        assertEquals(true, prefs[PreferenceKeys.SHOW_MONTHLY_CARD])
-        assertEquals(false, prefs[PreferenceKeys.SHOW_DAILY_CARD])
+        assertThat(prefs[PreferenceKeys.HOME_CURRENCY_CODE]).isEqualTo("EUR")
+        assertThat(prefs[PreferenceKeys.DYNAMIC_COLOR_ENABLED]).isFalse()
+        assertThat(prefs[PreferenceKeys.DARK_MODE_OVERRIDE]).isEqualTo("light")
+        assertThat(prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING]).isTrue()
+        assertThat(prefs[PreferenceKeys.INCOME_DAY]).isEqualTo(28)
+        assertThat(prefs[PreferenceKeys.SHOW_MONTHLY_CARD]).isTrue()
+        assertThat(prefs[PreferenceKeys.SHOW_DAILY_CARD]).isFalse()
     }
 
     @Test
@@ -139,43 +133,29 @@ class UserPreferencesBackupTest {
         repository.restoreFromBackupData(emptyMap())
 
         val prefs = fakeDataStore.data.first()
-        assertTrue("All prefs should be cleared", prefs.asMap().isEmpty())
+        assertThat(prefs.asMap()).isEmpty()
     }
 
     @Test
     fun `restoreFromBackupData handles invalid boolean gracefully`() = runTest {
-        val backupData = mapOf(
-            "dynamic_color_enabled" to "not_a_boolean",
-            "has_completed_onboarding" to "TRUE", // wrong case
+        repository.restoreFromBackupData(
+            mapOf(
+                "dynamic_color_enabled" to "not_a_boolean",
+                "has_completed_onboarding" to "TRUE",
+            ),
         )
-
-        repository.restoreFromBackupData(backupData)
 
         val prefs = fakeDataStore.data.first()
         // toBooleanStrictOrNull returns null for invalid input, fallback values apply
-        assertEquals(true, prefs[PreferenceKeys.DYNAMIC_COLOR_ENABLED])
-        assertEquals(false, prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING])
+        assertThat(prefs[PreferenceKeys.DYNAMIC_COLOR_ENABLED]).isTrue()
+        assertThat(prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING]).isFalse()
     }
 
     @Test
     fun `restoreFromBackupData handles invalid int gracefully`() = runTest {
-        val backupData = mapOf("income_day" to "not_a_number")
-
-        repository.restoreFromBackupData(backupData)
+        repository.restoreFromBackupData(mapOf("income_day" to "not_a_number"))
 
         val prefs = fakeDataStore.data.first()
-        assertEquals(1, prefs[PreferenceKeys.INCOME_DAY])
-    }
-}
-
-private class FakeDataStore : DataStore<Preferences> {
-    private val state = MutableStateFlow<Preferences>(preferencesOf())
-
-    override val data: Flow<Preferences> = state
-
-    override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences {
-        val newPrefs = transform(state.value)
-        state.value = newPrefs
-        return newPrefs
+        assertThat(prefs[PreferenceKeys.INCOME_DAY]).isEqualTo(1)
     }
 }
