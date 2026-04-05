@@ -57,7 +57,7 @@ fun ExpenseListScreen(
             val result = snackbarHostState.showSnackbar(
                 message = deletedMessage,
                 actionLabel = undoLabel,
-                duration = SnackbarDuration.Long,
+                duration = SnackbarDuration.Short,
             )
             if (result == SnackbarResult.ActionPerformed) {
                 viewModel.undoDelete()
