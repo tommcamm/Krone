@@ -32,7 +32,10 @@ class ExpenseListViewModel @Inject constructor(
 
     val groupedExpenses: StateFlow<Map<LocalDate, List<Expense>>> =
         getRecentExpensesUseCase(100)
-            .map { expenses -> expenses.groupBy { it.date } }
+            .map { expenses ->
+                expenses.groupBy { it.date }
+                    .toSortedMap(compareByDescending { it })
+            }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     private val _homeCurrency = MutableStateFlow<Currency?>(null)

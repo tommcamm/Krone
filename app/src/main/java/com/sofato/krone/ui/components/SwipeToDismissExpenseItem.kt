@@ -29,6 +29,7 @@ fun SwipeToDismissExpenseItem(
     homeCurrency: Currency? = null,
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
+        positionalThreshold = { totalDistance -> totalDistance * 0.4f },
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart) {
                 onDismiss()
