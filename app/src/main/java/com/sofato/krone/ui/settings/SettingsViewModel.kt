@@ -80,8 +80,12 @@ class SettingsViewModel @Inject constructor(
 
     fun importDatabase(uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
-            databaseBackupManager.importFrom(uri)
-            _events.emit(SettingsEvent.ImportComplete)
+            try {
+                databaseBackupManager.importFrom(uri)
+                _events.emit(SettingsEvent.ImportComplete)
+            } catch (e: Exception) {
+                _events.emit(SettingsEvent.ExportFailed(e.message ?: "Import failed"))
+            }
         }
     }
 

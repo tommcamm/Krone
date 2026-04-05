@@ -18,4 +18,6 @@ interface UserPreferencesRepository {
     suspend fun setShowMonthlyCard(show: Boolean)
     suspend fun setShowDailyCard(show: Boolean)
     suspend fun clearAll()
+    suspend fun getBackupData(): Map<String, String>
+    suspend fun restoreFromBackupData(data: Map<String, String>)
 }

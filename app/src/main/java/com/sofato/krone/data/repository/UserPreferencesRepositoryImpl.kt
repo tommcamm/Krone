@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import com.sofato.krone.data.datastore.PreferenceKeys
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -71,5 +72,31 @@ class UserPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun clearAll() {
         dataStore.edit { it.clear() }
+    }
+
+    override suspend fun getBackupData(): Map<String, String> {
+        val prefs = dataStore.data.first()
+        val result = mutableMapOf<String, String>()
+        prefs[PreferenceKeys.HOME_CURRENCY_CODE]?.let { result["home_currency_code"] = it }
+        prefs[PreferenceKeys.DYNAMIC_COLOR_ENABLED]?.let { result["dynamic_color_enabled"] = it.toString() }
+        prefs[PreferenceKeys.DARK_MODE_OVERRIDE]?.let { result["dark_mode_override"] = it }
+        prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING]?.let { result["has_completed_onboarding"] = it.toString() }
+        prefs[PreferenceKeys.INCOME_DAY]?.let { result["income_day"] = it.toString() }
+        prefs[PreferenceKeys.SHOW_MONTHLY_CARD]?.let { result["show_monthly_card"] = it.toString() }
+        prefs[PreferenceKeys.SHOW_DAILY_CARD]?.let { result["show_daily_card"] = it.toString() }
+        return result
+    }
+
+    override suspend fun restoreFromBackupData(data: Map<String, String>) {
+        dataStore.edit { prefs ->
+            prefs.clear()
+            data["home_currency_code"]?.let { prefs[PreferenceKeys.HOME_CURRENCY_CODE] = it }
+            data["dynamic_color_enabled"]?.let { prefs[PreferenceKeys.DYNAMIC_COLOR_ENABLED] = it.toBooleanStrictOrNull() ?: true }
+            data["dark_mode_override"]?.let { prefs[PreferenceKeys.DARK_MODE_OVERRIDE] = it }
+            data["has_completed_onboarding"]?.let { prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING] = it.toBooleanStrictOrNull() ?: false }
+            data["income_day"]?.let { prefs[PreferenceKeys.INCOME_DAY] = it.toIntOrNull() ?: 1 }
+            data["show_monthly_card"]?.let { prefs[PreferenceKeys.SHOW_MONTHLY_CARD] = it.toBooleanStrictOrNull() ?: true }
+            data["show_daily_card"]?.let { prefs[PreferenceKeys.SHOW_DAILY_CARD] = it.toBooleanStrictOrNull() ?: true }
+        }
     }
 }

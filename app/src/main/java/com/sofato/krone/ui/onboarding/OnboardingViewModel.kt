@@ -254,7 +254,6 @@ class OnboardingViewModel @Inject constructor(
     fun importBackup(uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             databaseBackupManager.importFrom(uri)
-            userPreferencesRepository.setHasCompletedOnboarding(true)
             _events.emit(OnboardingEvent.ImportCompleted)
         }
     }
