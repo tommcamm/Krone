@@ -34,6 +34,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -84,8 +86,10 @@ fun AddExpenseScreen(
     val rateFreshness by viewModel.rateFreshness.collectAsState()
     val isForeignCurrency by viewModel.isForeignCurrency.collectAsState()
     var showCurrencyPicker by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val focusRequester = remember { FocusRequester() }
+    val rateUnavailableMessage = stringResource(R.string.error_rate_unavailable)
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -95,12 +99,15 @@ fun AddExpenseScreen(
         viewModel.events.collect { event ->
             when (event) {
                 AddExpenseViewModel.AddExpenseEvent.Saved -> onNavigateBack()
-                AddExpenseViewModel.AddExpenseEvent.RateUnavailable -> { /* TODO: show snackbar */ }
+                AddExpenseViewModel.AddExpenseEvent.RateUnavailable -> {
+                    snackbarHostState.showSnackbar(rateUnavailableMessage)
+                }
             }
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().imePadding()) {
         TopAppBar(
             title = { Text(stringResource(R.string.add_expense)) },
             windowInsets = WindowInsets(0, 0, 0, 0),
@@ -122,8 +129,7 @@ fun AddExpenseScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .imePadding(),
+                .verticalScroll(rememberScrollState()),
         ) {
             // Amount hero section
             Surface(
@@ -276,6 +282,11 @@ fun AddExpenseScreen(
                 )
             }
         }
+    }
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.align(Alignment.BottomCenter),
+    )
     }
 
     if (showCurrencyPicker) {

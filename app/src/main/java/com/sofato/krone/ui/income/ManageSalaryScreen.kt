@@ -25,6 +25,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -36,6 +38,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.sofato.krone.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -61,6 +65,8 @@ fun ManageSalaryScreen(
     val editingIncome by viewModel.editingIncome.collectAsState()
 
     val focusRequester = remember { FocusRequester() }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val saveFailedMessage = stringResource(R.string.error_save_failed)
 
     LaunchedEffect(editingIncome) {
         if (editingIncome != null) {
@@ -72,12 +78,15 @@ fun ManageSalaryScreen(
         viewModel.events.collect { event ->
             when (event) {
                 ManageSalaryViewModel.Event.Saved -> onNavigateBack()
-                ManageSalaryViewModel.Event.Error -> { /* TODO: show error */ }
+                ManageSalaryViewModel.Event.Error -> {
+                    snackbarHostState.showSnackbar(saveFailedMessage)
+                }
             }
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().imePadding()) {
         TopAppBar(
             title = { Text("Manage salary") },
             windowInsets = WindowInsets(0, 0, 0, 0),
@@ -103,8 +112,7 @@ fun ManageSalaryScreen(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .imePadding(),
+                    .verticalScroll(rememberScrollState()),
             ) {
                 // Amount hero section
                 Surface(
@@ -210,6 +218,11 @@ fun ManageSalaryScreen(
                 }
             }
         }
+    }
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.align(Alignment.BottomCenter),
+    )
     }
 }
 

@@ -182,4 +182,8 @@
     <string name="export_success">Backup exported successfully</string>
     <string name="export_failed">Export failed</string>
     <string name="import_success">Backup imported successfully</string>
+
+    <!-- Error messages -->
+    <string name="error_rate_unavailable">Exchange rate unavailable. Please check your connection.</string>
+    <string name="error_save_failed">Could not save. Please try again.</string>
 </resources>

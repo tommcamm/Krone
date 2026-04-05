@@ -34,6 +34,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -80,18 +82,23 @@ fun EditExpenseScreen(
     val isForeignCurrency by viewModel.isForeignCurrency.collectAsState()
     val rateFreshness by viewModel.rateFreshness.collectAsState()
     var showCurrencyPicker by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val rateUnavailableMessage = stringResource(R.string.error_rate_unavailable)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 EditExpenseViewModel.EditExpenseEvent.Saved,
                 EditExpenseViewModel.EditExpenseEvent.Deleted -> onNavigateBack()
-                EditExpenseViewModel.EditExpenseEvent.RateUnavailable -> { /* TODO: show snackbar */ }
+                EditExpenseViewModel.EditExpenseEvent.RateUnavailable -> {
+                    snackbarHostState.showSnackbar(rateUnavailableMessage)
+                }
             }
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().imePadding()) {
         TopAppBar(
             title = { Text(stringResource(R.string.edit_expense)) },
             windowInsets = WindowInsets(0, 0, 0, 0),
@@ -110,8 +117,7 @@ fun EditExpenseScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .imePadding(),
+                .verticalScroll(rememberScrollState()),
         ) {
             // Amount hero section
             Surface(
@@ -262,6 +268,11 @@ fun EditExpenseScreen(
                 )
             }
         }
+    }
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.align(Alignment.BottomCenter),
+    )
     }
 
     if (showCurrencyPicker) {

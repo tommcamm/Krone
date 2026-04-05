@@ -30,6 +30,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -37,7 +39,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.sofato.krone.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
@@ -61,18 +66,23 @@ fun EditRecurringExpenseScreen(
     val categories by viewModel.categories.collectAsState()
     val recurrenceRule by viewModel.recurrenceRule.collectAsState()
     val dayOfMonth by viewModel.dayOfMonth.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val saveFailedMessage = stringResource(R.string.error_save_failed)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 EditRecurringExpenseViewModel.Event.Saved,
                 EditRecurringExpenseViewModel.Event.Deactivated -> onNavigateBack()
-                EditRecurringExpenseViewModel.Event.Error -> { /* TODO: show error */ }
+                EditRecurringExpenseViewModel.Event.Error -> {
+                    snackbarHostState.showSnackbar(saveFailedMessage)
+                }
             }
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().imePadding()) {
         TopAppBar(
             title = { Text("Edit recurring expense") },
             windowInsets = WindowInsets(0, 0, 0, 0),
@@ -95,8 +105,7 @@ fun EditRecurringExpenseScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .imePadding(),
+                .verticalScroll(rememberScrollState()),
         ) {
             // Amount hero section
             Surface(
@@ -241,5 +250,10 @@ fun EditRecurringExpenseScreen(
                 }
             }
         }
+    }
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.align(Alignment.BottomCenter),
+    )
     }
 }

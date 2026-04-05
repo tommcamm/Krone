@@ -26,6 +26,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -35,6 +37,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.sofato.krone.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -61,6 +65,8 @@ fun AddSavingsBucketScreen(
     val isSaving by viewModel.isSaving.collectAsState()
 
     val focusRequester = remember { FocusRequester() }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val saveFailedMessage = stringResource(R.string.error_save_failed)
 
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
 
@@ -68,12 +74,15 @@ fun AddSavingsBucketScreen(
         viewModel.events.collect { event ->
             when (event) {
                 AddSavingsBucketViewModel.Event.Saved -> onNavigateBack()
-                AddSavingsBucketViewModel.Event.Error -> { /* TODO: show error */ }
+                AddSavingsBucketViewModel.Event.Error -> {
+                    snackbarHostState.showSnackbar(saveFailedMessage)
+                }
             }
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().imePadding()) {
         TopAppBar(
             title = { Text("Add savings bucket") },
             windowInsets = WindowInsets(0, 0, 0, 0),
@@ -87,8 +96,7 @@ fun AddSavingsBucketScreen(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .imePadding(),
+                .verticalScroll(rememberScrollState()),
         ) {
             // Amount hero section
             Surface(
@@ -209,5 +217,10 @@ fun AddSavingsBucketScreen(
                 Text("Save", style = MaterialTheme.typography.titleMedium)
             }
         }
+    }
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.align(Alignment.BottomCenter),
+    )
     }
 }
