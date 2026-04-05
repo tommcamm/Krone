@@ -13,10 +13,8 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.Expense
@@ -30,13 +28,18 @@ fun SwipeToDismissExpenseItem(
     modifier: Modifier = Modifier,
     homeCurrency: Currency? = null,
 ) {
-    val dismissState = rememberSwipeToDismissBoxState()
-
-    LaunchedEffect(dismissState.currentValue) {
-        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-            onDismiss()
-        }
-    }
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onDismiss()
+            }
+            // Always return false so the box animates back to Settled.
+            // The actual item removal happens via the list reacting to the delete.
+            // This prevents a stale EndToStart state from re-triggering onDismiss
+            // when an item is restored via undo.
+            false
+        },
+    )
 
     SwipeToDismissBox(
         state = dismissState,

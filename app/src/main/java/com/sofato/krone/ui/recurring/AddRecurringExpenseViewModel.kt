@@ -51,7 +51,7 @@ class AddRecurringExpenseViewModel @Inject constructor(
     private val _recurrenceRule = MutableStateFlow(RecurrenceRule.MONTHLY)
     val recurrenceRule: StateFlow<String> = _recurrenceRule.asStateFlow()
 
-    private val _dayOfMonth = MutableStateFlow<Int?>(null)
+    private val _dayOfMonth = MutableStateFlow<Int?>(LocalDate.today().dayOfMonth)
     val dayOfMonth: StateFlow<Int?> = _dayOfMonth.asStateFlow()
 
     private val _isSaving = MutableStateFlow(false)

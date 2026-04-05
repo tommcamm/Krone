@@ -26,19 +26,25 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -66,6 +72,8 @@ import com.sofato.krone.ui.components.CategoryIcon
 import com.sofato.krone.ui.components.CurrencyChip
 import com.sofato.krone.ui.components.CurrencyPickerBottomSheet
 import com.sofato.krone.ui.theme.Dimens
+import com.sofato.krone.util.today
+import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -85,7 +93,9 @@ fun AddExpenseScreen(
     val convertedAmountText by viewModel.convertedAmountText.collectAsState()
     val rateFreshness by viewModel.rateFreshness.collectAsState()
     val isForeignCurrency by viewModel.isForeignCurrency.collectAsState()
+    val selectedDate by viewModel.selectedDate.collectAsState()
     var showCurrencyPicker by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     val focusRequester = remember { FocusRequester() }
@@ -259,6 +269,39 @@ fun AddExpenseScreen(
                     .padding(horizontal = Dimens.SpacingMd),
             )
 
+            Spacer(Modifier.height(Dimens.SpacingMd))
+
+            // Date picker
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.SpacingMd)
+                    .clickable { showDatePicker = true },
+                shape = MaterialTheme.shapes.medium,
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Icon(
+                        Icons.Default.DateRange,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = if (selectedDate == LocalDate.today()) {
+                            stringResource(R.string.today)
+                        } else {
+                            selectedDate.toString()
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+
             Spacer(Modifier.height(Dimens.SpacingXl))
         }
 
@@ -300,6 +343,42 @@ fun AddExpenseScreen(
             onDismiss = { showCurrencyPicker = false },
             onManageCurrencies = onManageCurrencies,
         )
+    }
+
+    if (showDatePicker) {
+        val today = LocalDate.today()
+        val todayMillis = today.toEpochDays().toLong() * 86_400_000L
+        val selectedMillis = selectedDate.toEpochDays().toLong() * 86_400_000L
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = selectedMillis,
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                    return utcTimeMillis <= todayMillis
+                }
+            },
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val epochDays = (millis / 86_400_000L).toInt()
+                        val date = LocalDate.fromEpochDays(epochDays)
+                        viewModel.onDateSelected(date)
+                    }
+                    showDatePicker = false
+                }) {
+                    Text(stringResource(R.string.save))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text(stringResource(R.string.close))
+                }
+            },
+        ) {
+            DatePicker(state = datePickerState)
+        }
     }
 }
 

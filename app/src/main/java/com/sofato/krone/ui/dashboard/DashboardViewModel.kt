@@ -15,6 +15,7 @@ import com.sofato.krone.domain.usecase.budget.GetBudgetOverviewUseCase
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.domain.usecase.expense.DeleteExpenseUseCase
 import com.sofato.krone.domain.usecase.expense.GetExpensesByDateUseCase
+import com.sofato.krone.domain.usecase.expense.RestoreExpenseUseCase
 import com.sofato.krone.domain.usecase.expense.GetExpensesBetweenDatesUseCase
 import com.sofato.krone.domain.usecase.recurring.ProcessDueRecurringExpensesUseCase
 import com.sofato.krone.domain.usecase.savings.ProcessSavingsContributionsUseCase
@@ -40,6 +41,7 @@ class DashboardViewModel @Inject constructor(
     getExpensesByDate: GetExpensesByDateUseCase,
     private val getExpensesBetweenDates: GetExpensesBetweenDatesUseCase,
     private val deleteExpenseUseCase: DeleteExpenseUseCase,
+    private val restoreExpenseUseCase: RestoreExpenseUseCase,
     private val calculateDailyBudgetUseCase: CalculateDailyBudgetUseCase,
     private val calculateBudgetPeriodUseCase: CalculateBudgetPeriodUseCase,
     private val processRecurringUseCase: ProcessDueRecurringExpensesUseCase,
@@ -123,7 +125,13 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun undoDelete() {
+        val expense = _lastDeletedExpense.value ?: return
         _lastDeletedExpense.value = null
+        viewModelScope.launch {
+            try {
+                restoreExpenseUseCase(expense)
+            } catch (_: Exception) { /* best-effort */ }
+        }
     }
 
     fun clearDeletedExpense() {

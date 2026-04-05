@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.RecurringExpense
 import com.sofato.krone.domain.repository.CurrencyRepository
-import com.sofato.krone.domain.repository.RecurringExpenseRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
+import com.sofato.krone.domain.usecase.recurring.DeactivateRecurringExpenseUseCase
 import com.sofato.krone.domain.usecase.recurring.GetActiveRecurringExpensesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,7 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RecurringExpenseListViewModel @Inject constructor(
     getActiveRecurringExpensesUseCase: GetActiveRecurringExpensesUseCase,
-    private val recurringExpenseRepository: RecurringExpenseRepository,
+    private val deactivateRecurringExpenseUseCase: DeactivateRecurringExpenseUseCase,
     currencyRepository: CurrencyRepository,
     userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
@@ -44,7 +44,7 @@ class RecurringExpenseListViewModel @Inject constructor(
 
     fun deactivate(id: Long) {
         viewModelScope.launch {
-            recurringExpenseRepository.deactivate(id)
+            deactivateRecurringExpenseUseCase(id)
         }
     }
 }

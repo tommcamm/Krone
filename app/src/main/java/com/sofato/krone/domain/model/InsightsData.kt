@@ -59,3 +59,14 @@ data class CurrencyTotal(
     val originalTotalMinor: Long,
     val homeTotalMinor: Long,
 )
+
+data class CategoryAmount(
+    val categoryName: String,
+    val colorHex: String,
+    val amountMinor: Long,
+)
+
+data class MonthCategoryBreakdown(
+    val month: String,
+    val categories: List<CategoryAmount>,
+)

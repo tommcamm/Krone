@@ -15,6 +15,8 @@ interface ExpenseRepository {
     suspend fun addExpense(expense: Expense): Long
     suspend fun updateExpense(expense: Expense)
     suspend fun deleteExpense(id: Long)
+    suspend fun reInsertExpense(expense: Expense)
+    suspend fun deleteRecurringInstances(recurringExpenseId: Long, startDate: LocalDate, endDate: LocalDate)
     fun getTotalHomeAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?>
     fun getTotalDiscretionaryAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?>
     fun getDailyTotals(startDate: LocalDate, endDate: LocalDate): Flow<List<DailyTotal>>

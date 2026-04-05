@@ -33,6 +33,9 @@ import com.sofato.krone.ui.insights.charts.GroupedBarChart
 import com.sofato.krone.ui.insights.charts.HeatmapCalendar
 import com.sofato.krone.ui.insights.charts.LineChartData
 import com.sofato.krone.ui.insights.charts.StackedAreaChart
+import com.sofato.krone.ui.insights.charts.StackedBarChart
+import com.sofato.krone.ui.insights.charts.StackedBarData
+import com.sofato.krone.ui.insights.charts.StackedBarSegment
 import com.sofato.krone.ui.insights.charts.TrendLineChart
 import com.sofato.krone.ui.insights.components.ChartCard
 import com.sofato.krone.ui.insights.components.StreakCard
@@ -55,6 +58,7 @@ fun InsightsScreen(
     val streak by viewModel.streak.collectAsState()
     val insightData by viewModel.insightData.collectAsState()
     val spendingTrend by viewModel.spendingTrend.collectAsState()
+    val categoryTrend by viewModel.categoryTrend.collectAsState()
 
     val currency = homeCurrency ?: return
 
@@ -96,15 +100,25 @@ fun InsightsScreen(
         if (overview != null && overview.categoryBreakdown.isNotEmpty()) {
             item {
                 ChartCard(title = stringResource(R.string.insights_donut_title)) {
-                    val slices = overview.categoryBreakdown.map { cs ->
+                    val remaining = (overview.discretionaryMinor - overview.spentMinor)
+                        .coerceAtLeast(0L)
+                    val categorySlices = overview.categoryBreakdown.map { cs ->
                         DonutSlice(
                             label = cs.category.name,
                             value = cs.spentMinor,
                             color = parseColor(cs.category.colorHex),
                         )
                     }
-                    val remaining = (overview.discretionaryMinor - overview.spentMinor)
-                        .coerceAtLeast(0L)
+                    val remainingColor = MaterialTheme.colorScheme.surfaceVariant
+                    val slices = if (remaining > 0) {
+                        categorySlices + DonutSlice(
+                            label = stringResource(R.string.insights_remaining),
+                            value = remaining,
+                            color = remainingColor,
+                        )
+                    } else {
+                        categorySlices
+                    }
                     val centerText = CurrencyFormatter.formatDisplay(remaining, currency)
 
                     Box(
@@ -119,12 +133,19 @@ fun InsightsScreen(
 
                     Spacer(Modifier.height(Dimens.SpacingSm))
 
-                    // Legend
+                    // Legend (categories only)
                     overview.categoryBreakdown.take(6).forEach { cs ->
                         DonutLegendRow(
                             color = parseColor(cs.category.colorHex),
                             label = cs.category.name,
                             amount = CurrencyFormatter.formatDisplay(cs.spentMinor, currency),
+                        )
+                    }
+                    if (remaining > 0) {
+                        DonutLegendRow(
+                            color = remainingColor,
+                            label = stringResource(R.string.insights_remaining),
+                            amount = CurrencyFormatter.formatDisplay(remaining, currency),
                         )
                     }
                 }
@@ -187,7 +208,28 @@ fun InsightsScreen(
             }
         }
 
-        // 7. Spending trend line
+        // 7. Category trend (stacked bar chart)
+        if (categoryTrend.size >= 2 && categoryTrend.any { it.categories.isNotEmpty() }) {
+            item {
+                ChartCard(title = stringResource(R.string.insights_category_trend_title)) {
+                    val barData = categoryTrend.map { month ->
+                        StackedBarData(
+                            label = month.month,
+                            segments = month.categories.take(6).map { ca ->
+                                StackedBarSegment(
+                                    label = ca.categoryName,
+                                    value = ca.amountMinor,
+                                    color = parseColor(ca.colorHex),
+                                )
+                            },
+                        )
+                    }
+                    StackedBarChart(data = barData)
+                }
+            }
+        }
+
+        // 8. Spending trend line
         if (spendingTrend.size >= 2) {
             item {
                 ChartCard(title = stringResource(R.string.insights_trend_title)) {

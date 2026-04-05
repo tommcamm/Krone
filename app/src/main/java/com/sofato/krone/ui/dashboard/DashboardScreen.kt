@@ -61,7 +61,7 @@ fun DashboardScreen(
             val result = snackbarHostState.showSnackbar(
                 message = "Expense deleted",
                 actionLabel = "Undo",
-                duration = SnackbarDuration.Short,
+                duration = SnackbarDuration.Long,
             )
             if (result == SnackbarResult.ActionPerformed) {
                 viewModel.undoDelete()
@@ -207,7 +207,9 @@ fun DashboardScreen(
 
         SnackbarHost(
             hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp),
         )
     }
 }

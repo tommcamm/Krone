@@ -17,8 +17,10 @@ import com.sofato.krone.domain.repository.MonthlySnapshotRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.domain.usecase.budget.CalculateDailyBudgetUseCase
 import com.sofato.krone.domain.usecase.budget.GetBudgetOverviewUseCase
+import com.sofato.krone.domain.model.MonthCategoryBreakdown
 import com.sofato.krone.domain.usecase.insights.GenerateTextInsightsUseCase
 import com.sofato.krone.domain.usecase.insights.GetCategoryComparisonUseCase
+import com.sofato.krone.domain.usecase.insights.GetCategoryTrendUseCase
 import com.sofato.krone.domain.usecase.insights.GetCurrencyBreakdownUseCase
 import com.sofato.krone.domain.usecase.insights.GetDailySpendingUseCase
 import com.sofato.krone.domain.usecase.insights.GetSpendingStreakUseCase
@@ -51,6 +53,7 @@ class InsightsViewModel @Inject constructor(
     getSpendingStreak: GetSpendingStreakUseCase,
     private val generateTextInsights: GenerateTextInsightsUseCase,
     getSpendingTrend: GetSpendingTrendUseCase,
+    getCategoryTrend: GetCategoryTrendUseCase,
     getBudgetOverview: GetBudgetOverviewUseCase,
     calculateDailyBudget: CalculateDailyBudgetUseCase,
     userPreferencesRepository: UserPreferencesRepository,
@@ -103,6 +106,10 @@ class InsightsViewModel @Inject constructor(
 
     val spendingTrend: StateFlow<List<GetSpendingTrendUseCase.MonthlyTrend>> =
         getSpendingTrend()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val categoryTrend: StateFlow<List<MonthCategoryBreakdown>> =
+        getCategoryTrend()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val snapshots: StateFlow<List<MonthlySnapshot>> =

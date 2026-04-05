@@ -15,6 +15,7 @@
     <string name="select_category">Select a category</string>
     <string name="select_currency">Select currency</string>
     <string name="select_date">Select date</string>
+    <string name="today">Today</string>
 
     <!-- Category management -->
     <string name="categories">Categories</string>
@@ -138,10 +139,12 @@
     <string name="insights_streak_longest_format">Longest: %d days</string>
     <string name="insights_heatmap_title">Spending heatmap</string>
     <string name="insights_donut_title">Spending by category</string>
+    <string name="insights_remaining">Remaining</string>
     <string name="insights_cumulative_title">Spending pace</string>
     <string name="insights_cumulative_subtitle">Actual vs. ideal budget line</string>
     <string name="insights_comparison_title">Category comparison</string>
     <string name="insights_comparison_subtitle">This period vs. last period</string>
+    <string name="insights_category_trend_title">Category trend</string>
     <string name="insights_trend_title">Spending trend</string>
     <string name="insights_savings_ratio_title">Savings vs. spending</string>
     <string name="insights_currency_breakdown_title">Multi-currency breakdown</string>

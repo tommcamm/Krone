@@ -9,6 +9,7 @@ import com.sofato.krone.domain.model.RecurringExpense
 import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.repository.RecurringExpenseRepository
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
+import com.sofato.krone.domain.usecase.recurring.DeactivateRecurringExpenseUseCase
 import com.sofato.krone.domain.model.Defaults
 import com.sofato.krone.ui.navigation.KroneDestination
 import com.sofato.krone.util.CurrencyFormatter
@@ -30,6 +31,7 @@ class EditRecurringExpenseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     getCategoriesUseCase: GetCategoriesUseCase,
     private val recurringExpenseRepository: RecurringExpenseRepository,
+    private val deactivateRecurringExpenseUseCase: DeactivateRecurringExpenseUseCase,
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<KroneDestination.EditRecurringExpense>()
@@ -121,7 +123,7 @@ class EditRecurringExpenseViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _expense.value?.let {
-                    recurringExpenseRepository.deactivate(it.id)
+                    deactivateRecurringExpenseUseCase(it.id)
                     _events.emit(Event.Deactivated)
                 }
             } catch (_: Exception) {

@@ -8,6 +8,7 @@ import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.domain.usecase.expense.DeleteExpenseUseCase
 import com.sofato.krone.domain.usecase.expense.GetRecentExpensesUseCase
+import com.sofato.krone.domain.usecase.expense.RestoreExpenseUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,6 +25,7 @@ import javax.inject.Inject
 class ExpenseListViewModel @Inject constructor(
     getRecentExpensesUseCase: GetRecentExpensesUseCase,
     private val deleteExpenseUseCase: DeleteExpenseUseCase,
+    private val restoreExpenseUseCase: RestoreExpenseUseCase,
     private val currencyRepository: CurrencyRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
@@ -43,11 +45,29 @@ class ExpenseListViewModel @Inject constructor(
         }
     }
 
+    private val _lastDeletedExpense = MutableStateFlow<Expense?>(null)
+    val lastDeletedExpense: StateFlow<Expense?> = _lastDeletedExpense.asStateFlow()
+
     fun deleteExpense(expense: Expense) {
         viewModelScope.launch {
             try {
+                _lastDeletedExpense.value = expense
                 deleteExpenseUseCase(expense.id)
             } catch (_: Exception) { /* best-effort */ }
         }
+    }
+
+    fun undoDelete() {
+        val expense = _lastDeletedExpense.value ?: return
+        _lastDeletedExpense.value = null
+        viewModelScope.launch {
+            try {
+                restoreExpenseUseCase(expense)
+            } catch (_: Exception) { /* best-effort */ }
+        }
+    }
+
+    fun clearDeletedExpense() {
+        _lastDeletedExpense.value = null
     }
 }

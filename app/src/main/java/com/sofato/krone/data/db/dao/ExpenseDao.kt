@@ -3,6 +3,7 @@ package com.sofato.krone.data.db.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.sofato.krone.data.db.dao.projections.CategoryTotal
@@ -27,6 +28,9 @@ interface ExpenseDao {
     @Insert
     suspend fun insertExpense(expense: ExpenseEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun reInsertExpense(expense: ExpenseEntity): Long
+
     @Update
     suspend fun updateExpense(expense: ExpenseEntity)
 
@@ -35,6 +39,9 @@ interface ExpenseDao {
 
     @Query("DELETE FROM expense WHERE id = :id")
     suspend fun deleteExpenseById(id: Long)
+
+    @Query("DELETE FROM expense WHERE isRecurringInstance = 1 AND recurringExpenseId = :recurringExpenseId AND date BETWEEN :startDate AND :endDate")
+    suspend fun deleteRecurringInstances(recurringExpenseId: Long, startDate: LocalDate, endDate: LocalDate)
 
     @Query("SELECT SUM(homeAmountMinor) FROM expense WHERE date BETWEEN :startDate AND :endDate")
     fun getTotalHomeAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?>

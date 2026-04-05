@@ -48,6 +48,14 @@ class ExpenseRepositoryImpl @Inject constructor(
         expenseDao.deleteExpenseById(id)
     }
 
+    override suspend fun reInsertExpense(expense: Expense) {
+        expenseDao.reInsertExpense(expense.toEntity())
+    }
+
+    override suspend fun deleteRecurringInstances(recurringExpenseId: Long, startDate: LocalDate, endDate: LocalDate) {
+        expenseDao.deleteRecurringInstances(recurringExpenseId, startDate, endDate)
+    }
+
     override fun getTotalHomeAmountBetween(startDate: LocalDate, endDate: LocalDate): Flow<Long?> =
         expenseDao.getTotalHomeAmountBetween(startDate, endDate)
 
