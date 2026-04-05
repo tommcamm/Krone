@@ -28,7 +28,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +39,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -54,7 +52,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
@@ -65,8 +62,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.R
-import com.sofato.krone.domain.model.Category
-import com.sofato.krone.ui.components.CategoryIcon
 import com.sofato.krone.ui.components.CurrencyChip
 import com.sofato.krone.ui.components.CurrencyPickerBottomSheet
 import com.sofato.krone.ui.theme.Dimens
@@ -119,7 +114,25 @@ fun EditExpenseScreen(
             },
             actions = {
                 IconButton(onClick = viewModel::delete) {
-                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete))
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.delete),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                }
+                IconButton(
+                    onClick = viewModel::save,
+                    enabled = amountInput.isNotBlank(),
+                ) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = stringResource(R.string.save),
+                        tint = if (amountInput.isNotBlank()) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                        },
+                    )
                 }
             },
         )
@@ -130,95 +143,91 @@ fun EditExpenseScreen(
                 .verticalScroll(rememberScrollState()),
         ) {
             // Amount hero section
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                modifier = Modifier.fillMaxWidth(),
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = Dimens.SpacingLg, horizontal = Dimens.SpacingMd),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Dimens.SpacingXl, horizontal = Dimens.SpacingMd),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    selectedCurrency?.let { currency ->
-                        CurrencyChip(
-                            currencyCode = currency.code,
-                            onClick = { showCurrencyPicker = true },
-                        )
-                    }
-                    Spacer(Modifier.height(Dimens.SpacingMd))
-                    BasicTextField(
-                        value = amountInput,
-                        onValueChange = viewModel::onAmountChanged,
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(
-                            fontSize = MaterialTheme.typography.displayMedium.fontSize,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center,
-                        ),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        decorationBox = { innerTextField ->
-                            Box(contentAlignment = Alignment.Center) {
-                                if (amountInput.isEmpty()) {
-                                    Text(
-                                        text = "0",
-                                        style = MaterialTheme.typography.displayMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        },
+                selectedCurrency?.let { currency ->
+                    CurrencyChip(
+                        currencyCode = currency.code,
+                        onClick = { showCurrencyPicker = true },
                     )
-                    if (convertedAmountText != null) {
-                        Spacer(Modifier.height(Dimens.SpacingXs))
-                        Text(
-                            text = convertedAmountText!!,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                    if (isForeignCurrency) {
-                        Spacer(Modifier.height(Dimens.SpacingXs))
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            val dotColor = when (rateFreshness) {
-                                RateFreshness.FRESH -> MaterialTheme.colorScheme.tertiary
-                                RateFreshness.STALE -> Color(0xFFF59E0B)
-                                RateFreshness.UNAVAILABLE -> MaterialTheme.colorScheme.error
+                }
+                Spacer(Modifier.height(Dimens.SpacingMd))
+                BasicTextField(
+                    value = amountInput,
+                    onValueChange = viewModel::onAmountChanged,
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = TextStyle(
+                        fontSize = MaterialTheme.typography.displayMedium.fontSize,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    decorationBox = { innerTextField ->
+                        Box(contentAlignment = Alignment.Center) {
+                            if (amountInput.isEmpty()) {
+                                Text(
+                                    text = "0",
+                                    style = MaterialTheme.typography.displayMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                )
                             }
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .background(dotColor, CircleShape),
-                            )
-                            Spacer(Modifier.width(6.dp))
-                            Text(
-                                text = when (rateFreshness) {
-                                    RateFreshness.FRESH -> stringResource(R.string.rate_fresh)
-                                    RateFreshness.STALE -> stringResource(R.string.rate_stale)
-                                    RateFreshness.UNAVAILABLE -> stringResource(R.string.rates_unavailable)
-                                },
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                            innerTextField()
                         }
+                    },
+                )
+                if (convertedAmountText != null) {
+                    Spacer(Modifier.height(Dimens.SpacingXs))
+                    Text(
+                        text = convertedAmountText!!,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                if (isForeignCurrency) {
+                    Spacer(Modifier.height(Dimens.SpacingXs))
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        val dotColor = when (rateFreshness) {
+                            RateFreshness.FRESH -> MaterialTheme.colorScheme.tertiary
+                            RateFreshness.STALE -> Color(0xFFF59E0B)
+                            RateFreshness.UNAVAILABLE -> MaterialTheme.colorScheme.error
+                        }
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(dotColor, CircleShape),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = when (rateFreshness) {
+                                RateFreshness.FRESH -> stringResource(R.string.rate_fresh)
+                                RateFreshness.STALE -> stringResource(R.string.rate_stale)
+                                RateFreshness.UNAVAILABLE -> stringResource(R.string.rates_unavailable)
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
 
+            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.SpacingMd))
             Spacer(Modifier.height(Dimens.SpacingMd))
 
-            // Category section
+            // Category section — compact chips
             Column(modifier = Modifier.padding(horizontal = Dimens.SpacingMd)) {
                 Text(
                     text = stringResource(R.string.select_category),
@@ -227,11 +236,11 @@ fun EditExpenseScreen(
                 )
                 Spacer(Modifier.height(Dimens.SpacingSm))
                 FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingXs),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.SpacingXs),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     categories.forEach { category ->
-                        CategoryChipItem(
+                        CompactCategoryChip(
                             category = category,
                             isSelected = category.id == selectedCategory?.id,
                             onClick = { viewModel.onCategorySelected(category) },
@@ -259,59 +268,32 @@ fun EditExpenseScreen(
 
             // Date picker
             selectedDate?.let { date ->
-                Surface(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Dimens.SpacingMd)
-                        .clickable { showDatePicker = true },
-                    shape = MaterialTheme.shapes.medium,
-                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        .clickable { showDatePicker = true }
+                        .padding(horizontal = Dimens.SpacingMd, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Icon(
-                            Icons.Default.DateRange,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            text = if (date == LocalDate.today()) {
-                                stringResource(R.string.today)
-                            } else {
-                                date.toString()
-                            },
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
+                    Icon(
+                        Icons.Default.DateRange,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = if (date == LocalDate.today()) {
+                            stringResource(R.string.today)
+                        } else {
+                            date.toString()
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
                 }
             }
 
             Spacer(Modifier.height(Dimens.SpacingXl))
-        }
-
-        // Bottom save button
-        Surface(
-            tonalElevation = 3.dp,
-            shadowElevation = 3.dp,
-        ) {
-            Button(
-                onClick = viewModel::save,
-                enabled = amountInput.isNotBlank(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.SpacingMd, vertical = Dimens.SpacingSm)
-                    .height(56.dp),
-                shape = MaterialTheme.shapes.large,
-            ) {
-                Text(
-                    text = stringResource(R.string.save),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
         }
     }
     SnackbarHost(
@@ -366,58 +348,6 @@ fun EditExpenseScreen(
             },
         ) {
             DatePicker(state = datePickerState)
-        }
-    }
-}
-
-@Composable
-private fun CategoryChipItem(
-    category: Category,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-) {
-    val bgColor = try {
-        Color(android.graphics.Color.parseColor(category.colorHex))
-    } catch (_: Exception) {
-        MaterialTheme.colorScheme.primaryContainer
-    }
-
-    Surface(
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.medium)
-            .clickable(onClick = onClick),
-        shape = MaterialTheme.shapes.medium,
-        color = if (isSelected) bgColor.copy(alpha = 0.15f) else Color.Transparent,
-    ) {
-        Row(
-            modifier = Modifier
-                .then(
-                    if (isSelected) Modifier.border(1.5.dp, bgColor, MaterialTheme.shapes.medium)
-                    else Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.medium)
-                )
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            CategoryIcon(
-                iconName = category.iconName,
-                colorHex = category.colorHex,
-                size = 28.dp,
-                iconSize = 16.dp,
-            )
-            Text(
-                text = category.name,
-                style = MaterialTheme.typography.labelLarge,
-                color = if (isSelected) bgColor else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            if (isSelected) {
-                Icon(
-                    Icons.Default.Check,
-                    contentDescription = null,
-                    tint = bgColor,
-                    modifier = Modifier.size(16.dp),
-                )
-            }
         }
     }
 }
