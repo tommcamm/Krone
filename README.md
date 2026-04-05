@@ -19,9 +19,19 @@
   <a href="#"><img src="https://img.shields.io/badge/Target_SDK-36-green?style=flat-square" alt="Target SDK 36"></a>
   <a href="#"><img src="https://img.shields.io/badge/Kotlin-2.2-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin"></a>
   <a href="#"><img src="https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white" alt="Compose"></a>
+  <a href="https://github.com/tommcamm/Krone/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/tommcamm/Krone/build.yml?style=flat-square&label=Build" alt="Build Status"></a>
+  <a href="https://github.com/tommcamm/Krone/releases/latest"><img src="https://img.shields.io/github/v/release/tommcamm/Krone?style=flat-square&label=Latest%20Release" alt="Latest Release"></a>
 </p>
 
 ---
+
+## Download
+
+<a href="https://github.com/tommcamm/Krone/releases/latest">
+  <img src="https://img.shields.io/badge/Download_APK-GitHub_Releases-181717?style=for-the-badge&logo=github" alt="Download from GitHub Releases">
+</a>
+
+> Download the latest FOSS APK from [GitHub Releases](https://github.com/tommcamm/Krone/releases/latest). No Google Play required.
 
 ## Why Krone?
 
@@ -105,7 +115,7 @@ app/
 ### Requirements
 
 - Android Studio Ladybug or later
-- JDK 11+
+- JDK 21
 - Android SDK 36
 
 ### Build variants
@@ -141,6 +151,34 @@ cd krone
 ```
 
 The `share` build type uses the standard Android debug keystore (`~/.android/debug.keystore`) that every developer already has --- no additional signing setup needed.
+
+## Development
+
+### CI/CD
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| **Build & Test** | Push to `main` / PR | Compiles FOSS debug APK, runs unit tests |
+| **Release** | Manual (`workflow_dispatch`) | Bumps version, builds signed APK, creates GitHub Release |
+
+### Versioning
+
+Version is managed in `version.properties` at the repo root. To create a release:
+
+1. Go to **Actions** > **Release** on GitHub
+2. Click **Run workflow**
+3. Select bump type (patch / minor / major)
+4. The workflow handles everything: version bump, build, tag, and release
+
+### Commit conventions
+
+Use short, descriptive messages. Prefix with a type when it helps clarity:
+
+- `fix:` bug fixes
+- `feat:` new features
+- `docs:` documentation
+- `refactor:` code restructuring
+- `release:` version bumps (automated by CI)
 
 ## Contributing
 

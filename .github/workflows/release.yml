@@ -1,0 +1,114 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Read current version
+        id: current
+        run: |
+          source version.properties
+          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Compute next version
+        id: next
+        run: |
+          IFS='.' read -r major minor patch <<< "${{ steps.current.outputs.name }}"
+          case "${{ inputs.bump }}" in
+            major) major=$((major + 1)); minor=0; patch=0 ;;
+            minor) minor=$((minor + 1)); patch=0 ;;
+            patch) patch=$((patch + 1)) ;;
+          esac
+          code=$(( ${{ steps.current.outputs.code }} + 1 ))
+          echo "name=${major}.${minor}.${patch}" >> "$GITHUB_OUTPUT"
+          echo "code=${code}" >> "$GITHUB_OUTPUT"
+
+      - name: Update version.properties
+        run: |
+          printf 'VERSION_NAME=${{ steps.next.outputs.name }}\nVERSION_CODE=${{ steps.next.outputs.code }}\n' > version.properties
+
+      - name: Generate debug keystore
+        run: |
+          mkdir -p ~/.android
+          keytool -genkeypair \
+            -alias androiddebugkey \
+            -keypass android \
+            -keystore ~/.android/debug.keystore \
+            -storepass android \
+            -dname "CN=Android Debug,O=Android,C=US" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000
+
+      - name: Run unit tests
+        run: ./gradlew testFossDebugUnitTest
+
+      - name: Build FOSS Share APK
+        run: ./gradlew assembleFossShare
+
+      - name: Rename APK
+        id: apk
+        run: |
+          VERSION="${{ steps.next.outputs.name }}"
+          APK_SRC=$(find app/build/outputs/apk/foss/share -name "*.apk" | head -1)
+          APK_DEST="app/build/outputs/apk/foss/share/Krone-v${VERSION}-foss.apk"
+          mv "$APK_SRC" "$APK_DEST"
+          echo "path=$APK_DEST" >> "$GITHUB_OUTPUT"
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add version.properties
+          git commit -m "release: v${{ steps.next.outputs.name }}"
+          git tag "v${{ steps.next.outputs.name }}"
+          git push origin main --tags
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ steps.next.outputs.name }}"
+          name: "Krone v${{ steps.next.outputs.name }}"
+          generate_release_notes: true
+          files: ${{ steps.apk.outputs.path }}
+          body: |
+            ## Krone v${{ steps.next.outputs.name }}
+
+            ### Installation
+            1. Download `Krone-v${{ steps.next.outputs.name }}-foss.apk` below
+            2. Enable "Install from unknown sources" if prompted
+            3. Install and enjoy!
+
+            ---
+            *Built with release optimizations (minified via R8). Signed with a CI debug key for easy distribution.*

@@ -7,6 +7,15 @@ plugins {
     alias(libs.plugins.room)
 }
 
+val versionPropsFile = rootProject.file("version.properties")
+val versionProps = mutableMapOf<String, String>()
+versionPropsFile.readLines().forEach { line ->
+    if (line.contains("=")) {
+        val (key, value) = line.split("=", limit = 2)
+        versionProps[key.trim()] = value.trim()
+    }
+}
+
 android {
     namespace = "com.sofato.krone"
     compileSdk {
@@ -19,8 +28,8 @@ android {
         applicationId = "com.sofato.krone"
         minSdk = 30
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = versionProps["VERSION_CODE"]!!.toInt()
+        versionName = versionProps["VERSION_NAME"]!!
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

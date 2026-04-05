@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Build artifacts
+*.apk
+*.aab
+
+# Kotlin build metadata
+.kotlin/
