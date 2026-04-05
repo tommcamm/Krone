@@ -38,8 +38,27 @@ object Migrations {
 
     private val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(connection: SQLiteConnection) {
-            // Add index on budget_allocation.month
+            // Recreate budget_allocation to change FK onDelete to CASCADE and add month index.
+            // SQLite doesn't support ALTER TABLE for foreign key changes.
+            connection.execSQL(
+                """CREATE TABLE IF NOT EXISTS budget_allocation_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    categoryId INTEGER NOT NULL,
+                    month TEXT NOT NULL,
+                    allocatedAmountMinor INTEGER NOT NULL,
+                    currencyCode TEXT NOT NULL,
+                    FOREIGN KEY (categoryId) REFERENCES category(id) ON DELETE CASCADE
+                )""".trimIndent()
+            )
+            connection.execSQL(
+                "INSERT INTO budget_allocation_new (id, categoryId, month, allocatedAmountMinor, currencyCode) " +
+                    "SELECT id, categoryId, month, allocatedAmountMinor, currencyCode FROM budget_allocation"
+            )
+            connection.execSQL("DROP TABLE budget_allocation")
+            connection.execSQL("ALTER TABLE budget_allocation_new RENAME TO budget_allocation")
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_budget_allocation_categoryId ON budget_allocation (categoryId)")
             connection.execSQL("CREATE INDEX IF NOT EXISTS index_budget_allocation_month ON budget_allocation (month)")
+
             // Add composite index on recurring_expense(isActive, nextDate)
             connection.execSQL("CREATE INDEX IF NOT EXISTS index_recurring_expense_isActive_nextDate ON recurring_expense (isActive, nextDate)")
             // Add unique index on monthly_snapshot.month
