@@ -2,6 +2,7 @@ package com.sofato.krone.ui.currency
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sofato.krone.domain.model.Defaults
 import com.sofato.krone.data.worker.ExchangeRateSyncScheduler
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.ExchangeRate
@@ -36,7 +37,7 @@ class CurrencySettingsViewModel @Inject constructor(
     private val syncScheduler: ExchangeRateSyncScheduler,
 ) : ViewModel() {
 
-    private val _homeCurrencyCode = MutableStateFlow("DKK")
+    private val _homeCurrencyCode = MutableStateFlow(Defaults.HOME_CURRENCY_CODE)
     val homeCurrencyCode: StateFlow<String> = _homeCurrencyCode.asStateFlow()
 
     private val _lastSyncTime = MutableStateFlow<Instant?>(null)
@@ -84,18 +85,15 @@ class CurrencySettingsViewModel @Inject constructor(
             return
         }
 
-        // Enabling: set enabled, then refresh rates. If refresh fails, revert.
+        // Enabling: fetch rates first, only enable if rates are available.
         viewModelScope.launch {
             _togglingCode.value = code
-            currencyRepository.setEnabled(code, true)
-
             val result = exchangeRateRepository.refreshRates()
-            if (result.isFailure) {
-                // Revert the toggle
-                currencyRepository.setEnabled(code, false)
-                _events.emit(CurrencySettingsEvent.RateFetchFailed(code))
-            } else {
+            if (result.isSuccess) {
+                currencyRepository.setEnabled(code, true)
                 _lastSyncTime.value = exchangeRateRepository.getLatestFetchTime()
+            } else {
+                _events.emit(CurrencySettingsEvent.RateFetchFailed(code))
             }
             _togglingCode.value = null
         }

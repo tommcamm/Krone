@@ -39,25 +39,21 @@ class GetBudgetOverviewUseCase @Inject constructor(
         emit(Triple(period, currencyCode, LocalDate.today()) to month)
     }.flatMapLatest { (triple, month) ->
         val (period, currencyCode, today) = triple
-        combine(
+        val totalsFlow = combine(
             incomeRepository.getTotalRecurringIncomeMinor(),
             recurringExpenseRepository.getTotalActiveRecurringMinor(),
             savingsBucketRepository.getTotalMonthlyContributionsMinor(),
+        ) { income, fixed, savings ->
+            Triple(income ?: 0L, fixed ?: 0L, savings ?: 0L)
+        }
+        val dataFlow = combine(
             expenseRepository.getExpensesBetween(period.startDate, today),
             categoryRepository.getActiveCategories(),
             getOrCopyForwardAllocations(month),
-        ) { values ->
-            @Suppress("UNCHECKED_CAST")
-            val income = values[0] as Long?
-            val fixed = values[1] as Long?
-            val savings = values[2] as Long?
-            val expenses = values[3] as List<Expense>
-            val categories = values[4] as List<Category>
-            val allocations = values[5] as List<BudgetAllocation>
-
-            val totalIncome = income ?: 0L
-            val totalFixed = fixed ?: 0L
-            val totalSavings = savings ?: 0L
+        ) { expenses, categories, allocations ->
+            Triple(expenses, categories, allocations)
+        }
+        combine(totalsFlow, dataFlow) { (totalIncome, totalFixed, totalSavings), (expenses, categories, allocations) ->
             val totalSpent = expenses.sumOf { it.homeAmount }
             val discretionary = totalIncome - totalFixed - totalSavings
 

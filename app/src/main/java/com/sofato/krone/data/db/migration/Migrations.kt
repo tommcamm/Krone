@@ -36,5 +36,16 @@ object Migrations {
         }
     }
 
-    val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(connection: SQLiteConnection) {
+            // Add index on budget_allocation.month
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_budget_allocation_month ON budget_allocation (month)")
+            // Add composite index on recurring_expense(isActive, nextDate)
+            connection.execSQL("CREATE INDEX IF NOT EXISTS index_recurring_expense_isActive_nextDate ON recurring_expense (isActive, nextDate)")
+            // Add unique index on monthly_snapshot.month
+            connection.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_monthly_snapshot_month ON monthly_snapshot (month)")
+        }
+    }
+
+    val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 }

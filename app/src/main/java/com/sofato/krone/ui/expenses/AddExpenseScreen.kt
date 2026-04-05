@@ -95,6 +95,7 @@ fun AddExpenseScreen(
         viewModel.events.collect { event ->
             when (event) {
                 AddExpenseViewModel.AddExpenseEvent.Saved -> onNavigateBack()
+                AddExpenseViewModel.AddExpenseEvent.RateUnavailable -> { /* TODO: show snackbar */ }
             }
         }
     }

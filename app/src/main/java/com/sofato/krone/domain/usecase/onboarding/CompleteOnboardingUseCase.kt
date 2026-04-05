@@ -1,5 +1,7 @@
 package com.sofato.krone.domain.usecase.onboarding
 
+import androidx.room.withTransaction
+import com.sofato.krone.data.db.KroneDatabase
 import com.sofato.krone.domain.model.Income
 import com.sofato.krone.domain.model.RecurringExpense
 import com.sofato.krone.domain.model.SavingsBucket
@@ -10,6 +12,7 @@ import com.sofato.krone.domain.repository.UserPreferencesRepository
 import javax.inject.Inject
 
 class CompleteOnboardingUseCase @Inject constructor(
+    private val database: KroneDatabase,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val incomeRepository: IncomeRepository,
     private val recurringExpenseRepository: RecurringExpenseRepository,
@@ -22,15 +25,21 @@ class CompleteOnboardingUseCase @Inject constructor(
         recurringExpenses: List<RecurringExpense>,
         savingsBuckets: List<SavingsBucket>,
     ) {
+        // Preferences are stored in DataStore (not Room), so set them outside the transaction.
         userPreferencesRepository.setHomeCurrencyCode(currencyCode)
         userPreferencesRepository.setIncomeDay(incomeDay)
-        incomeRepository.addIncome(income)
-        for (expense in recurringExpenses) {
-            recurringExpenseRepository.addRecurringExpense(expense)
+
+        // All Room writes happen atomically.
+        database.withTransaction {
+            incomeRepository.addIncome(income)
+            for (expense in recurringExpenses) {
+                recurringExpenseRepository.addRecurringExpense(expense)
+            }
+            for (bucket in savingsBuckets) {
+                savingsBucketRepository.addBucket(bucket)
+            }
         }
-        for (bucket in savingsBuckets) {
-            savingsBucketRepository.addBucket(bucket)
-        }
+
         userPreferencesRepository.setHasCompletedOnboarding(true)
     }
 }

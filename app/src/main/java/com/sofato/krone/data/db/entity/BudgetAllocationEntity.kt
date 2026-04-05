@@ -12,9 +12,10 @@ import androidx.room.PrimaryKey
             entity = CategoryEntity::class,
             parentColumns = ["id"],
             childColumns = ["categoryId"],
+            onDelete = ForeignKey.CASCADE,
         ),
     ],
-    indices = [Index("categoryId")],
+    indices = [Index("categoryId"), Index("month")],
 )
 data class BudgetAllocationEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

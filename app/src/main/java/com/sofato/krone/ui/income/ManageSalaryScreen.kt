@@ -72,6 +72,7 @@ fun ManageSalaryScreen(
         viewModel.events.collect { event ->
             when (event) {
                 ManageSalaryViewModel.Event.Saved -> onNavigateBack()
+                ManageSalaryViewModel.Event.Error -> { /* TODO: show error */ }
             }
         }
     }

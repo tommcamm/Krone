@@ -21,7 +21,7 @@ import kotlinx.datetime.LocalDate
             childColumns = ["currencyCode"],
         ),
     ],
-    indices = [Index("categoryId"), Index("currencyCode")],
+    indices = [Index("categoryId"), Index("currencyCode"), Index("isActive", "nextDate")],
 )
 data class RecurringExpenseEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

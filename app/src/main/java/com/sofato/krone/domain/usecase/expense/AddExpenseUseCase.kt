@@ -17,13 +17,17 @@ class AddExpenseUseCase @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val exchangeRateRepository: ExchangeRateRepository,
 ) {
+    /**
+     * Returns the ID of the created expense, or null if the exchange rate was unavailable
+     * for a foreign-currency expense.
+     */
     suspend operator fun invoke(
         amountMinor: Long,
         currency: Currency,
         category: Category,
         note: String?,
         date: LocalDate,
-    ): Long {
+    ): Long? {
         val homeCurrencyCode = userPreferencesRepository.homeCurrencyCode.first()
         val homeAmount: Long
         val rateUsed: Double
@@ -32,14 +36,9 @@ class AddExpenseUseCase @Inject constructor(
             rateUsed = 1.0
         } else {
             val rate = exchangeRateRepository.getRate(currency.code, homeCurrencyCode)
-            if (rate != null) {
-                rateUsed = rate.rate
-                homeAmount = (amountMinor * rateUsed).roundToLong()
-            } else {
-                // No cached rate available — store with fallback so we don't block the user.
-                rateUsed = 0.0
-                homeAmount = 0
-            }
+                ?: return null
+            rateUsed = rate.rate
+            homeAmount = (amountMinor * rateUsed).roundToLong()
         }
 
         val expense = Expense(

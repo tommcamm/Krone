@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import com.sofato.krone.domain.repository.ExchangeRateRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.io.IOException
 
 @HiltWorker
 class ExchangeRateSyncWorker @AssistedInject constructor(
@@ -18,7 +19,10 @@ class ExchangeRateSyncWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         return exchangeRateRepository.refreshRates().fold(
             onSuccess = { Result.success() },
-            onFailure = { Result.retry() },
+            onFailure = { error ->
+                // Only retry on transient network errors; fail immediately on parse/DB errors.
+                if (error is IOException) Result.retry() else Result.failure()
+            },
         )
     }
 

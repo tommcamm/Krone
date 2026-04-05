@@ -68,6 +68,7 @@ fun AddSavingsBucketScreen(
         viewModel.events.collect { event ->
             when (event) {
                 AddSavingsBucketViewModel.Event.Saved -> onNavigateBack()
+                AddSavingsBucketViewModel.Event.Error -> { /* TODO: show error */ }
             }
         }
     }

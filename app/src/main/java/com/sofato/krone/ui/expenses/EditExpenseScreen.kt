@@ -86,6 +86,7 @@ fun EditExpenseScreen(
             when (event) {
                 EditExpenseViewModel.EditExpenseEvent.Saved,
                 EditExpenseViewModel.EditExpenseEvent.Deleted -> onNavigateBack()
+                EditExpenseViewModel.EditExpenseEvent.RateUnavailable -> { /* TODO: show snackbar */ }
             }
         }
     }

@@ -7,6 +7,9 @@ import com.sofato.krone.domain.model.SymbolPosition
 
 class KroneDatabaseCallback : RoomDatabase.Callback() {
 
+    /** Escape single quotes for SQL string literals. */
+    private fun String.esc(): String = replace("'", "''")
+
     override fun onCreate(connection: SQLiteConnection) {
         super.onCreate(connection)
         seedCurrencies(connection)
@@ -46,7 +49,7 @@ class KroneDatabaseCallback : RoomDatabase.Callback() {
         for (c in currencies) {
             connection.execSQL(
                 "INSERT INTO currency (code, name, symbol, decimalPlaces, symbolPosition, isEnabled, sortOrder) " +
-                    "VALUES ('${c.code}', '${c.name}', '${c.symbol}', ${c.decimalPlaces}, '${c.symbolPosition.name}', ${if (c.isEnabled) 1 else 0}, ${c.sortOrder})"
+                    "VALUES ('${c.code.esc()}', '${c.name.esc()}', '${c.symbol.esc()}', ${c.decimalPlaces}, '${c.symbolPosition.name}', ${if (c.isEnabled) 1 else 0}, ${c.sortOrder})"
             )
         }
     }
@@ -75,7 +78,7 @@ class KroneDatabaseCallback : RoomDatabase.Callback() {
         for (c in categories) {
             connection.execSQL(
                 "INSERT INTO category (name, iconName, colorHex, isCustom, sortOrder, isArchived) " +
-                    "VALUES ('${c.name}', '${c.iconName}', '${c.colorHex}', 0, ${c.sortOrder}, 0)"
+                    "VALUES ('${c.name.esc()}', '${c.iconName.esc()}', '${c.colorHex.esc()}', 0, ${c.sortOrder}, 0)"
             )
         }
     }

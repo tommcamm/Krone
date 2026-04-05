@@ -6,6 +6,7 @@ import com.sofato.krone.domain.model.Income
 import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.IncomeRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
+import com.sofato.krone.domain.model.Defaults
 import com.sofato.krone.util.CurrencyFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -49,12 +50,12 @@ class ManageSalaryViewModel @Inject constructor(
     private val _events = MutableSharedFlow<Event>()
     val events = _events.asSharedFlow()
 
-    private var currencyCode: String = "DKK"
-    private var decimalPlaces: Int = 2
+    private var currencyCode: String = Defaults.HOME_CURRENCY_CODE
+    private var decimalPlaces: Int = Defaults.DECIMAL_PLACES
 
     val homeCurrencyCode: StateFlow<String> =
         userPreferencesRepository.homeCurrencyCode
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "DKK")
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Defaults.HOME_CURRENCY_CODE)
 
     init {
         viewModelScope.launch {
@@ -101,19 +102,25 @@ class ManageSalaryViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isSaving.value = true
-            incomeRepository.updateIncome(
-                editing.copy(
-                    amountMinor = amountMinor,
-                    label = _labelInput.value.trim(),
+            try {
+                incomeRepository.updateIncome(
+                    editing.copy(
+                        amountMinor = amountMinor,
+                        label = _labelInput.value.trim(),
+                    )
                 )
-            )
-            userPreferencesRepository.setIncomeDay(_incomeDay.value)
-            _isSaving.value = false
-            _events.emit(Event.Saved)
+                userPreferencesRepository.setIncomeDay(_incomeDay.value)
+                _events.emit(Event.Saved)
+            } catch (_: Exception) {
+                _events.emit(Event.Error)
+            } finally {
+                _isSaving.value = false
+            }
         }
     }
 
     sealed interface Event {
         data object Saved : Event
+        data object Error : Event
     }
 }

@@ -1,7 +1,4 @@
 package com.sofato.krone.data.db.dao.projections
 
-data class CurrencyTotal(
-    val currencyCode: String,
-    val originalTotalMinor: Long,
-    val homeTotalMinor: Long,
-)
+// Moved to domain layer — this typealias keeps DAO queries compiling.
+typealias CurrencyTotal = com.sofato.krone.domain.model.CurrencyTotal

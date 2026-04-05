@@ -81,7 +81,8 @@ fun SavingsBucket.toEntity(): SavingsBucketEntity = SavingsBucketEntity(
     monthlyContributionMinor = monthlyContributionMinor,
     targetAmountMinor = targetAmountMinor, deadline = deadline,
     currentBalanceMinor = currentBalanceMinor, balanceUpdatedAt = null,
-    isActive = isActive, sortOrder = sortOrder, createdAt = Clock.System.now(),
+    isActive = isActive, sortOrder = sortOrder,
+    createdAt = Clock.System.now(), // Only meaningful for inserts; updates preserve createdAt via DAO
 )
 
 // SavingsContribution

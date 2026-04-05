@@ -3,6 +3,7 @@ package com.sofato.krone.ui.savings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sofato.krone.domain.model.SavingsBucket
+import com.sofato.krone.domain.model.Defaults
 import com.sofato.krone.domain.model.SavingsBucketType
 import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
@@ -46,8 +47,8 @@ class AddSavingsBucketViewModel @Inject constructor(
     private val _events = MutableSharedFlow<Event>()
     val events = _events.asSharedFlow()
 
-    private var currencyCode: String = "DKK"
-    private var decimalPlaces: Int = 2
+    private var currencyCode: String = Defaults.HOME_CURRENCY_CODE
+    private var decimalPlaces: Int = Defaults.DECIMAL_PLACES
 
     init {
         viewModelScope.launch {
@@ -81,25 +82,31 @@ class AddSavingsBucketViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isSaving.value = true
-            addSavingsBucketUseCase(
-                SavingsBucket(
-                    label = _label.value.trim(),
-                    type = _selectedType.value,
-                    currencyCode = currencyCode,
-                    monthlyContributionMinor = contributionMinor,
-                    targetAmountMinor = targetMinor,
-                    deadline = null,
-                    currentBalanceMinor = 0L,
-                    isActive = true,
-                    sortOrder = 0,
+            try {
+                addSavingsBucketUseCase(
+                    SavingsBucket(
+                        label = _label.value.trim(),
+                        type = _selectedType.value,
+                        currencyCode = currencyCode,
+                        monthlyContributionMinor = contributionMinor,
+                        targetAmountMinor = targetMinor,
+                        deadline = null,
+                        currentBalanceMinor = 0L,
+                        isActive = true,
+                        sortOrder = 0,
+                    )
                 )
-            )
-            _isSaving.value = false
-            _events.emit(Event.Saved)
+                _events.emit(Event.Saved)
+            } catch (_: Exception) {
+                _events.emit(Event.Error)
+            } finally {
+                _isSaving.value = false
+            }
         }
     }
 
     sealed interface Event {
         data object Saved : Event
+        data object Error : Event
     }
 }

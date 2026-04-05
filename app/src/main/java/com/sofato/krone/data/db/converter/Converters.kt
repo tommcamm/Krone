@@ -24,11 +24,13 @@ class Converters {
     fun fromSymbolPosition(value: SymbolPosition): String = value.name
 
     @TypeConverter
-    fun toSymbolPosition(value: String): SymbolPosition = SymbolPosition.valueOf(value)
+    fun toSymbolPosition(value: String): SymbolPosition =
+        runCatching { SymbolPosition.valueOf(value) }.getOrDefault(SymbolPosition.BEFORE)
 
     @TypeConverter
     fun fromBucketType(value: SavingsBucketType): String = value.name
 
     @TypeConverter
-    fun toBucketType(value: String): SavingsBucketType = SavingsBucketType.valueOf(value)
+    fun toBucketType(value: String): SavingsBucketType =
+        runCatching { SavingsBucketType.valueOf(value) }.getOrDefault(SavingsBucketType.GOAL)
 }

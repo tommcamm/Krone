@@ -1,26 +1,20 @@
 package com.sofato.krone.domain.usecase.insights
 
-import android.content.Context
-import com.sofato.krone.R
 import com.sofato.krone.domain.model.CategoryMonthlySpend
-import com.sofato.krone.domain.model.InsightType
+import com.sofato.krone.domain.model.InsightData
 import com.sofato.krone.domain.model.MonthlySnapshot
 import com.sofato.krone.domain.model.SpendingStreak
-import com.sofato.krone.domain.model.TextInsight
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-class GenerateTextInsightsUseCase @Inject constructor(
-    @param:ApplicationContext private val context: Context,
-) {
+class GenerateTextInsightsUseCase @Inject constructor() {
     operator fun invoke(
         categoryComparison: List<CategoryMonthlySpend>,
         snapshots: List<MonthlySnapshot>,
         streak: SpendingStreak,
-    ): List<TextInsight> {
-        val insights = mutableListOf<TextInsight>()
+    ): List<InsightData> {
+        val insights = mutableListOf<InsightData>()
 
         // 1. Biggest category change vs last month
         val biggestChange = categoryComparison
@@ -33,23 +27,9 @@ class GenerateTextInsightsUseCase @Inject constructor(
                 biggestChange.previousMonthMinor * 100).roundToInt()
             if (abs(pctChange) >= 10) {
                 if (pctChange > 0) {
-                    insights += TextInsight(
-                        message = context.getString(
-                            R.string.insights_spent_more_format,
-                            pctChange,
-                            biggestChange.category.name,
-                        ),
-                        type = InsightType.NEGATIVE,
-                    )
+                    insights += InsightData.CategoryChangeUp(pctChange, biggestChange.category.name)
                 } else {
-                    insights += TextInsight(
-                        message = context.getString(
-                            R.string.insights_spent_less_format,
-                            abs(pctChange),
-                            biggestChange.category.name,
-                        ),
-                        type = InsightType.POSITIVE,
-                    )
+                    insights += InsightData.CategoryChangeDown(abs(pctChange), biggestChange.category.name)
                 }
             }
         }
@@ -63,15 +43,9 @@ class GenerateTextInsightsUseCase @Inject constructor(
                     previous.totalVariableMinor * 100).roundToInt()
                 if (abs(pct) >= 5) {
                     if (pct > 0) {
-                        insights += TextInsight(
-                            message = context.getString(R.string.insights_overall_up_format, pct),
-                            type = InsightType.NEGATIVE,
-                        )
+                        insights += InsightData.OverallSpendingUp(pct)
                     } else {
-                        insights += TextInsight(
-                            message = context.getString(R.string.insights_overall_down_format, abs(pct)),
-                            type = InsightType.POSITIVE,
-                        )
+                        insights += InsightData.OverallSpendingDown(abs(pct))
                     }
                 }
             }
@@ -79,20 +53,14 @@ class GenerateTextInsightsUseCase @Inject constructor(
 
         // 3. Streak callout
         if (streak.currentDays >= 3) {
-            insights += TextInsight(
-                message = context.getString(R.string.insights_streak_callout_format, streak.currentDays),
-                type = InsightType.POSITIVE,
-            )
+            insights += InsightData.StreakCallout(streak.currentDays)
         }
 
         // 4. Top category (if we still have room)
         if (insights.size < 3 && categoryComparison.isNotEmpty()) {
             val top = categoryComparison.first()
             if (top.currentMonthMinor > 0) {
-                insights += TextInsight(
-                    message = context.getString(R.string.insights_top_category_format, top.category.name),
-                    type = InsightType.NEUTRAL,
-                )
+                insights += InsightData.TopCategory(top.category.name)
             }
         }
 

@@ -9,6 +9,7 @@ import com.sofato.krone.domain.repository.BudgetAllocationRepository
 import com.sofato.krone.domain.repository.CategoryRepository
 import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
+import com.sofato.krone.domain.model.Defaults
 import com.sofato.krone.domain.usecase.budget.CalculateBudgetPeriodUseCase
 import com.sofato.krone.domain.usecase.budget.GetOrCopyForwardAllocationsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -70,7 +71,7 @@ class MonthlyBudgetsViewModel @Inject constructor(
                 categoryRepository.getActiveCategories(),
             ) { allocations, categories ->
                 val allocatedIds = allocations.map { it.categoryId }.toSet()
-                categories.filter { it.id !in allocatedIds && !(it.iconName == "MoreHoriz" && !it.isCustom) }
+                categories.filter { it.id !in allocatedIds && !(it.iconName == Defaults.OTHER_CATEGORY_ICON && !it.isCustom) }
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -86,31 +87,35 @@ class MonthlyBudgetsViewModel @Inject constructor(
 
     fun saveAllocation(categoryId: Long, amountMinor: Long) {
         viewModelScope.launch {
-            val month = currentMonth.value.ifEmpty { return@launch }
-            val currencyCode = userPreferencesRepository.homeCurrencyCode.first()
-            val existing = budgetAllocationRepository.getAllocationsForMonth(month)
-                .first()
-                .find { it.categoryId == categoryId }
-            if (existing != null) {
-                budgetAllocationRepository.updateAllocation(
-                    existing.copy(allocatedAmountMinor = amountMinor)
-                )
-            } else {
-                budgetAllocationRepository.addAllocation(
-                    BudgetAllocation(
-                        categoryId = categoryId,
-                        month = month,
-                        allocatedAmountMinor = amountMinor,
-                        currencyCode = currencyCode,
+            try {
+                val month = currentMonth.value.ifEmpty { return@launch }
+                val currencyCode = userPreferencesRepository.homeCurrencyCode.first()
+                val existing = budgetAllocationRepository.getAllocationsForMonth(month)
+                    .first()
+                    .find { it.categoryId == categoryId }
+                if (existing != null) {
+                    budgetAllocationRepository.updateAllocation(
+                        existing.copy(allocatedAmountMinor = amountMinor)
                     )
-                )
-            }
+                } else {
+                    budgetAllocationRepository.addAllocation(
+                        BudgetAllocation(
+                            categoryId = categoryId,
+                            month = month,
+                            allocatedAmountMinor = amountMinor,
+                            currencyCode = currencyCode,
+                        )
+                    )
+                }
+            } catch (_: Exception) { /* budget save is best-effort */ }
         }
     }
 
     fun deleteAllocation(allocationId: Long) {
         viewModelScope.launch {
-            budgetAllocationRepository.deleteAllocation(allocationId)
+            try {
+                budgetAllocationRepository.deleteAllocation(allocationId)
+            } catch (_: Exception) { /* best-effort */ }
         }
     }
 }

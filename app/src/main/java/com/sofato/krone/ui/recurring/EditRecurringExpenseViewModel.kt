@@ -9,6 +9,7 @@ import com.sofato.krone.domain.model.RecurringExpense
 import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.repository.RecurringExpenseRepository
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
+import com.sofato.krone.domain.model.Defaults
 import com.sofato.krone.ui.navigation.KroneDestination
 import com.sofato.krone.util.CurrencyFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -96,27 +97,35 @@ class EditRecurringExpenseViewModel @Inject constructor(
         val amountDouble = amountText.toDoubleOrNull() ?: return
         if (amountDouble <= 0 || _label.value.isBlank()) return
 
-        val amountMinor = (amountDouble * 10.0.pow(2)).roundToLong()
+        val amountMinor = (amountDouble * 10.0.pow(Defaults.DECIMAL_PLACES)).roundToLong()
 
         viewModelScope.launch {
-            recurringExpenseRepository.updateRecurringExpense(
-                original.copy(
-                    label = _label.value.trim(),
-                    amountMinor = amountMinor,
-                    categoryId = category.id,
-                    recurrenceRule = _recurrenceRule.value,
-                    dayOfMonth = _dayOfMonth.value,
+            try {
+                recurringExpenseRepository.updateRecurringExpense(
+                    original.copy(
+                        label = _label.value.trim(),
+                        amountMinor = amountMinor,
+                        categoryId = category.id,
+                        recurrenceRule = _recurrenceRule.value,
+                        dayOfMonth = _dayOfMonth.value,
+                    )
                 )
-            )
-            _events.emit(Event.Saved)
+                _events.emit(Event.Saved)
+            } catch (_: Exception) {
+                _events.emit(Event.Error)
+            }
         }
     }
 
     fun deactivate() {
         viewModelScope.launch {
-            _expense.value?.let {
-                recurringExpenseRepository.deactivate(it.id)
-                _events.emit(Event.Deactivated)
+            try {
+                _expense.value?.let {
+                    recurringExpenseRepository.deactivate(it.id)
+                    _events.emit(Event.Deactivated)
+                }
+            } catch (_: Exception) {
+                _events.emit(Event.Error)
             }
         }
     }
@@ -124,5 +133,6 @@ class EditRecurringExpenseViewModel @Inject constructor(
     sealed interface Event {
         data object Saved : Event
         data object Deactivated : Event
+        data object Error : Event
     }
 }

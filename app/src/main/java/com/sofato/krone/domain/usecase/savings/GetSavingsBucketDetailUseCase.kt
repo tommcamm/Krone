@@ -4,9 +4,12 @@ import com.sofato.krone.domain.model.SavingsBucket
 import com.sofato.krone.domain.model.SavingsContribution
 import com.sofato.krone.domain.repository.SavingsBucketRepository
 import com.sofato.krone.domain.repository.SavingsContributionRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 data class SavingsBucketDetail(
@@ -18,11 +21,15 @@ class GetSavingsBucketDetailUseCase @Inject constructor(
     private val savingsBucketRepository: SavingsBucketRepository,
     private val savingsContributionRepository: SavingsContributionRepository,
 ) {
-    suspend operator fun invoke(bucketId: Long): Flow<SavingsBucketDetail?> {
-        val bucket = savingsBucketRepository.getById(bucketId) ?: return flowOf(null)
-        return savingsContributionRepository.getContributionsForBucket(bucketId)
-            .combine(flowOf(bucket)) { contributions, b ->
-                SavingsBucketDetail(bucket = b, contributions = contributions)
-            }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    operator fun invoke(bucketId: Long): Flow<SavingsBucketDetail?> = flow {
+        emit(savingsBucketRepository.getById(bucketId))
+    }.flatMapLatest { bucket ->
+        if (bucket == null) {
+            flowOf(null)
+        } else {
+            savingsContributionRepository.getContributionsForBucket(bucketId)
+                .map { contributions -> SavingsBucketDetail(bucket = bucket, contributions = contributions) }
+        }
     }
 }

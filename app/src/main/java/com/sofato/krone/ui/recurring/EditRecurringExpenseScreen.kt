@@ -67,6 +67,7 @@ fun EditRecurringExpenseScreen(
             when (event) {
                 EditRecurringExpenseViewModel.Event.Saved,
                 EditRecurringExpenseViewModel.Event.Deactivated -> onNavigateBack()
+                EditRecurringExpenseViewModel.Event.Error -> { /* TODO: show error */ }
             }
         }
     }

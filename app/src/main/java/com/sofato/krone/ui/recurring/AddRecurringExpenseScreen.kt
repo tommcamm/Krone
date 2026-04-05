@@ -79,6 +79,7 @@ fun AddRecurringExpenseScreen(
         viewModel.events.collect { event ->
             when (event) {
                 AddRecurringExpenseViewModel.Event.Saved -> onNavigateBack()
+                AddRecurringExpenseViewModel.Event.Error -> { /* TODO: show error */ }
             }
         }
     }

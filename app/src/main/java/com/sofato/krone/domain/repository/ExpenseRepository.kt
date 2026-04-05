@@ -1,8 +1,8 @@
 package com.sofato.krone.domain.repository
 
-import com.sofato.krone.data.db.dao.projections.CategoryTotal
-import com.sofato.krone.data.db.dao.projections.CurrencyTotal
-import com.sofato.krone.data.db.dao.projections.DailyTotal
+import com.sofato.krone.domain.model.CategoryTotal
+import com.sofato.krone.domain.model.CurrencyTotal
+import com.sofato.krone.domain.model.DailyTotal
 import com.sofato.krone.domain.model.Expense
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate

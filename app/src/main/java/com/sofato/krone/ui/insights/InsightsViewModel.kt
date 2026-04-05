@@ -10,6 +10,7 @@ import com.sofato.krone.domain.model.DailyBudget
 import com.sofato.krone.domain.model.DailySpend
 import com.sofato.krone.domain.model.MonthlySnapshot
 import com.sofato.krone.domain.model.SpendingStreak
+import com.sofato.krone.domain.model.InsightData
 import com.sofato.krone.domain.model.TextInsight
 import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.MonthlySnapshotRepository
@@ -108,7 +109,7 @@ class InsightsViewModel @Inject constructor(
         monthlySnapshotRepository.getAllSnapshots()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val textInsights: StateFlow<List<TextInsight>> =
+    val insightData: StateFlow<List<InsightData>> =
         combine(categoryComparison, snapshots, streak) { cats, snaps, str ->
             generateTextInsights(cats, snaps, str)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

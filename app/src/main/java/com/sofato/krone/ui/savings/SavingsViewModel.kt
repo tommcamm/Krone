@@ -52,7 +52,9 @@ class SavingsViewModel @Inject constructor(
 
     fun deactivateBucket(id: Long) {
         viewModelScope.launch {
-            deactivateSavingsBucketUseCase(id)
+            try {
+                deactivateSavingsBucketUseCase(id)
+            } catch (_: Exception) { /* best-effort */ }
         }
     }
 }

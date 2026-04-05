@@ -45,7 +45,9 @@ class ExpenseListViewModel @Inject constructor(
 
     fun deleteExpense(expense: Expense) {
         viewModelScope.launch {
-            deleteExpenseUseCase(expense.id)
+            try {
+                deleteExpenseUseCase(expense.id)
+            } catch (_: Exception) { /* best-effort */ }
         }
     }
 }

@@ -9,6 +9,7 @@ import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.domain.usecase.recurring.AddRecurringExpenseUseCase
+import com.sofato.krone.domain.model.Defaults
 import com.sofato.krone.util.today
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -59,8 +60,8 @@ class AddRecurringExpenseViewModel @Inject constructor(
     private val _events = MutableSharedFlow<Event>()
     val events = _events.asSharedFlow()
 
-    private var currencyCode: String = "DKK"
-    private var decimalPlaces: Int = 2
+    private var currencyCode: String = Defaults.HOME_CURRENCY_CODE
+    private var decimalPlaces: Int = Defaults.DECIMAL_PLACES
 
     init {
         viewModelScope.launch {
@@ -96,32 +97,38 @@ class AddRecurringExpenseViewModel @Inject constructor(
 
         viewModelScope.launch {
             _isSaving.value = true
-            val today = LocalDate.today()
-            val day = _dayOfMonth.value
-            val nextDate = if (day != null && _recurrenceRule.value == RecurrenceRule.MONTHLY) {
-                RecurrenceRule.initialNextDate(day, today)
-            } else {
-                today
-            }
-            addRecurringExpenseUseCase(
-                RecurringExpense(
-                    amountMinor = amountMinor,
-                    currencyCode = currencyCode,
-                    categoryId = category.id,
-                    label = _label.value.trim(),
-                    recurrenceRule = _recurrenceRule.value,
-                    nextDate = nextDate,
-                    isActive = true,
-                    createdAt = Clock.System.now(),
-                    dayOfMonth = day,
+            try {
+                val today = LocalDate.today()
+                val day = _dayOfMonth.value
+                val nextDate = if (day != null && _recurrenceRule.value == RecurrenceRule.MONTHLY) {
+                    RecurrenceRule.initialNextDate(day, today)
+                } else {
+                    today
+                }
+                addRecurringExpenseUseCase(
+                    RecurringExpense(
+                        amountMinor = amountMinor,
+                        currencyCode = currencyCode,
+                        categoryId = category.id,
+                        label = _label.value.trim(),
+                        recurrenceRule = _recurrenceRule.value,
+                        nextDate = nextDate,
+                        isActive = true,
+                        createdAt = Clock.System.now(),
+                        dayOfMonth = day,
+                    )
                 )
-            )
-            _isSaving.value = false
-            _events.emit(Event.Saved)
+                _events.emit(Event.Saved)
+            } catch (_: Exception) {
+                _events.emit(Event.Error)
+            } finally {
+                _isSaving.value = false
+            }
         }
     }
 
     sealed interface Event {
         data object Saved : Event
+        data object Error : Event
     }
 }

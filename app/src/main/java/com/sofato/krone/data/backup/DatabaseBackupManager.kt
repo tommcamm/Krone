@@ -35,11 +35,16 @@ class DatabaseBackupManager @Inject constructor(
                 input.copyTo(output)
             }
         } ?: throw IllegalStateException("Could not open input stream")
+
+        // Force Room to reopen the database on next access
+        database.openHelper.writableDatabase
     }
 
     fun deleteAll() {
         database.close()
         deleteDbFiles()
+        // Force Room to reopen (and re-seed via callback)
+        database.openHelper.writableDatabase
     }
 
     private fun deleteDbFiles() {

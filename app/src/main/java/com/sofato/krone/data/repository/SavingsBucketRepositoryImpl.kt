@@ -30,7 +30,11 @@ class SavingsBucketRepositoryImpl @Inject constructor(
         savingsBucketDao.insert(bucket.toEntity())
 
     override suspend fun updateBucket(bucket: SavingsBucket) {
-        savingsBucketDao.update(bucket.toEntity())
+        val existing = savingsBucketDao.getById(bucket.id)
+        val entity = bucket.toEntity().let {
+            if (existing != null) it.copy(createdAt = existing.createdAt) else it
+        }
+        savingsBucketDao.update(entity)
     }
 
     override suspend fun deactivateBucket(id: Long) {

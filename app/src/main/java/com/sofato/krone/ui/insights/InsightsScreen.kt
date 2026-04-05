@@ -22,6 +22,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.R
+import com.sofato.krone.domain.model.InsightData
+import com.sofato.krone.domain.model.TextInsight
 import com.sofato.krone.ui.insights.charts.AreaChartData
 import com.sofato.krone.ui.insights.charts.BarChartGroup
 import com.sofato.krone.ui.insights.charts.CurrencyBreakdownChart
@@ -51,7 +53,7 @@ fun InsightsScreen(
     val categoryComparison by viewModel.categoryComparison.collectAsState()
     val currencyBreakdown by viewModel.currencyBreakdown.collectAsState()
     val streak by viewModel.streak.collectAsState()
-    val textInsights by viewModel.textInsights.collectAsState()
+    val insightData by viewModel.insightData.collectAsState()
     val spendingTrend by viewModel.spendingTrend.collectAsState()
 
     val currency = homeCurrency ?: return
@@ -65,8 +67,9 @@ fun InsightsScreen(
         item { Spacer(Modifier.height(Dimens.SpacingSm)) }
 
         // 1. Text insights
-        if (textInsights.isNotEmpty()) {
+        if (insightData.isNotEmpty()) {
             item {
+                val textInsights = insightData.map { it.toTextInsight() }
                 TextInsightsCard(insights = textInsights)
             }
         }
@@ -270,6 +273,19 @@ private fun DonutLegendRow(
             style = MaterialTheme.typography.bodyMedium,
         )
     }
+}
+
+@Composable
+private fun InsightData.toTextInsight(): TextInsight {
+    val message = when (this) {
+        is InsightData.CategoryChangeUp -> stringResource(R.string.insights_spent_more_format, percent, categoryName)
+        is InsightData.CategoryChangeDown -> stringResource(R.string.insights_spent_less_format, percent, categoryName)
+        is InsightData.OverallSpendingUp -> stringResource(R.string.insights_overall_up_format, percent)
+        is InsightData.OverallSpendingDown -> stringResource(R.string.insights_overall_down_format, percent)
+        is InsightData.StreakCallout -> stringResource(R.string.insights_streak_callout_format, days)
+        is InsightData.TopCategory -> stringResource(R.string.insights_top_category_format, categoryName)
+    }
+    return TextInsight(message = message, type = type)
 }
 
 private fun parseColor(hex: String): Color {
