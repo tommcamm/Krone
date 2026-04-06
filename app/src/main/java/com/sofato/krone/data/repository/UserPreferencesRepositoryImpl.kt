@@ -34,14 +34,6 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         prefs[PreferenceKeys.INCOME_DAY] ?: 1
     }
 
-    override val showMonthlyCard: Flow<Boolean> = dataStore.data.map { prefs ->
-        prefs[PreferenceKeys.SHOW_MONTHLY_CARD] ?: true
-    }
-
-    override val showDailyCard: Flow<Boolean> = dataStore.data.map { prefs ->
-        prefs[PreferenceKeys.SHOW_DAILY_CARD] ?: true
-    }
-
     override suspend fun setHomeCurrencyCode(code: String) {
         dataStore.edit { it[PreferenceKeys.HOME_CURRENCY_CODE] = code }
     }
@@ -62,14 +54,6 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataStore.edit { it[PreferenceKeys.INCOME_DAY] = day }
     }
 
-    override suspend fun setShowMonthlyCard(show: Boolean) {
-        dataStore.edit { it[PreferenceKeys.SHOW_MONTHLY_CARD] = show }
-    }
-
-    override suspend fun setShowDailyCard(show: Boolean) {
-        dataStore.edit { it[PreferenceKeys.SHOW_DAILY_CARD] = show }
-    }
-
     override suspend fun clearAll() {
         dataStore.edit { it.clear() }
     }
@@ -82,8 +66,6 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         prefs[PreferenceKeys.DARK_MODE_OVERRIDE]?.let { result["dark_mode_override"] = it }
         prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING]?.let { result["has_completed_onboarding"] = it.toString() }
         prefs[PreferenceKeys.INCOME_DAY]?.let { result["income_day"] = it.toString() }
-        prefs[PreferenceKeys.SHOW_MONTHLY_CARD]?.let { result["show_monthly_card"] = it.toString() }
-        prefs[PreferenceKeys.SHOW_DAILY_CARD]?.let { result["show_daily_card"] = it.toString() }
         return result
     }
 
@@ -95,8 +77,6 @@ class UserPreferencesRepositoryImpl @Inject constructor(
             data["dark_mode_override"]?.let { prefs[PreferenceKeys.DARK_MODE_OVERRIDE] = it }
             data["has_completed_onboarding"]?.let { prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING] = it.toBooleanStrictOrNull() ?: false }
             data["income_day"]?.let { prefs[PreferenceKeys.INCOME_DAY] = it.toIntOrNull() ?: 1 }
-            data["show_monthly_card"]?.let { prefs[PreferenceKeys.SHOW_MONTHLY_CARD] = it.toBooleanStrictOrNull() ?: true }
-            data["show_daily_card"]?.let { prefs[PreferenceKeys.SHOW_DAILY_CARD] = it.toBooleanStrictOrNull() ?: true }
         }
     }
 }

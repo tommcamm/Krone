@@ -1,11 +1,8 @@
 package com.sofato.krone.ui.dashboard
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -45,7 +41,6 @@ import java.time.format.TextStyle as JavaTextStyle
 import java.util.Locale
 import androidx.core.graphics.toColorInt
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DashboardScreen(
     onAddExpense: (categoryId: Long?) -> Unit,
@@ -104,33 +99,7 @@ fun DashboardScreen(
             segments = segments,
         )
 
-        // Arc chart legend
-        if (segments.isNotEmpty()) {
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = Dimens.SpacingSm),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingMd),
-                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingXs),
-            ) {
-                segments.forEach { segment ->
-                    val pct = if (budget.discretionaryMinor > 0) {
-                        (segment.value * 100 / budget.discretionaryMinor).toInt()
-                    } else 0
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Canvas(modifier = Modifier.size(10.dp)) {
-                            drawCircle(color = segment.color)
-                        }
-                        Spacer(Modifier.width(Dimens.SpacingXs))
-                        Text(
-                            text = "${segment.label} $pct%",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-            }
-        }
+        Spacer(Modifier.height(Dimens.SpacingSm))
 
         // Add expense button
         OutlinedButton(

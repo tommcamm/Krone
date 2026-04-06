@@ -171,28 +171,43 @@ fun ExpenseBottomSheet(
 
                 Spacer(Modifier.height(Dimens.SpacingMd))
 
-                // Amount display with backspace
+                // Amount display with currency symbol and backspace
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = calculatorState.displayText,
-                        style = MaterialTheme.typography.displayMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = (-2).sp,
-                        ),
-                        textAlign = TextAlign.End,
+                    Row(
                         modifier = Modifier
                             .weight(1f)
                             .padding(horizontal = Dimens.SpacingSm),
-                        maxLines = 1,
-                        color = if (calculatorState.hasError) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
-                    )
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = calculatorState.displayText,
+                            style = MaterialTheme.typography.displayMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = (-2).sp,
+                            ),
+                            maxLines = 1,
+                            color = if (calculatorState.hasError) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                        )
+                        selectedCurrency?.let { currency ->
+                            Text(
+                                text = " ${currency.symbol}",
+                                style = MaterialTheme.typography.displaySmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = (-1).sp,
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                maxLines = 1,
+                            )
+                        }
+                    }
                     if (calculatorState.expression.isNotEmpty()) {
                         Text(
                             text = "\u232B",

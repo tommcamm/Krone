@@ -201,7 +201,7 @@ class CalculatorEngine {
                 val op = ops[i]
                 val right = numbers[i + 1]
                 if (op == '*' || op == '/') {
-                    val left = reducedNumbers.removeLast()
+                    val left = reducedNumbers.removeAt(reducedNumbers.lastIndex)
                     if (op == '/' && right == 0.0) return null
                     reducedNumbers.add(if (op == '*') left * right else left / right)
                 } else {
@@ -229,7 +229,7 @@ class CalculatorEngine {
             return if (value == value.toLong().toDouble()) {
                 value.toLong().toString()
             } else {
-                String.format("%.2f", value)
+                String.format(java.util.Locale.getDefault(), "%.2f", value)
             }
         }
     }

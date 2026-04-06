@@ -28,8 +28,6 @@ class UserPreferencesBackupTest {
             mutable[PreferenceKeys.DARK_MODE_OVERRIDE] = "dark"
             mutable[PreferenceKeys.HAS_COMPLETED_ONBOARDING] = true
             mutable[PreferenceKeys.INCOME_DAY] = 25
-            mutable[PreferenceKeys.SHOW_MONTHLY_CARD] = false
-            mutable[PreferenceKeys.SHOW_DAILY_CARD] = true
             mutable
         }
 
@@ -41,8 +39,6 @@ class UserPreferencesBackupTest {
             "dark_mode_override", "dark",
             "has_completed_onboarding", "true",
             "income_day", "25",
-            "show_monthly_card", "false",
-            "show_daily_card", "true",
         )
     }
 
@@ -64,7 +60,6 @@ class UserPreferencesBackupTest {
         fakeDataStore.updateData {
             val mutable = it.toMutablePreferences()
             mutable[PreferenceKeys.HOME_CURRENCY_CODE] = "DKK"
-            mutable[PreferenceKeys.SHOW_DAILY_CARD] = false
             mutable
         }
 
@@ -80,8 +75,6 @@ class UserPreferencesBackupTest {
         assertThat(prefs[PreferenceKeys.HOME_CURRENCY_CODE]).isEqualTo("SEK")
         assertThat(prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING]).isTrue()
         assertThat(prefs[PreferenceKeys.INCOME_DAY]).isEqualTo(15)
-        // Previously set SHOW_DAILY_CARD should be cleared
-        assertThat(prefs[PreferenceKeys.SHOW_DAILY_CARD]).isNull()
     }
 
     @Test
@@ -93,8 +86,6 @@ class UserPreferencesBackupTest {
             mutable[PreferenceKeys.DARK_MODE_OVERRIDE] = "light"
             mutable[PreferenceKeys.HAS_COMPLETED_ONBOARDING] = true
             mutable[PreferenceKeys.INCOME_DAY] = 28
-            mutable[PreferenceKeys.SHOW_MONTHLY_CARD] = true
-            mutable[PreferenceKeys.SHOW_DAILY_CARD] = false
             mutable
         }
 
@@ -117,8 +108,6 @@ class UserPreferencesBackupTest {
         assertThat(prefs[PreferenceKeys.DARK_MODE_OVERRIDE]).isEqualTo("light")
         assertThat(prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING]).isTrue()
         assertThat(prefs[PreferenceKeys.INCOME_DAY]).isEqualTo(28)
-        assertThat(prefs[PreferenceKeys.SHOW_MONTHLY_CARD]).isTrue()
-        assertThat(prefs[PreferenceKeys.SHOW_DAILY_CARD]).isFalse()
     }
 
     @Test

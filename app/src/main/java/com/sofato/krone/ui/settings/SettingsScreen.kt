@@ -3,10 +3,10 @@
 package com.sofato.krone.ui.settings
 
 import android.content.Intent
-import androidx.core.net.toUri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toUri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,7 +24,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.CurrencyExchange
-import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.FileDownload
@@ -71,8 +70,6 @@ fun SettingsScreen(
 ) {
     val darkModeOverride by viewModel.darkModeOverride.collectAsState()
     val isDynamicColorEnabled by viewModel.isDynamicColorEnabled.collectAsState()
-    val showMonthlyCard by viewModel.showMonthlyCard.collectAsState()
-    val showDailyCard by viewModel.showDailyCard.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -81,6 +78,7 @@ fun SettingsScreen(
 
     val exportSuccessMsg = stringResource(R.string.export_success)
     val exportFailedMsg = stringResource(R.string.export_failed)
+    val importFailedMsg = stringResource(R.string.import_failed)
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/octet-stream"),
     ) { uri ->
@@ -107,6 +105,9 @@ fun SettingsScreen(
                     intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                     Runtime.getRuntime().exit(0)
+                }
+                is SettingsViewModel.SettingsEvent.ImportFailed -> {
+                    snackbarHostState.showSnackbar("$importFailedMsg: ${event.message}")
                 }
                 SettingsViewModel.SettingsEvent.ResetComplete -> {
                     val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
@@ -189,29 +190,6 @@ fun SettingsScreen(
                         onCheckedChange = { viewModel.setDynamicColor(it) },
                     )
                 }
-            }
-
-            // Dashboard section
-            item { SettingsSection("Dashboard") }
-
-            item {
-                SettingsSwitchRow(
-                    icon = Icons.Outlined.Dashboard,
-                    title = "Monthly overview",
-                    subtitle = "Show \"Left this month\" card",
-                    checked = showMonthlyCard,
-                    onCheckedChange = { viewModel.setShowMonthlyCard(it) },
-                )
-            }
-
-            item {
-                SettingsSwitchRow(
-                    icon = Icons.Outlined.Dashboard,
-                    title = "Daily budget",
-                    subtitle = "Show \"You can spend today\" card",
-                    checked = showDailyCard,
-                    onCheckedChange = { viewModel.setShowDailyCard(it) },
-                )
             }
 
             // General section

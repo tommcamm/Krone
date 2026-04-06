@@ -58,7 +58,7 @@
 
     <!-- Welcome -->
     <string name="welcome_tagline">Manage your spending, all in one place.</string>
-    <string name="welcome_feature_offline">Works offline -- no internet required</string>
+    <string name="welcome_feature_offline">Works offline — no internet required</string>
     <string name="welcome_feature_privacy">Your data stays on your device</string>
     <string name="welcome_feature_currency">Multi-currency support</string>
     <string name="welcome_feature_foss">Free and open source</string>
@@ -187,6 +187,7 @@
     <string name="export_success">Backup exported successfully</string>
     <string name="export_failed">Export failed</string>
     <string name="import_success">Backup imported successfully</string>
+    <string name="import_failed">Import failed</string>
 
     <!-- Error messages -->
     <string name="error_rate_unavailable">Exchange rate unavailable. Please check your connection.</string>

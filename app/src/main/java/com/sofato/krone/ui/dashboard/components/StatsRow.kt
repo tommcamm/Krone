@@ -12,9 +12,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.CurrencyFormatter
@@ -32,56 +34,62 @@ fun StatsRow(
         horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
     ) {
         Card(
-            modifier = Modifier.weight(1f).height(128.dp),
+            modifier = Modifier.weight(1f).height(120.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             ),
         ) {
             Column(
-                modifier = Modifier.padding(Dimens.SpacingMd).fillMaxWidth(),
-                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(Dimens.SpacingMd)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = "Available today",
-                    style = MaterialTheme.typography.labelMedium,
+                    text = "AVAILABLE DAY",
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp,
                 )
-                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.height(Dimens.SpacingSm))
                 Text(
                     text = CurrencyFormatter.formatDisplay(availableToday.coerceAtLeast(0), currency),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                 )
-                Text(
-                    text = if (onTrack) "• On track" else "• Over",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = if (onTrack) {
-                        MaterialTheme.colorScheme.tertiary
-                    } else {
-                        MaterialTheme.colorScheme.error
-                    },
-                )
+                if (!onTrack) {
+                    Text(
+                        text = "• Over",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
             }
         }
         Card(
-            modifier = Modifier.weight(1f).height(128.dp),
+            modifier = Modifier.weight(1f).height(120.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             ),
         ) {
             Column(
-                modifier = Modifier.padding(Dimens.SpacingMd).fillMaxWidth(),
-                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .padding(Dimens.SpacingMd)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = "Daily avg spent",
-                    style = MaterialTheme.typography.labelMedium,
+                    text = "AVG DAY",
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp,
                 )
-                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.height(Dimens.SpacingSm))
                 Text(
                     text = CurrencyFormatter.formatDisplay(dailyAverage, currency),
                     style = MaterialTheme.typography.headlineSmall,
