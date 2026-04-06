@@ -35,7 +35,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.R
 import com.sofato.krone.ui.components.SwipeToDismissExpenseItem
 import com.sofato.krone.ui.theme.Dimens
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 
 @OptIn(ExperimentalMaterial3Api::class)
