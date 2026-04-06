@@ -4,8 +4,6 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.sofato.krone.domain.model.BudgetOverview
 import com.sofato.krone.domain.model.BudgetPeriod
-import com.sofato.krone.domain.model.Category
-import com.sofato.krone.domain.model.CategorySpend
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.DailyBudget
 import com.sofato.krone.domain.model.Expense

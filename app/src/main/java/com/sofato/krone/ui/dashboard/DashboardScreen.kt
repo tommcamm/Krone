@@ -39,15 +39,16 @@ import com.sofato.krone.ui.dashboard.components.StatsRow
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.today
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
 import java.time.Month as JavaMonth
 import java.time.format.TextStyle as JavaTextStyle
 import java.util.Locale
+import androidx.core.graphics.toColorInt
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DashboardScreen(
     onAddExpense: (categoryId: Long?) -> Unit,
-    onExpenseClick: (Long) -> Unit,
     onViewAllExpenses: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
@@ -62,8 +63,8 @@ fun DashboardScreen(
     val budget = dailyBudget ?: return
 
     val totalSpent = budget.spentSoFarMinor + totalSpentToday
-    val monthNumber = budgetOverview?.period?.startDate?.monthNumber
-        ?: LocalDate.today().monthNumber
+    val monthNumber = budgetOverview?.period?.startDate?.month?.number
+        ?: LocalDate.today().month.number
     val monthName = JavaMonth.of(monthNumber)
         .getDisplayName(JavaTextStyle.FULL_STANDALONE, Locale.getDefault())
         .replaceFirstChar { it.uppercase() }
@@ -221,7 +222,7 @@ internal fun buildArcSegments(
     val trackedCategories = overview.categoryBreakdown.filter { it.spentMinor > 0 }
     for (cs in trackedCategories) {
         val categoryColor = try {
-            Color(android.graphics.Color.parseColor(cs.category.colorHex))
+            Color(cs.category.colorHex.toColorInt())
         } catch (_: Exception) {
             Color(0xFF94A3B8) // fallback slate
         }

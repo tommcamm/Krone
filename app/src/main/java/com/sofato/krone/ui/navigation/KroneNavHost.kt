@@ -3,7 +3,6 @@ package com.sofato.krone.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.sofato.krone.ui.budget.BudgetScreen
@@ -40,7 +39,6 @@ fun KroneNavHost(
                 onAddExpense = { categoryId ->
                     navController.navigate(KroneDestination.AddExpense(categoryId = categoryId ?: -1L))
                 },
-                onExpenseClick = { id -> navController.navigate(KroneDestination.EditExpense(id)) },
                 onViewAllExpenses = { navController.navigate(KroneDestination.ExpenseList) },
             )
         }
