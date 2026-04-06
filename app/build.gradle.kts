@@ -36,10 +36,13 @@ android {
 
     signingConfigs {
         create("share") {
-            storeFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+            val ksFile = file(System.getProperty("user.home") + "/.android/debug.keystore")
+            if (ksFile.exists()) {
+                storeFile = ksFile
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
         }
         create("release") {
             val ksFile = rootProject.file("krone-release.jks")

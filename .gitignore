@@ -25,3 +25,6 @@ local.properties
 
 # Kotlin build metadata
 .kotlin/
+
+# Claude Code
+.claude/
