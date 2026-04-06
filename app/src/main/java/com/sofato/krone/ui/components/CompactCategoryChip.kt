@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.sofato.krone.domain.model.Category
+import androidx.core.graphics.toColorInt
 
 @Composable
 fun CompactCategoryChip(
@@ -24,7 +25,7 @@ fun CompactCategoryChip(
     onClick: () -> Unit,
 ) {
     val bgColor = try {
-        Color(android.graphics.Color.parseColor(category.colorHex))
+        Color(category.colorHex.toColorInt())
     } catch (_: Exception) {
         MaterialTheme.colorScheme.primaryContainer
     }
