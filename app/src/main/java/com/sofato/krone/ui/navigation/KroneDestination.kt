@@ -8,8 +8,6 @@ sealed interface KroneDestination {
     @Serializable data object Budget : KroneDestination
     @Serializable data object Savings : KroneDestination
     @Serializable data object Insights : KroneDestination
-    @Serializable data class AddExpense(val categoryId: Long = -1L) : KroneDestination
-    @Serializable data class EditExpense(val expenseId: Long) : KroneDestination
     @Serializable data object ExpenseList : KroneDestination
     @Serializable data object CategoryManagement : KroneDestination
     @Serializable data object Onboarding : KroneDestination

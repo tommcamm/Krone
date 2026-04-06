@@ -12,6 +12,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -20,6 +23,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.sofato.krone.R
+import com.sofato.krone.ui.expenses.ExpenseBottomSheet
+import com.sofato.krone.ui.expenses.ExpenseSheetViewModel
 import com.sofato.krone.ui.onboarding.OnboardingScreen
 import com.sofato.krone.ui.theme.KroneTheme
 
@@ -65,8 +70,13 @@ private fun MainApp() {
         BottomNavItem.entries.any { dest.hasRoute(it.destination::class) }
     } ?: true
     val isSavingsTab = currentDestination?.hasRoute(KroneDestination.Savings::class) == true
+    val isDashboardTab = currentDestination?.hasRoute(KroneDestination.Dashboard::class) == true
     val isSettingsTab = currentDestination?.hasRoute(KroneDestination.Settings::class) == true
-    val showFab = showBottomBar && !isSettingsTab
+    val showFab = showBottomBar && !isSettingsTab && !isDashboardTab
+
+    // Expense bottom sheet state
+    var showExpenseSheet by remember { mutableStateOf(false) }
+    val expenseSheetViewModel: ExpenseSheetViewModel = hiltViewModel()
 
     Scaffold(
         bottomBar = {
@@ -92,7 +102,8 @@ private fun MainApp() {
                         if (isSavingsTab) {
                             navController.navigate(KroneDestination.AddSavingsBucket)
                         } else {
-                            navController.navigate(KroneDestination.AddExpense())
+                            expenseSheetViewModel.resetForNew()
+                            showExpenseSheet = true
                         }
                     },
                 ) {
@@ -111,6 +122,21 @@ private fun MainApp() {
         KroneNavHost(
             navController = navController,
             modifier = Modifier.padding(innerPadding),
+            onAddExpense = { categoryId ->
+                expenseSheetViewModel.resetForNew(categoryId)
+                showExpenseSheet = true
+            },
+            onEditExpense = { expenseId ->
+                expenseSheetViewModel.loadForEdit(expenseId)
+                showExpenseSheet = true
+            },
+        )
+    }
+
+    if (showExpenseSheet) {
+        ExpenseBottomSheet(
+            viewModel = expenseSheetViewModel,
+            onDismiss = { showExpenseSheet = false },
         )
     }
 }

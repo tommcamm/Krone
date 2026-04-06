@@ -35,6 +35,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.R
 import com.sofato.krone.ui.components.SwipeToDismissExpenseItem
 import com.sofato.krone.ui.theme.Dimens
+import kotlinx.datetime.number
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,8 +99,12 @@ fun ExpenseListScreen(
         ) {
             groupedExpenses.forEach { (date, expenses) ->
                 item(key = "header_$date") {
+                    val formattedDate = remember(date) {
+                        java.time.LocalDate.of(date.year, date.month.number, date.day)
+                            .format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM))
+                    }
                     Text(
-                        text = date.toString(),
+                        text = formattedDate,
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
