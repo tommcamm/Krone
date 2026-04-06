@@ -19,20 +19,17 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -52,6 +49,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.domain.model.RecurrenceRule
+import com.sofato.krone.ui.components.CurrencyChip
+import com.sofato.krone.ui.expenses.CompactCategoryChip
 import com.sofato.krone.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -66,6 +65,7 @@ fun EditRecurringExpenseScreen(
     val categories by viewModel.categories.collectAsState()
     val recurrenceRule by viewModel.recurrenceRule.collectAsState()
     val dayOfMonth by viewModel.dayOfMonth.collectAsState()
+    val currencyCode by viewModel.currencyCode.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val saveFailedMessage = stringResource(R.string.error_save_failed)
 
@@ -99,6 +99,20 @@ fun EditRecurringExpenseScreen(
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
+                IconButton(
+                    onClick = viewModel::save,
+                    enabled = label.isNotBlank() && amountInput.isNotBlank() && selectedCategory != null,
+                ) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = stringResource(R.string.save),
+                        tint = if (label.isNotBlank() && amountInput.isNotBlank() && selectedCategory != null) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                        },
+                    )
+                }
             },
         )
 
@@ -108,46 +122,49 @@ fun EditRecurringExpenseScreen(
                 .verticalScroll(rememberScrollState()),
         ) {
             // Amount hero section
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                modifier = Modifier.fillMaxWidth(),
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = Dimens.SpacingLg, horizontal = Dimens.SpacingMd),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Dimens.SpacingLg, horizontal = Dimens.SpacingMd),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    BasicTextField(
-                        value = amountInput,
-                        onValueChange = viewModel::onAmountChanged,
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = TextStyle(
-                            fontSize = MaterialTheme.typography.displayMedium.fontSize,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            textAlign = TextAlign.Center,
-                        ),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                        decorationBox = { innerTextField ->
-                            Box(contentAlignment = Alignment.Center) {
-                                if (amountInput.isEmpty()) {
-                                    Text(
-                                        text = "0",
-                                        style = MaterialTheme.typography.displayMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                    )
-                                }
-                                innerTextField()
-                            }
-                        },
+                if (currencyCode.isNotEmpty()) {
+                    CurrencyChip(
+                        currencyCode = currencyCode,
+                        onClick = { },
                     )
+                    Spacer(Modifier.height(Dimens.SpacingMd))
                 }
+                BasicTextField(
+                    value = amountInput,
+                    onValueChange = viewModel::onAmountChanged,
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = TextStyle(
+                        fontSize = MaterialTheme.typography.displayMedium.fontSize,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    decorationBox = { innerTextField ->
+                        Box(contentAlignment = Alignment.Center) {
+                            if (amountInput.isEmpty()) {
+                                Text(
+                                    text = "0",
+                                    style = MaterialTheme.typography.displayMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                )
+                            }
+                            innerTextField()
+                        }
+                    },
+                )
             }
 
+            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.SpacingMd))
             Spacer(Modifier.height(Dimens.SpacingMd))
 
             // Name field
@@ -205,11 +222,11 @@ fun EditRecurringExpenseScreen(
                 )
                 Spacer(Modifier.height(Dimens.SpacingSm))
                 FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingXs),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.SpacingXs),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     categories.forEach { category ->
-                        CategoryPillChip(
+                        CompactCategoryChip(
                             category = category,
                             isSelected = category.id == selectedCategory?.id,
                             onClick = { viewModel.onCategorySelected(category) },
@@ -219,36 +236,6 @@ fun EditRecurringExpenseScreen(
             }
 
             Spacer(Modifier.height(Dimens.SpacingXl))
-        }
-
-        // Bottom action buttons
-        Surface(tonalElevation = 3.dp, shadowElevation = 3.dp) {
-            Column(
-                modifier = Modifier.padding(horizontal = Dimens.SpacingMd, vertical = Dimens.SpacingSm),
-                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
-            ) {
-                Button(
-                    onClick = viewModel::save,
-                    enabled = label.isNotBlank() && amountInput.isNotBlank() && selectedCategory != null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = MaterialTheme.shapes.large,
-                ) {
-                    Text("Save", style = MaterialTheme.typography.titleMedium)
-                }
-                OutlinedButton(
-                    onClick = viewModel::deactivate,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = MaterialTheme.shapes.large,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                ) {
-                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
-                    Text("Deactivate")
-                }
-            }
         }
     }
     SnackbarHost(

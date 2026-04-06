@@ -60,13 +60,15 @@ class AddRecurringExpenseViewModel @Inject constructor(
     private val _events = MutableSharedFlow<Event>()
     val events = _events.asSharedFlow()
 
-    private var currencyCode: String = Defaults.HOME_CURRENCY_CODE
+    private val _currencyCode = MutableStateFlow(Defaults.HOME_CURRENCY_CODE)
+    val currencyCode: StateFlow<String> = _currencyCode.asStateFlow()
+
     private var decimalPlaces: Int = Defaults.DECIMAL_PLACES
 
     init {
         viewModelScope.launch {
-            currencyCode = userPreferencesRepository.homeCurrencyCode.first()
-            val currency = currencyRepository.getCurrencyByCode(currencyCode)
+            _currencyCode.value = userPreferencesRepository.homeCurrencyCode.first()
+            val currency = currencyRepository.getCurrencyByCode(_currencyCode.value)
             decimalPlaces = currency?.decimalPlaces ?: 2
         }
     }
@@ -108,7 +110,7 @@ class AddRecurringExpenseViewModel @Inject constructor(
                 addRecurringExpenseUseCase(
                     RecurringExpense(
                         amountMinor = amountMinor,
-                        currencyCode = currencyCode,
+                        currencyCode = _currencyCode.value,
                         categoryId = category.id,
                         label = _label.value.trim(),
                         recurrenceRule = _recurrenceRule.value,

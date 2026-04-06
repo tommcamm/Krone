@@ -57,6 +57,9 @@ class EditRecurringExpenseViewModel @Inject constructor(
     private val _dayOfMonth = MutableStateFlow<Int?>(null)
     val dayOfMonth: StateFlow<Int?> = _dayOfMonth.asStateFlow()
 
+    private val _currencyCode = MutableStateFlow("")
+    val currencyCode: StateFlow<String> = _currencyCode.asStateFlow()
+
     private val _events = MutableSharedFlow<Event>()
     val events = _events.asSharedFlow()
 
@@ -66,6 +69,7 @@ class EditRecurringExpenseViewModel @Inject constructor(
             _expense.value = loaded
             _label.value = loaded.label
             _amountInput.value = CurrencyFormatter.formatPlain(loaded.amountMinor, 2)
+            _currencyCode.value = loaded.currencyCode
             _recurrenceRule.value = RecurrenceRule.normalize(loaded.recurrenceRule)
             _dayOfMonth.value = loaded.dayOfMonth
             // Wait for categories to load, then resolve the matching category
