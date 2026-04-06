@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.ui.components.CurrencyChip
-import com.sofato.krone.ui.expenses.CompactCategoryChip
+import com.sofato.krone.ui.components.CompactCategoryChip
 import com.sofato.krone.ui.theme.Dimens
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)

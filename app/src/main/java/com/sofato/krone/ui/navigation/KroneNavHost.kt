@@ -11,9 +11,7 @@ import com.sofato.krone.ui.currency.CurrencySettingsScreen
 import com.sofato.krone.ui.income.ManageSalaryScreen
 import com.sofato.krone.ui.settings.SettingsScreen
 import com.sofato.krone.ui.dashboard.DashboardScreen
-import com.sofato.krone.ui.expenses.AddExpenseScreen
 import com.sofato.krone.ui.expenses.CategoryManagementScreen
-import com.sofato.krone.ui.expenses.EditExpenseScreen
 import com.sofato.krone.ui.expenses.ExpenseListScreen
 import com.sofato.krone.ui.insights.InsightsScreen
 import com.sofato.krone.ui.recurring.AddRecurringExpenseScreen
@@ -28,6 +26,8 @@ import com.sofato.krone.ui.savings.SavingsScreen
 fun KroneNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    onAddExpense: (categoryId: Long?) -> Unit,
+    onEditExpense: (expenseId: Long) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -36,9 +36,7 @@ fun KroneNavHost(
     ) {
         composable<KroneDestination.Dashboard> {
             DashboardScreen(
-                onAddExpense = { categoryId ->
-                    navController.navigate(KroneDestination.AddExpense(categoryId = categoryId ?: -1L))
-                },
+                onAddExpense = { categoryId -> onAddExpense(categoryId) },
                 onViewAllExpenses = { navController.navigate(KroneDestination.ExpenseList) },
             )
         }
@@ -62,23 +60,10 @@ fun KroneNavHost(
         composable<KroneDestination.Insights> {
             InsightsScreen()
         }
-        composable<KroneDestination.AddExpense> {
-            AddExpenseScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onManageCategories = { navController.navigate(KroneDestination.CategoryManagement) },
-                onManageCurrencies = { navController.navigate(KroneDestination.CurrencySettings) },
-            )
-        }
-        composable<KroneDestination.EditExpense> {
-            EditExpenseScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onManageCurrencies = { navController.navigate(KroneDestination.CurrencySettings) },
-            )
-        }
         composable<KroneDestination.ExpenseList> {
             ExpenseListScreen(
-                onExpenseClick = { id -> navController.navigate(KroneDestination.EditExpense(id)) },
-                onAddExpense = { navController.navigate(KroneDestination.AddExpense()) },
+                onExpenseClick = { id -> onEditExpense(id) },
+                onAddExpense = { onAddExpense(null) },
                 onNavigateBack = { navController.popBackStack() },
             )
         }

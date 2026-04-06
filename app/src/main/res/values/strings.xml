@@ -9,7 +9,9 @@
 
     <!-- Expense entry -->
     <string name="add_expense">Add Expense</string>
-    <string name="edit_expense">Edit Expense</string>
+    <string name="new_expense">New expense</string>
+    <string name="action_add">ADD</string>
+    <string name="edit_expense">Edit expense</string>
     <string name="amount_hint">Amount</string>
     <string name="note_hint">Note (optional)</string>
     <string name="select_category">Select a category</string>
