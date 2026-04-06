@@ -98,8 +98,12 @@ fun ExpenseListScreen(
         ) {
             groupedExpenses.forEach { (date, expenses) ->
                 item(key = "header_$date") {
+                    val formattedDate = remember(date) {
+                        java.time.LocalDate.of(date.year, date.monthNumber, date.dayOfMonth)
+                            .format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM))
+                    }
                     Text(
-                        text = date.toString(),
+                        text = formattedDate,
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier

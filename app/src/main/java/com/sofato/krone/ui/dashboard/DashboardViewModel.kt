@@ -6,26 +6,20 @@ import com.sofato.krone.domain.model.BudgetOverview
 import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.DailyBudget
-import com.sofato.krone.domain.model.Expense
 import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.domain.usecase.budget.CalculateBudgetPeriodUseCase
 import com.sofato.krone.domain.usecase.budget.CalculateDailyBudgetUseCase
 import com.sofato.krone.domain.usecase.budget.GetBudgetOverviewUseCase
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
-import com.sofato.krone.domain.usecase.expense.DeleteExpenseUseCase
 import com.sofato.krone.domain.usecase.expense.GetExpensesByDateUseCase
-import com.sofato.krone.domain.usecase.expense.RestoreExpenseUseCase
-import com.sofato.krone.domain.usecase.expense.GetExpensesBetweenDatesUseCase
 import com.sofato.krone.domain.usecase.recurring.ProcessDueRecurringExpensesUseCase
 import com.sofato.krone.domain.usecase.savings.ProcessSavingsContributionsUseCase
 import com.sofato.krone.util.today
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -39,13 +33,10 @@ import javax.inject.Inject
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     getExpensesByDate: GetExpensesByDateUseCase,
-    private val getExpensesBetweenDates: GetExpensesBetweenDatesUseCase,
-    private val deleteExpenseUseCase: DeleteExpenseUseCase,
-    private val restoreExpenseUseCase: RestoreExpenseUseCase,
-    private val calculateDailyBudgetUseCase: CalculateDailyBudgetUseCase,
     private val calculateBudgetPeriodUseCase: CalculateBudgetPeriodUseCase,
     private val processRecurringUseCase: ProcessDueRecurringExpensesUseCase,
     private val processSavingsUseCase: ProcessSavingsContributionsUseCase,
+    calculateDailyBudgetUseCase: CalculateDailyBudgetUseCase,
     getBudgetOverviewUseCase: GetBudgetOverviewUseCase,
     getCategoriesUseCase: GetCategoriesUseCase,
     userPreferencesRepository: UserPreferencesRepository,
@@ -53,10 +44,6 @@ class DashboardViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val today = LocalDate.today()
-
-    val todaysExpenses: StateFlow<List<Expense>> =
-        getExpensesByDate(today)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val homeCurrency: StateFlow<Currency?> =
         userPreferencesRepository.homeCurrencyCode
@@ -69,7 +56,7 @@ class DashboardViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val totalSpentToday: StateFlow<Long> =
-        todaysExpenses
+        getExpensesByDate(today)
             .map { expenses -> expenses.filter { !it.isRecurringInstance }.sumOf { it.homeAmount } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
@@ -94,19 +81,16 @@ class DashboardViewModel @Inject constructor(
         getBudgetOverviewUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val showMonthlyCard: StateFlow<Boolean> =
-        userPreferencesRepository.showMonthlyCard
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
-
-    val showDailyCard: StateFlow<Boolean> =
-        userPreferencesRepository.showDailyCard
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
-
-    private val _lastDeletedExpense = MutableStateFlow<Expense?>(null)
-    val lastDeletedExpense: StateFlow<Expense?> = _lastDeletedExpense.asStateFlow()
+    /** Positive = projected overspend, negative = projected underspend */
+    val projectedEndOfMonth: StateFlow<Long> =
+        combine(rollingDailyAverage, dailyBudget, totalSpentToday) { avg, budget, spentToday ->
+            if (budget == null) return@combine 0L
+            val totalSpentSoFar = budget.spentSoFarMinor + spentToday
+            val projected = totalSpentSoFar + avg * budget.remainingDays
+            projected - budget.discretionaryMinor
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
     init {
-        // Trigger auto-posting on dashboard open
         viewModelScope.launch {
             try {
                 processRecurringUseCase()
@@ -115,26 +99,5 @@ class DashboardViewModel @Inject constructor(
                 // Non-critical; don't crash the dashboard
             }
         }
-    }
-
-    fun deleteExpense(expense: Expense) {
-        viewModelScope.launch {
-            _lastDeletedExpense.value = expense
-            deleteExpenseUseCase(expense.id)
-        }
-    }
-
-    fun undoDelete() {
-        val expense = _lastDeletedExpense.value ?: return
-        _lastDeletedExpense.value = null
-        viewModelScope.launch {
-            try {
-                restoreExpenseUseCase(expense)
-            } catch (_: Exception) { /* best-effort */ }
-        }
-    }
-
-    fun clearDeletedExpense() {
-        _lastDeletedExpense.value = null
     }
 }

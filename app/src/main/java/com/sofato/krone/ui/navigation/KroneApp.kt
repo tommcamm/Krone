@@ -65,8 +65,9 @@ private fun MainApp() {
         BottomNavItem.entries.any { dest.hasRoute(it.destination::class) }
     } ?: true
     val isSavingsTab = currentDestination?.hasRoute(KroneDestination.Savings::class) == true
+    val isDashboardTab = currentDestination?.hasRoute(KroneDestination.Dashboard::class) == true
     val isSettingsTab = currentDestination?.hasRoute(KroneDestination.Settings::class) == true
-    val showFab = showBottomBar && !isSettingsTab
+    val showFab = showBottomBar && !isSettingsTab && !isDashboardTab
 
     Scaffold(
         bottomBar = {
