@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,6 +52,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -209,12 +214,17 @@ fun ExpenseBottomSheet(
                         }
                     }
                     if (calculatorState.expression.isNotEmpty()) {
+                        val backspaceDescription = stringResource(R.string.cd_backspace)
                         Text(
                             text = "\u232B",
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
                                 .clickable(onClick = viewModel::onBackspace)
+                                .semantics {
+                                    contentDescription = backspaceDescription
+                                    role = Role.Button
+                                }
                                 .padding(Dimens.SpacingSm),
                         )
                     }
@@ -441,24 +451,40 @@ private fun CalculatorKeypad(
                             }
                         }
                         is KeyDef.Op -> {
+                            val opDescription = stringResource(
+                                when (key.char) {
+                                    '\u00F7' -> R.string.cd_op_divide
+                                    '\u00D7' -> R.string.cd_op_multiply
+                                    '\u2212' -> R.string.cd_op_minus
+                                    else -> R.string.cd_op_plus
+                                }
+                            )
                             FilledTonalButton(
                                 onClick = { onOperator(key.char) },
-                                modifier = buttonModifier.weight(1f),
+                                modifier = buttonModifier
+                                    .weight(1f)
+                                    .semantics { contentDescription = opDescription },
                                 shape = buttonShape,
                                 contentPadding = PaddingValues(0.dp),
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                ),
                             ) {
                                 Text(
                                     text = key.char.toString(),
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
                                 )
                             }
                         }
                         KeyDef.Decimal -> {
+                            val decimalDescription = stringResource(R.string.cd_decimal_point)
                             FilledTonalButton(
                                 onClick = onDecimal,
-                                modifier = buttonModifier.weight(1f),
+                                modifier = buttonModifier
+                                    .weight(1f)
+                                    .semantics { contentDescription = decimalDescription },
                                 shape = buttonShape,
                                 contentPadding = PaddingValues(0.dp),
                             ) {

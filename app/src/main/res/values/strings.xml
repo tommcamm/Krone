@@ -192,4 +192,12 @@
     <!-- Error messages -->
     <string name="error_rate_unavailable">Exchange rate unavailable. Please check your connection.</string>
     <string name="error_save_failed">Could not save. Please try again.</string>
+
+    <!-- Keypad content descriptions (screen readers) -->
+    <string name="cd_op_divide">Divide</string>
+    <string name="cd_op_multiply">Multiply</string>
+    <string name="cd_op_minus">Minus</string>
+    <string name="cd_op_plus">Plus</string>
+    <string name="cd_decimal_point">Decimal point</string>
+    <string name="cd_backspace">Backspace</string>
 </resources>
