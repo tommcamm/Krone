@@ -18,11 +18,18 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,7 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sofato.krone.R
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.sofato.krone.ui.components.ExpenseItem
+import com.sofato.krone.ui.components.SwipeToDismissExpenseItem
 import com.sofato.krone.ui.dashboard.components.ArcSegment
 import com.sofato.krone.ui.dashboard.components.BudgetArcChart
 import com.sofato.krone.ui.dashboard.components.ProjectionCard
@@ -59,6 +66,26 @@ fun DashboardScreen(
     val budgetOverview by viewModel.budgetOverview.collectAsState()
     val projectedEndOfMonth by viewModel.projectedEndOfMonth.collectAsState()
     val recentExpenses by viewModel.recentExpenses.collectAsState()
+    val lastDeleted by viewModel.lastDeletedExpense.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val deletedMessage = stringResource(R.string.expense_deleted)
+    val undoLabel = stringResource(R.string.undo)
+
+    LaunchedEffect(lastDeleted) {
+        lastDeleted?.let {
+            val result = snackbarHostState.showSnackbar(
+                message = deletedMessage,
+                actionLabel = undoLabel,
+                duration = SnackbarDuration.Short,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                viewModel.undoDelete()
+            } else {
+                viewModel.clearDeletedExpense()
+            }
+        }
+    }
 
     val currency = homeCurrency ?: return
     val budget = dailyBudget ?: return
@@ -74,124 +101,130 @@ fun DashboardScreen(
     val overview = budgetOverview
     val segments = buildArcSegments(overview)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = Dimens.SpacingMd),
-    ) {
-        // Header
-        Spacer(Modifier.height(Dimens.SpacingSm))
-        Column {
-            Text(
-                text = "Dashboard",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                text = "$monthName ▾",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Medium,
-            )
-        }
-
-        // Arc chart
-        BudgetArcChart(
-            totalBudget = budget.discretionaryMinor,
-            totalSpent = totalSpent,
-            remainingDays = budget.remainingDays,
-            currency = currency,
-            segments = segments,
-        )
-
-        Spacer(Modifier.height(Dimens.SpacingSm))
-
-        // Add expense button
-        OutlinedButton(
-            onClick = { onAddExpense(null) },
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = MaterialTheme.shapes.large,
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = Dimens.SpacingMd),
         ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
-            )
-            Text(
-                text = "Add expense",
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = Dimens.SpacingSm),
-            )
-        }
-
-        Spacer(Modifier.height(Dimens.SpacingSm))
-
-        // Stats row
-        val availableToday = budget.dailyAmountMinor - totalSpentToday
-        val onTrack = projectedEndOfMonth <= 0
-        StatsRow(
-            availableToday = availableToday,
-            dailyAverage = rollingAvg,
-            onTrack = onTrack,
-            currency = currency,
-        )
-
-        Spacer(Modifier.height(Dimens.SpacingSm))
-
-        // Projection card
-        ProjectionCard(
-            projectedDifference = projectedEndOfMonth,
-            currency = currency,
-        )
-
-        Spacer(Modifier.height(Dimens.SpacingMd))
-
-        // All expenses section — header + preview of the 5 latest
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.all_expenses),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
-            TextButton(onClick = onViewAllExpenses) {
-                Text(stringResource(R.string.view_all))
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
+            // Header
+            Spacer(Modifier.height(Dimens.SpacingSm))
+            Column {
+                Text(
+                    text = "Dashboard",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = "$monthName ▾",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Medium,
                 )
             }
-        }
 
-        if (recentExpenses.isEmpty()) {
-            Text(
-                text = stringResource(R.string.no_expenses_yet),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = Dimens.SpacingMd),
+            // Arc chart
+            BudgetArcChart(
+                totalBudget = budget.discretionaryMinor,
+                totalSpent = totalSpent,
+                remainingDays = budget.remainingDays,
+                currency = currency,
+                segments = segments,
             )
-        } else {
-            Column {
-                recentExpenses.forEachIndexed { index, expense ->
-                    ExpenseItem(
-                        expense = expense,
-                        onClick = { onEditExpense(expense.id) },
-                        homeCurrency = currency,
+
+            Spacer(Modifier.height(Dimens.SpacingSm))
+
+            // Add expense button
+            OutlinedButton(
+                onClick = { onAddExpense(null) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = MaterialTheme.shapes.large,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Text(
+                    text = "Add expense",
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = Dimens.SpacingSm),
+                )
+            }
+
+            Spacer(Modifier.height(Dimens.SpacingSm))
+
+            // Stats row
+            val availableToday = budget.dailyAmountMinor - totalSpentToday
+            val onTrack = projectedEndOfMonth <= 0
+            StatsRow(
+                availableToday = availableToday,
+                dailyAverage = rollingAvg,
+                onTrack = onTrack,
+                currency = currency,
+            )
+
+            Spacer(Modifier.height(Dimens.SpacingSm))
+
+            // Projection card
+            ProjectionCard(
+                projectedDifference = projectedEndOfMonth,
+                currency = currency,
+            )
+
+            Spacer(Modifier.height(Dimens.SpacingMd))
+
+            // Recent expenses section — header + preview of the 5 latest
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.recent_expenses),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                TextButton(onClick = onViewAllExpenses) {
+                    Text(stringResource(R.string.view_all))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
                     )
-                    if (index < recentExpenses.lastIndex) {
-                        HorizontalDivider(modifier = Modifier.padding(start = 52.dp))
+                }
+            }
+
+            if (recentExpenses.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.no_expenses_yet),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = Dimens.SpacingMd),
+                )
+            } else {
+                Column {
+                    recentExpenses.forEachIndexed { index, expense ->
+                        SwipeToDismissExpenseItem(
+                            expense = expense,
+                            onDismiss = { viewModel.deleteExpense(expense) },
+                            onClick = { onEditExpense(expense.id) },
+                            homeCurrency = currency,
+                        )
+                        if (index < recentExpenses.lastIndex) {
+                            HorizontalDivider(modifier = Modifier.padding(start = 52.dp))
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.height(Dimens.FabSpacerHeight))
+            Spacer(Modifier.height(Dimens.FabSpacerHeight))
+        }
     }
 }
 

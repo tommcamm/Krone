@@ -27,6 +27,9 @@ class SettingsViewModel @Inject constructor(
     val isDynamicColorEnabled: StateFlow<Boolean> = userPreferencesRepository.isDynamicColorEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val isHapticFeedbackEnabled: StateFlow<Boolean> = userPreferencesRepository.isHapticFeedbackEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     private val _events = MutableSharedFlow<SettingsEvent>()
     val events = _events.asSharedFlow()
 
@@ -47,6 +50,12 @@ class SettingsViewModel @Inject constructor(
     fun setDynamicColor(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setDynamicColorEnabled(enabled)
+        }
+    }
+
+    fun setHapticFeedback(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setHapticFeedbackEnabled(enabled)
         }
     }
 

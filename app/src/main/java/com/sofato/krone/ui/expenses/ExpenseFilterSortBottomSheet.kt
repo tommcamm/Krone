@@ -61,7 +61,7 @@ fun ExpenseFilterSortBottomSheet(
     onApply: (ExpenseFilter, ExpenseSort) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
     var draftFilter by remember { mutableStateOf(currentFilter) }
     var draftSort by remember { mutableStateOf(currentSort) }

@@ -147,4 +147,35 @@ class UserPreferencesBackupTest {
         val prefs = fakeDataStore.data.first()
         assertThat(prefs[PreferenceKeys.INCOME_DAY]).isEqualTo(1)
     }
+
+    @Test
+    fun `haptic feedback preference round-trips through backup and restore`() = runTest {
+        fakeDataStore.updateData {
+            val mutable = it.toMutablePreferences()
+            mutable[PreferenceKeys.HAPTIC_FEEDBACK_ENABLED] = false
+            mutable
+        }
+
+        val backup = repository.getBackupData()
+        assertThat(backup).containsEntry("haptic_feedback_enabled", "false")
+
+        fakeDataStore.updateData {
+            val mutable = it.toMutablePreferences()
+            mutable.clear()
+            mutable
+        }
+
+        repository.restoreFromBackupData(backup)
+
+        val prefs = fakeDataStore.data.first()
+        assertThat(prefs[PreferenceKeys.HAPTIC_FEEDBACK_ENABLED]).isFalse()
+    }
+
+    @Test
+    fun `restoreFromBackupData falls back to true for invalid haptic feedback value`() = runTest {
+        repository.restoreFromBackupData(mapOf("haptic_feedback_enabled" to "garbage"))
+
+        val prefs = fakeDataStore.data.first()
+        assertThat(prefs[PreferenceKeys.HAPTIC_FEEDBACK_ENABLED]).isTrue()
+    }
 }

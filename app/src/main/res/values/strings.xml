@@ -48,6 +48,7 @@
     <string name="todays_spending">Today\'s spending</string>
     <string name="no_expenses_today">No expenses today</string>
     <string name="all_expenses">All expenses</string>
+    <string name="recent_expenses">Recent expenses</string>
     <string name="no_expenses_yet">No expenses yet</string>
     <string name="daily_budget_hero">You can spend</string>
     <string name="daily_budget_today">today</string>
@@ -167,6 +168,8 @@
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_dynamic_color">Dynamic color</string>
     <string name="settings_dynamic_color_subtitle">Use colors from your wallpaper</string>
+    <string name="settings_haptic_feedback">Haptic feedback</string>
+    <string name="settings_haptic_feedback_subtitle">Subtle vibrations on keypad and buttons</string>
     <string name="settings_general">General</string>
     <string name="settings_data">Data</string>
     <string name="settings_export">Export backup</string>

@@ -32,6 +32,7 @@ import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -70,6 +71,7 @@ fun SettingsScreen(
 ) {
     val darkModeOverride by viewModel.darkModeOverride.collectAsState()
     val isDynamicColorEnabled by viewModel.isDynamicColorEnabled.collectAsState()
+    val isHapticFeedbackEnabled by viewModel.isHapticFeedbackEnabled.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -190,6 +192,16 @@ fun SettingsScreen(
                         onCheckedChange = { viewModel.setDynamicColor(it) },
                     )
                 }
+            }
+
+            item {
+                SettingsSwitchRow(
+                    icon = Icons.Outlined.Vibration,
+                    title = stringResource(R.string.settings_haptic_feedback),
+                    subtitle = stringResource(R.string.settings_haptic_feedback_subtitle),
+                    checked = isHapticFeedbackEnabled,
+                    onCheckedChange = { viewModel.setHapticFeedback(it) },
+                )
             }
 
             // General section

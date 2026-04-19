@@ -64,6 +64,7 @@ import com.sofato.krone.R
 import com.sofato.krone.ui.components.CompactCategoryChip
 import com.sofato.krone.ui.components.CurrencyChip
 import com.sofato.krone.ui.components.CurrencyPickerDialog
+import com.sofato.krone.ui.components.LocalHaptics
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.today
 import kotlinx.datetime.LocalDate
@@ -92,6 +93,7 @@ fun ExpenseBottomSheet(
     var showNoteField by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val rateUnavailableMessage = stringResource(R.string.error_rate_unavailable)
+    val haptics = LocalHaptics.current
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -141,7 +143,10 @@ fun ExpenseBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         if (isEditMode) {
-                            IconButton(onClick = viewModel::delete) {
+                            IconButton(onClick = {
+                                haptics.reject()
+                                viewModel.delete()
+                            }) {
                                 Icon(
                                     Icons.Default.Delete,
                                     contentDescription = stringResource(R.string.delete),
@@ -152,7 +157,10 @@ fun ExpenseBottomSheet(
                         selectedCurrency?.let { currency ->
                             CurrencyChip(
                                 currencyCode = currency.code,
-                                onClick = { showCurrencyPicker = true },
+                                onClick = {
+                                    haptics.select()
+                                    showCurrencyPicker = true
+                                },
                             )
                         }
                     }
@@ -169,7 +177,10 @@ fun ExpenseBottomSheet(
                         CompactCategoryChip(
                             category = category,
                             isSelected = category.id == selectedCategory?.id,
-                            onClick = { viewModel.onCategorySelected(category) },
+                            onClick = {
+                                haptics.select()
+                                viewModel.onCategorySelected(category)
+                            },
                         )
                     }
                 }
@@ -220,7 +231,10 @@ fun ExpenseBottomSheet(
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
-                                .clickable(onClick = viewModel::onBackspace)
+                                .clickable {
+                                    haptics.tap()
+                                    viewModel.onBackspace()
+                                }
                                 .semantics {
                                     contentDescription = backspaceDescription
                                     role = Role.Button
@@ -255,7 +269,10 @@ fun ExpenseBottomSheet(
                 ) {
                     // Date chip
                     FilledTonalButton(
-                        onClick = { showDatePicker = true },
+                        onClick = {
+                            haptics.select()
+                            showDatePicker = true
+                        },
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                         modifier = Modifier.height(32.dp),
                     ) {
@@ -416,6 +433,7 @@ private fun CalculatorKeypad(
     actionLabel: String,
     isActionEnabled: Boolean,
 ) {
+    val haptics = LocalHaptics.current
     val buttonShape = RoundedCornerShape(16.dp)
     val buttonModifier = Modifier
         .height(56.dp)
@@ -438,7 +456,10 @@ private fun CalculatorKeypad(
                     when (key) {
                         is KeyDef.Digit -> {
                             FilledTonalButton(
-                                onClick = { onDigit(key.char) },
+                                onClick = {
+                                    haptics.tap()
+                                    onDigit(key.char)
+                                },
                                 modifier = buttonModifier.weight(1f),
                                 shape = buttonShape,
                                 contentPadding = PaddingValues(0.dp),
@@ -460,7 +481,10 @@ private fun CalculatorKeypad(
                                 }
                             )
                             FilledTonalButton(
-                                onClick = { onOperator(key.char) },
+                                onClick = {
+                                    haptics.tap()
+                                    onOperator(key.char)
+                                },
                                 modifier = buttonModifier
                                     .weight(1f)
                                     .semantics { contentDescription = opDescription },
@@ -481,7 +505,10 @@ private fun CalculatorKeypad(
                         KeyDef.Decimal -> {
                             val decimalDescription = stringResource(R.string.cd_decimal_point)
                             FilledTonalButton(
-                                onClick = onDecimal,
+                                onClick = {
+                                    haptics.tap()
+                                    onDecimal()
+                                },
                                 modifier = buttonModifier
                                     .weight(1f)
                                     .semantics { contentDescription = decimalDescription },
@@ -497,7 +524,10 @@ private fun CalculatorKeypad(
                         }
                         KeyDef.Action -> {
                             Button(
-                                onClick = onAction,
+                                onClick = {
+                                    haptics.confirm()
+                                    onAction()
+                                },
                                 enabled = isActionEnabled,
                                 modifier = buttonModifier.weight(1f),
                                 shape = buttonShape,

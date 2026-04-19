@@ -32,6 +32,17 @@ fun SwipeToDismissExpenseItem(
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { totalDistance -> totalDistance * 0.6f },
     )
+    val haptics = LocalHaptics.current
+
+    // Fire a light tick the moment the drag crosses the commit threshold so the
+    // user feels the "release to delete" point without looking.
+    LaunchedEffect(dismissState.targetValue) {
+        if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart &&
+            dismissState.currentValue == SwipeToDismissBoxValue.Settled
+        ) {
+            haptics.thresholdCross()
+        }
+    }
 
     // Only delete once the swipe fully settles at EndToStart (i.e. the user
     // dragged past the 60 % threshold AND released). Then snap back so the
@@ -40,6 +51,7 @@ fun SwipeToDismissExpenseItem(
     LaunchedEffect(dismissState.currentValue) {
         if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
             dismissState.snapTo(SwipeToDismissBoxValue.Settled)
+            haptics.reject()
             onDismiss()
         }
     }

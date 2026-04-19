@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.sofato.krone.domain.model.BudgetOverview
 import com.sofato.krone.domain.model.BudgetPeriod
+import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.DailyBudget
 import com.sofato.krone.domain.model.Expense
@@ -14,11 +15,14 @@ import com.sofato.krone.domain.usecase.budget.CalculateBudgetPeriodUseCase
 import com.sofato.krone.domain.usecase.budget.CalculateDailyBudgetUseCase
 import com.sofato.krone.domain.usecase.budget.GetBudgetOverviewUseCase
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
+import com.sofato.krone.domain.usecase.expense.DeleteExpenseUseCase
 import com.sofato.krone.domain.usecase.expense.GetExpensesByDateUseCase
 import com.sofato.krone.domain.usecase.expense.GetRecentExpensesUseCase
+import com.sofato.krone.domain.usecase.expense.RestoreExpenseUseCase
 import com.sofato.krone.domain.usecase.recurring.ProcessDueRecurringExpensesUseCase
 import com.sofato.krone.domain.usecase.savings.ProcessSavingsContributionsUseCase
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +37,7 @@ import kotlinx.datetime.LocalDate
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DashboardViewModelTest {
@@ -54,6 +59,15 @@ class DashboardViewModelTest {
         endDate = LocalDate(2026, 4, 30),
     )
 
+    private val category = Category(
+        id = 1,
+        name = "Food",
+        iconName = "restaurant",
+        colorHex = "#FF0000",
+        isCustom = false,
+        sortOrder = 0,
+    )
+
     private lateinit var getExpensesByDateUseCase: GetExpensesByDateUseCase
     private lateinit var getRecentExpensesUseCase: GetRecentExpensesUseCase
     private lateinit var calculateDailyBudgetUseCase: CalculateDailyBudgetUseCase
@@ -62,6 +76,8 @@ class DashboardViewModelTest {
     private lateinit var getCategoriesUseCase: GetCategoriesUseCase
     private lateinit var processRecurringUseCase: ProcessDueRecurringExpensesUseCase
     private lateinit var processSavingsUseCase: ProcessSavingsContributionsUseCase
+    private lateinit var deleteExpenseUseCase: DeleteExpenseUseCase
+    private lateinit var restoreExpenseUseCase: RestoreExpenseUseCase
     private lateinit var userPreferencesRepository: UserPreferencesRepository
     private lateinit var currencyRepository: CurrencyRepository
 
@@ -105,6 +121,8 @@ class DashboardViewModelTest {
         }
         processRecurringUseCase = mockk(relaxed = true)
         processSavingsUseCase = mockk(relaxed = true)
+        deleteExpenseUseCase = mockk(relaxed = true)
+        restoreExpenseUseCase = mockk(relaxed = true)
         userPreferencesRepository = mockk {
             every { homeCurrencyCode } returns flowOf("DKK")
         }
@@ -125,12 +143,26 @@ class DashboardViewModelTest {
             calculateBudgetPeriodUseCase = calculateBudgetPeriodUseCase,
             processRecurringUseCase = processRecurringUseCase,
             processSavingsUseCase = processSavingsUseCase,
+            deleteExpenseUseCase = deleteExpenseUseCase,
+            restoreExpenseUseCase = restoreExpenseUseCase,
             calculateDailyBudgetUseCase = calculateDailyBudgetUseCase,
             getBudgetOverviewUseCase = getBudgetOverviewUseCase,
             getCategoriesUseCase = getCategoriesUseCase,
             userPreferencesRepository = userPreferencesRepository,
             currencyRepository = currencyRepository,
         )
+
+    private fun buildExpense(id: Long): Expense = Expense(
+        id = id,
+        amount = 10000,
+        currency = dkk,
+        homeAmount = 10000,
+        exchangeRateUsed = 1.0,
+        category = category,
+        note = null,
+        date = LocalDate(2026, 4, 1),
+        createdAt = Instant.fromEpochSeconds(100),
+    )
 
     private fun dailyBudget(
         dailyAmount: Long = 5000,
@@ -271,5 +303,52 @@ class DashboardViewModelTest {
         viewModel.totalSpentToday.test {
             assertThat(awaitItem()).isEqualTo(5000L)
         }
+    }
+
+    // --- delete / undo tests ---
+
+    @Test
+    fun `deleteExpense tracks expense and invokes delete use case`() = runTest {
+        val expense = buildExpense(id = 42L)
+        val viewModel = buildViewModel()
+
+        viewModel.deleteExpense(expense)
+
+        assertThat(viewModel.lastDeletedExpense.value).isEqualTo(expense)
+        coVerify(exactly = 1) { deleteExpenseUseCase.invoke(42L) }
+    }
+
+    @Test
+    fun `undoDelete restores last deleted expense and clears state`() = runTest {
+        val expense = buildExpense(id = 42L)
+        val viewModel = buildViewModel()
+
+        viewModel.deleteExpense(expense)
+        viewModel.undoDelete()
+
+        assertThat(viewModel.lastDeletedExpense.value).isNull()
+        coVerify(exactly = 1) { restoreExpenseUseCase.invoke(expense) }
+    }
+
+    @Test
+    fun `undoDelete with no pending deletion is a no-op`() = runTest {
+        val viewModel = buildViewModel()
+
+        viewModel.undoDelete()
+
+        assertThat(viewModel.lastDeletedExpense.value).isNull()
+        coVerify(exactly = 0) { restoreExpenseUseCase.invoke(any()) }
+    }
+
+    @Test
+    fun `clearDeletedExpense removes pending deletion without restoring`() = runTest {
+        val expense = buildExpense(id = 42L)
+        val viewModel = buildViewModel()
+
+        viewModel.deleteExpense(expense)
+        viewModel.clearDeletedExpense()
+
+        assertThat(viewModel.lastDeletedExpense.value).isNull()
+        coVerify(exactly = 0) { restoreExpenseUseCase.invoke(any()) }
     }
 }

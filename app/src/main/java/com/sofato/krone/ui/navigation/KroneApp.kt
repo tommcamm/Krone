@@ -10,6 +10,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,6 +24,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.sofato.krone.R
+import com.sofato.krone.ui.components.LocalHaptics
+import com.sofato.krone.ui.components.rememberHaptics
 import com.sofato.krone.ui.expenses.ExpenseBottomSheet
 import com.sofato.krone.ui.expenses.ExpenseSheetViewModel
 import com.sofato.krone.ui.onboarding.OnboardingScreen
@@ -36,6 +39,8 @@ fun KroneApp(
     val hasCompletedOnboarding by appViewModel.hasCompletedOnboarding.collectAsState()
     val darkModeOverride by appViewModel.darkModeOverride.collectAsState()
     val isDynamicColorEnabled by appViewModel.isDynamicColorEnabled.collectAsState()
+    val isHapticFeedbackEnabled by appViewModel.isHapticFeedbackEnabled.collectAsState()
+    val haptics = rememberHaptics(enabled = isHapticFeedbackEnabled)
 
     val systemDark = isSystemInDarkTheme()
     val darkTheme = when (darkModeOverride) {
@@ -45,17 +50,19 @@ fun KroneApp(
     }
 
     KroneTheme(darkTheme = darkTheme, dynamicColor = isDynamicColorEnabled) {
-        if (isLoading) {
-            Box(Modifier.fillMaxSize())
-            return@KroneTheme
-        }
+        CompositionLocalProvider(LocalHaptics provides haptics) {
+            if (isLoading) {
+                Box(Modifier.fillMaxSize())
+                return@CompositionLocalProvider
+            }
 
-        if (!hasCompletedOnboarding) {
-            OnboardingScreen(
-                onComplete = { appViewModel.onOnboardingComplete() },
-            )
-        } else {
-            MainApp()
+            if (!hasCompletedOnboarding) {
+                OnboardingScreen(
+                    onComplete = { appViewModel.onOnboardingComplete() },
+                )
+            } else {
+                MainApp()
+            }
         }
     }
 }

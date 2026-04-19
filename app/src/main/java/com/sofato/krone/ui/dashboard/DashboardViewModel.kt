@@ -12,16 +12,20 @@ import com.sofato.krone.domain.usecase.budget.CalculateBudgetPeriodUseCase
 import com.sofato.krone.domain.usecase.budget.CalculateDailyBudgetUseCase
 import com.sofato.krone.domain.usecase.budget.GetBudgetOverviewUseCase
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
+import com.sofato.krone.domain.usecase.expense.DeleteExpenseUseCase
 import com.sofato.krone.domain.usecase.expense.GetExpensesByDateUseCase
 import com.sofato.krone.domain.usecase.expense.GetRecentExpensesUseCase
+import com.sofato.krone.domain.usecase.expense.RestoreExpenseUseCase
 import com.sofato.krone.domain.model.Expense
 import com.sofato.krone.domain.usecase.recurring.ProcessDueRecurringExpensesUseCase
 import com.sofato.krone.domain.usecase.savings.ProcessSavingsContributionsUseCase
 import com.sofato.krone.util.today
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -39,6 +43,8 @@ class DashboardViewModel @Inject constructor(
     private val calculateBudgetPeriodUseCase: CalculateBudgetPeriodUseCase,
     private val processRecurringUseCase: ProcessDueRecurringExpensesUseCase,
     private val processSavingsUseCase: ProcessSavingsContributionsUseCase,
+    private val deleteExpenseUseCase: DeleteExpenseUseCase,
+    private val restoreExpenseUseCase: RestoreExpenseUseCase,
     calculateDailyBudgetUseCase: CalculateDailyBudgetUseCase,
     getBudgetOverviewUseCase: GetBudgetOverviewUseCase,
     getCategoriesUseCase: GetCategoriesUseCase,
@@ -97,6 +103,9 @@ class DashboardViewModel @Inject constructor(
             projected - budget.discretionaryMinor
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
 
+    private val _lastDeletedExpense = MutableStateFlow<Expense?>(null)
+    val lastDeletedExpense: StateFlow<Expense?> = _lastDeletedExpense.asStateFlow()
+
     init {
         viewModelScope.launch {
             try {
@@ -106,6 +115,29 @@ class DashboardViewModel @Inject constructor(
                 // Non-critical; don't crash the dashboard
             }
         }
+    }
+
+    fun deleteExpense(expense: Expense) {
+        viewModelScope.launch {
+            try {
+                _lastDeletedExpense.value = expense
+                deleteExpenseUseCase(expense.id)
+            } catch (_: Exception) { /* best-effort */ }
+        }
+    }
+
+    fun undoDelete() {
+        val expense = _lastDeletedExpense.value ?: return
+        _lastDeletedExpense.value = null
+        viewModelScope.launch {
+            try {
+                restoreExpenseUseCase(expense)
+            } catch (_: Exception) { /* best-effort */ }
+        }
+    }
+
+    fun clearDeletedExpense() {
+        _lastDeletedExpense.value = null
     }
 
     private companion object {
