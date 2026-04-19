@@ -32,8 +32,8 @@ jobs:
       - name: Build FOSS Debug
         run: ./gradlew assembleFossDebug
 
-      - name: Run unit tests
-        run: ./gradlew testFossDebugUnitTest
+      - name: Run unit tests with coverage
+        run: ./gradlew jacocoFossDebugTestReport
 
       - name: Upload test results
         if: always()
@@ -41,4 +41,20 @@ jobs:
         with:
           name: test-results
           path: app/build/reports/tests/
+          retention-days: 14
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: app/build/reports/jacoco/jacocoFossDebugTestReport/jacocoFossDebugTestReport.xml
+          flags: unittests
+          fail_ci_if_error: false
+
+      - name: Upload coverage HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: app/build/reports/jacoco/jacocoFossDebugTestReport/html/
           retention-days: 14
