@@ -3,7 +3,6 @@ package com.sofato.krone.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.sofato.krone.ui.budget.BudgetScreen
@@ -12,9 +11,7 @@ import com.sofato.krone.ui.currency.CurrencySettingsScreen
 import com.sofato.krone.ui.income.ManageSalaryScreen
 import com.sofato.krone.ui.settings.SettingsScreen
 import com.sofato.krone.ui.dashboard.DashboardScreen
-import com.sofato.krone.ui.expenses.AddExpenseScreen
 import com.sofato.krone.ui.expenses.CategoryManagementScreen
-import com.sofato.krone.ui.expenses.EditExpenseScreen
 import com.sofato.krone.ui.expenses.ExpenseListScreen
 import com.sofato.krone.ui.insights.InsightsScreen
 import com.sofato.krone.ui.recurring.AddRecurringExpenseScreen
@@ -29,6 +26,8 @@ import com.sofato.krone.ui.savings.SavingsScreen
 fun KroneNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    onAddExpense: (categoryId: Long?) -> Unit,
+    onEditExpense: (expenseId: Long) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -37,11 +36,10 @@ fun KroneNavHost(
     ) {
         composable<KroneDestination.Dashboard> {
             DashboardScreen(
-                onAddExpense = { categoryId ->
-                    navController.navigate(KroneDestination.AddExpense(categoryId = categoryId ?: -1L))
-                },
-                onExpenseClick = { id -> navController.navigate(KroneDestination.EditExpense(id)) },
+                onAddExpense = { categoryId -> onAddExpense(categoryId) },
                 onViewAllExpenses = { navController.navigate(KroneDestination.ExpenseList) },
+                onEditExpense = { id -> onEditExpense(id) },
+                onNavigateToSettings = { navController.navigate(KroneDestination.Settings) },
             )
         }
         composable<KroneDestination.Budget> {
@@ -64,23 +62,10 @@ fun KroneNavHost(
         composable<KroneDestination.Insights> {
             InsightsScreen()
         }
-        composable<KroneDestination.AddExpense> {
-            AddExpenseScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onManageCategories = { navController.navigate(KroneDestination.CategoryManagement) },
-                onManageCurrencies = { navController.navigate(KroneDestination.CurrencySettings) },
-            )
-        }
-        composable<KroneDestination.EditExpense> {
-            EditExpenseScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onManageCurrencies = { navController.navigate(KroneDestination.CurrencySettings) },
-            )
-        }
         composable<KroneDestination.ExpenseList> {
             ExpenseListScreen(
-                onExpenseClick = { id -> navController.navigate(KroneDestination.EditExpense(id)) },
-                onAddExpense = { navController.navigate(KroneDestination.AddExpense()) },
+                onExpenseClick = { id -> onEditExpense(id) },
+                onAddExpense = { onAddExpense(null) },
                 onNavigateBack = { navController.popBackStack() },
             )
         }
@@ -136,6 +121,7 @@ fun KroneNavHost(
             SettingsScreen(
                 onNavigateToCurrency = { navController.navigate(KroneDestination.CurrencySettings) },
                 onNavigateToCategories = { navController.navigate(KroneDestination.CategoryManagement) },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }

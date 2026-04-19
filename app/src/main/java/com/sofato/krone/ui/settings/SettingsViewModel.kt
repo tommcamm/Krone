@@ -27,10 +27,7 @@ class SettingsViewModel @Inject constructor(
     val isDynamicColorEnabled: StateFlow<Boolean> = userPreferencesRepository.isDynamicColorEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
-    val showMonthlyCard: StateFlow<Boolean> = userPreferencesRepository.showMonthlyCard
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
-
-    val showDailyCard: StateFlow<Boolean> = userPreferencesRepository.showDailyCard
+    val isHapticFeedbackEnabled: StateFlow<Boolean> = userPreferencesRepository.isHapticFeedbackEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     private val _events = MutableSharedFlow<SettingsEvent>()
@@ -40,6 +37,7 @@ class SettingsViewModel @Inject constructor(
         data object ExportSuccess : SettingsEvent
         data class ExportFailed(val message: String) : SettingsEvent
         data object ImportComplete : SettingsEvent
+        data class ImportFailed(val message: String) : SettingsEvent
         data object ResetComplete : SettingsEvent
     }
 
@@ -55,15 +53,9 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun setShowMonthlyCard(show: Boolean) {
+    fun setHapticFeedback(enabled: Boolean) {
         viewModelScope.launch {
-            userPreferencesRepository.setShowMonthlyCard(show)
-        }
-    }
-
-    fun setShowDailyCard(show: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setShowDailyCard(show)
+            userPreferencesRepository.setHapticFeedbackEnabled(enabled)
         }
     }
 
@@ -84,7 +76,7 @@ class SettingsViewModel @Inject constructor(
                 databaseBackupManager.importFrom(uri)
                 _events.emit(SettingsEvent.ImportComplete)
             } catch (e: Exception) {
-                _events.emit(SettingsEvent.ExportFailed(e.message ?: "Import failed"))
+                _events.emit(SettingsEvent.ImportFailed(e.message ?: "Unknown error"))
             }
         }
     }

@@ -29,14 +29,14 @@ import com.sofato.krone.ui.insights.charts.BarChartGroup
 import com.sofato.krone.ui.insights.charts.CurrencyBreakdownChart
 import com.sofato.krone.ui.insights.charts.DonutChart
 import com.sofato.krone.ui.insights.charts.DonutSlice
-import com.sofato.krone.ui.insights.charts.GroupedBarChart
 import com.sofato.krone.ui.insights.charts.HeatmapCalendar
 import com.sofato.krone.ui.insights.charts.LineChartData
-import com.sofato.krone.ui.insights.charts.StackedAreaChart
-import com.sofato.krone.ui.insights.charts.StackedBarChart
 import com.sofato.krone.ui.insights.charts.StackedBarData
 import com.sofato.krone.ui.insights.charts.StackedBarSegment
-import com.sofato.krone.ui.insights.charts.TrendLineChart
+import com.sofato.krone.ui.insights.charts.VicoGroupedBarChart
+import com.sofato.krone.ui.insights.charts.VicoLineChart
+import com.sofato.krone.ui.insights.charts.VicoStackedAreaChart
+import com.sofato.krone.ui.insights.charts.VicoStackedBarChart
 import com.sofato.krone.ui.insights.components.ChartCard
 import com.sofato.krone.ui.insights.components.StreakCard
 import com.sofato.krone.ui.insights.components.TextInsightsCard
@@ -102,7 +102,8 @@ fun InsightsScreen(
                 ChartCard(title = stringResource(R.string.insights_donut_title)) {
                     val remaining = (overview.discretionaryMinor - overview.spentMinor)
                         .coerceAtLeast(0L)
-                    val categorySlices = overview.categoryBreakdown.map { cs ->
+                    val sortedBreakdown = overview.categoryBreakdown.sortedByDescending { it.spentMinor }
+                    val categorySlices = sortedBreakdown.map { cs ->
                         DonutSlice(
                             label = cs.category.name,
                             value = cs.spentMinor,
@@ -134,7 +135,7 @@ fun InsightsScreen(
                     Spacer(Modifier.height(Dimens.SpacingSm))
 
                     // Legend (categories only)
-                    overview.categoryBreakdown.take(6).forEach { cs ->
+                    sortedBreakdown.take(6).forEach { cs ->
                         DonutLegendRow(
                             color = parseColor(cs.category.colorHex),
                             label = cs.category.name,
@@ -180,7 +181,7 @@ fun InsightsScreen(
                         )
                     }
 
-                    TrendLineChart(
+                    VicoLineChart(
                         data = cumulativeData,
                         idealLine = idealData,
                     )
@@ -203,7 +204,7 @@ fun InsightsScreen(
                             color = parseColor(cs.category.colorHex),
                         )
                     }
-                    GroupedBarChart(groups = groups)
+                    VicoGroupedBarChart(groups = groups)
                 }
             }
         }
@@ -224,7 +225,7 @@ fun InsightsScreen(
                             },
                         )
                     }
-                    StackedBarChart(data = barData)
+                    VicoStackedBarChart(data = barData)
                 }
             }
         }
@@ -241,7 +242,7 @@ fun InsightsScreen(
                         }
                         LineChartData(label = monthLabel, value = trend.totalSpendingMinor)
                     }
-                    TrendLineChart(data = trendData)
+                    VicoLineChart(data = trendData)
                 }
             }
         }
@@ -262,7 +263,7 @@ fun InsightsScreen(
                             savingsMinor = trend.totalSavingsMinor,
                         )
                     }
-                    StackedAreaChart(data = areaData)
+                    VicoStackedAreaChart(data = areaData)
                 }
             }
         }

@@ -8,8 +8,9 @@ import com.sofato.krone.domain.model.Expense
 import com.sofato.krone.domain.model.SymbolPosition
 import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
+import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.domain.usecase.expense.DeleteExpenseUseCase
-import com.sofato.krone.domain.usecase.expense.GetRecentExpensesUseCase
+import com.sofato.krone.domain.usecase.expense.GetAllExpensesUseCase
 import com.sofato.krone.domain.usecase.expense.RestoreExpenseUseCase
 import io.mockk.coEvery
 import io.mockk.every
@@ -56,6 +57,7 @@ class ExpenseListViewModelTest {
     private lateinit var restoreExpenseUseCase: RestoreExpenseUseCase
     private lateinit var currencyRepository: CurrencyRepository
     private lateinit var userPreferencesRepository: UserPreferencesRepository
+    private lateinit var getCategoriesUseCase: GetCategoriesUseCase
 
     @Before
     fun setUp() {
@@ -68,6 +70,9 @@ class ExpenseListViewModelTest {
         userPreferencesRepository = mockk {
             every { homeCurrencyCode } returns flowOf("DKK")
         }
+        getCategoriesUseCase = mockk {
+            every { this@mockk.invoke() } returns flowOf(listOf(category))
+        }
     }
 
     @After
@@ -75,24 +80,29 @@ class ExpenseListViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun expense(id: Long, date: LocalDate, createdAtEpoch: Long): Expense =
-        Expense(
-            id = id,
-            amount = 10000,
-            currency = dkk,
-            homeAmount = 10000,
-            exchangeRateUsed = 1.0,
-            category = category,
-            note = null,
-            date = date,
-            createdAt = Instant.fromEpochSeconds(createdAtEpoch),
-        )
+    private fun expense(
+        id: Long,
+        date: LocalDate,
+        createdAtEpoch: Long,
+        homeAmount: Long = 10000,
+    ): Expense = Expense(
+        id = id,
+        amount = homeAmount,
+        currency = dkk,
+        homeAmount = homeAmount,
+        exchangeRateUsed = 1.0,
+        category = category,
+        note = null,
+        date = date,
+        createdAt = Instant.fromEpochSeconds(createdAtEpoch),
+    )
 
     private fun buildViewModel(
-        getRecentExpensesUseCase: GetRecentExpensesUseCase,
+        getAllExpensesUseCase: GetAllExpensesUseCase,
     ): ExpenseListViewModel =
         ExpenseListViewModel(
-            getRecentExpensesUseCase = getRecentExpensesUseCase,
+            getAllExpensesUseCase = getAllExpensesUseCase,
+            getCategoriesUseCase = getCategoriesUseCase,
             deleteExpenseUseCase = deleteExpenseUseCase,
             restoreExpenseUseCase = restoreExpenseUseCase,
             currencyRepository = currencyRepository,
@@ -100,72 +110,44 @@ class ExpenseListViewModelTest {
         )
 
     @Test
-    fun `grouped expenses are sorted by date descending`() = runTest {
+    fun `default sort orders by date then createdAt descending`() = runTest {
         val april1 = LocalDate(2026, 4, 1)
         val april3 = LocalDate(2026, 4, 3)
         val april5 = LocalDate(2026, 4, 5)
 
-        // Expenses ordered by createdAt DESC (as DB returns them).
-        // Intentionally: the oldest date has the newest createdAt to trigger the bug.
         val expenses = listOf(
-            expense(id = 1, date = april1, createdAtEpoch = 300),  // oldest date, created last
+            expense(id = 1, date = april1, createdAtEpoch = 300),
             expense(id = 2, date = april5, createdAtEpoch = 200),
-            expense(id = 3, date = april3, createdAtEpoch = 100),  // newest create is oldest
-        )
-
-        val useCase = mockk<GetRecentExpensesUseCase> {
-            every { this@mockk.invoke(any()) } returns flowOf(expenses)
-        }
-
-        val viewModel = buildViewModel(useCase)
-
-        viewModel.groupedExpenses.test {
-            val grouped = awaitItem()
-            assertThat(grouped).isNotEmpty()
-            val dates = grouped.keys.toList()
-            assertThat(dates).isEqualTo(listOf(april5, april3, april1))
-        }
-    }
-
-    @Test
-    fun `grouped expenses with same date are kept in one group`() = runTest {
-        val april3 = LocalDate(2026, 4, 3)
-
-        val expenses = listOf(
-            expense(id = 1, date = april3, createdAtEpoch = 300),
-            expense(id = 2, date = april3, createdAtEpoch = 200),
             expense(id = 3, date = april3, createdAtEpoch = 100),
         )
 
-        val useCase = mockk<GetRecentExpensesUseCase> {
-            every { this@mockk.invoke(any()) } returns flowOf(expenses)
+        val useCase = mockk<GetAllExpensesUseCase> {
+            every { this@mockk.invoke() } returns flowOf(expenses)
         }
 
         val viewModel = buildViewModel(useCase)
 
-        viewModel.groupedExpenses.test {
-            val grouped = awaitItem()
-            assertThat(grouped.keys).hasSize(1)
-            assertThat(grouped[april3]).hasSize(3)
+        viewModel.expenses.test {
+            val sorted = awaitItem()
+            assertThat(sorted.map { it.id }).isEqualTo(listOf(2L, 3L, 1L))
         }
     }
 
     @Test
-    fun `empty expense list produces empty map`() = runTest {
-        val useCase = mockk<GetRecentExpensesUseCase> {
-            every { this@mockk.invoke(any()) } returns flowOf(emptyList())
+    fun `empty source produces empty list`() = runTest {
+        val useCase = mockk<GetAllExpensesUseCase> {
+            every { this@mockk.invoke() } returns flowOf(emptyList())
         }
 
         val viewModel = buildViewModel(useCase)
 
-        viewModel.groupedExpenses.test {
-            val grouped = awaitItem()
-            assertThat(grouped).isEmpty()
+        viewModel.expenses.test {
+            assertThat(awaitItem()).isEmpty()
         }
     }
 
     @Test
-    fun `grouped expenses update when source emits new data`() = runTest {
+    fun `expenses update when source emits new data`() = runTest {
         val april1 = LocalDate(2026, 4, 1)
         val april2 = LocalDate(2026, 4, 2)
 
@@ -173,15 +155,15 @@ class ExpenseListViewModelTest {
             listOf(expense(id = 1, date = april1, createdAtEpoch = 100)),
         )
 
-        val useCase = mockk<GetRecentExpensesUseCase> {
-            every { this@mockk.invoke(any()) } returns source
+        val useCase = mockk<GetAllExpensesUseCase> {
+            every { this@mockk.invoke() } returns source
         }
 
         val viewModel = buildViewModel(useCase)
 
-        viewModel.groupedExpenses.test {
+        viewModel.expenses.test {
             val first = awaitItem()
-            assertThat(first.keys.toList()).isEqualTo(listOf(april1))
+            assertThat(first.map { it.id }).isEqualTo(listOf(1L))
 
             source.value = listOf(
                 expense(id = 2, date = april2, createdAtEpoch = 200),
@@ -189,7 +171,62 @@ class ExpenseListViewModelTest {
             )
 
             val second = awaitItem()
-            assertThat(second.keys.toList()).isEqualTo(listOf(april2, april1))
+            assertThat(second.map { it.id }).isEqualTo(listOf(2L, 1L))
+        }
+    }
+
+    @Test
+    fun `amount high sort orders by home amount descending`() = runTest {
+        val day = LocalDate(2026, 4, 1)
+        val expenses = listOf(
+            expense(id = 1, date = day, createdAtEpoch = 100, homeAmount = 500),
+            expense(id = 2, date = day, createdAtEpoch = 200, homeAmount = 9000),
+            expense(id = 3, date = day, createdAtEpoch = 300, homeAmount = 1500),
+        )
+        val useCase = mockk<GetAllExpensesUseCase> {
+            every { this@mockk.invoke() } returns flowOf(expenses)
+        }
+
+        val viewModel = buildViewModel(useCase)
+        viewModel.updateSort(ExpenseSort.AmountHigh)
+
+        viewModel.expenses.test {
+            // Initial emit (DateNewest) may arrive first; skip to the one with new sort.
+            val items = awaitItem()
+            val final = if (items.map { it.id } == listOf(2L, 3L, 1L)) items else awaitItem()
+            assertThat(final.map { it.id }).isEqualTo(listOf(2L, 3L, 1L))
+        }
+    }
+
+    @Test
+    fun `category filter restricts results to matching ids`() = runTest {
+        val day = LocalDate(2026, 4, 1)
+        val otherCategory = category.copy(id = 2, name = "Transport")
+        val expenses = listOf(
+            expense(id = 1, date = day, createdAtEpoch = 100),
+            Expense(
+                id = 2,
+                amount = 10000,
+                currency = dkk,
+                homeAmount = 10000,
+                exchangeRateUsed = 1.0,
+                category = otherCategory,
+                note = null,
+                date = day,
+                createdAt = Instant.fromEpochSeconds(200),
+            ),
+        )
+        val useCase = mockk<GetAllExpensesUseCase> {
+            every { this@mockk.invoke() } returns flowOf(expenses)
+        }
+
+        val viewModel = buildViewModel(useCase)
+        viewModel.updateFilter(ExpenseFilter(categoryIds = setOf(2L)))
+
+        viewModel.expenses.test {
+            val items = awaitItem()
+            val final = if (items.map { it.id } == listOf(2L)) items else awaitItem()
+            assertThat(final.map { it.id }).isEqualTo(listOf(2L))
         }
     }
 }

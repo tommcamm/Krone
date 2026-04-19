@@ -6,7 +6,6 @@ import com.sofato.krone.domain.model.BudgetOverview
 import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.domain.model.DailyBudget
-import com.sofato.krone.domain.model.Expense
 import com.sofato.krone.domain.repository.CurrencyRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
 import com.sofato.krone.domain.usecase.budget.CalculateBudgetPeriodUseCase
@@ -15,8 +14,9 @@ import com.sofato.krone.domain.usecase.budget.GetBudgetOverviewUseCase
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.domain.usecase.expense.DeleteExpenseUseCase
 import com.sofato.krone.domain.usecase.expense.GetExpensesByDateUseCase
+import com.sofato.krone.domain.usecase.expense.GetRecentExpensesUseCase
 import com.sofato.krone.domain.usecase.expense.RestoreExpenseUseCase
-import com.sofato.krone.domain.usecase.expense.GetExpensesBetweenDatesUseCase
+import com.sofato.krone.domain.model.Expense
 import com.sofato.krone.domain.usecase.recurring.ProcessDueRecurringExpensesUseCase
 import com.sofato.krone.domain.usecase.savings.ProcessSavingsContributionsUseCase
 import com.sofato.krone.util.today
@@ -39,13 +39,13 @@ import javax.inject.Inject
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     getExpensesByDate: GetExpensesByDateUseCase,
-    private val getExpensesBetweenDates: GetExpensesBetweenDatesUseCase,
-    private val deleteExpenseUseCase: DeleteExpenseUseCase,
-    private val restoreExpenseUseCase: RestoreExpenseUseCase,
-    private val calculateDailyBudgetUseCase: CalculateDailyBudgetUseCase,
+    getRecentExpensesUseCase: GetRecentExpensesUseCase,
     private val calculateBudgetPeriodUseCase: CalculateBudgetPeriodUseCase,
     private val processRecurringUseCase: ProcessDueRecurringExpensesUseCase,
     private val processSavingsUseCase: ProcessSavingsContributionsUseCase,
+    private val deleteExpenseUseCase: DeleteExpenseUseCase,
+    private val restoreExpenseUseCase: RestoreExpenseUseCase,
+    calculateDailyBudgetUseCase: CalculateDailyBudgetUseCase,
     getBudgetOverviewUseCase: GetBudgetOverviewUseCase,
     getCategoriesUseCase: GetCategoriesUseCase,
     userPreferencesRepository: UserPreferencesRepository,
@@ -53,10 +53,6 @@ class DashboardViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val today = LocalDate.today()
-
-    val todaysExpenses: StateFlow<List<Expense>> =
-        getExpensesByDate(today)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val homeCurrency: StateFlow<Currency?> =
         userPreferencesRepository.homeCurrencyCode
@@ -69,9 +65,13 @@ class DashboardViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val totalSpentToday: StateFlow<Long> =
-        todaysExpenses
+        getExpensesByDate(today)
             .map { expenses -> expenses.filter { !it.isRecurringInstance }.sumOf { it.homeAmount } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+
+    val recentExpenses: StateFlow<List<Expense>> =
+        getRecentExpensesUseCase(RECENT_EXPENSES_PREVIEW_LIMIT)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val dailyBudget: StateFlow<DailyBudget?> =
         calculateDailyBudgetUseCase()
@@ -94,19 +94,10 @@ class DashboardViewModel @Inject constructor(
         getBudgetOverviewUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val showMonthlyCard: StateFlow<Boolean> =
-        userPreferencesRepository.showMonthlyCard
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
-
-    val showDailyCard: StateFlow<Boolean> =
-        userPreferencesRepository.showDailyCard
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
-
     private val _lastDeletedExpense = MutableStateFlow<Expense?>(null)
     val lastDeletedExpense: StateFlow<Expense?> = _lastDeletedExpense.asStateFlow()
 
     init {
-        // Trigger auto-posting on dashboard open
         viewModelScope.launch {
             try {
                 processRecurringUseCase()
@@ -119,8 +110,10 @@ class DashboardViewModel @Inject constructor(
 
     fun deleteExpense(expense: Expense) {
         viewModelScope.launch {
-            _lastDeletedExpense.value = expense
-            deleteExpenseUseCase(expense.id)
+            try {
+                _lastDeletedExpense.value = expense
+                deleteExpenseUseCase(expense.id)
+            } catch (_: Exception) { /* best-effort */ }
         }
     }
 
@@ -136,5 +129,9 @@ class DashboardViewModel @Inject constructor(
 
     fun clearDeletedExpense() {
         _lastDeletedExpense.value = null
+    }
+
+    private companion object {
+        const val RECENT_EXPENSES_PREVIEW_LIMIT = 5
     }
 }

@@ -30,6 +30,9 @@ class KroneAppViewModel @Inject constructor(
     val isDynamicColorEnabled: StateFlow<Boolean> = userPreferencesRepository.isDynamicColorEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val isHapticFeedbackEnabled: StateFlow<Boolean> = userPreferencesRepository.isHapticFeedbackEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     init {
         viewModelScope.launch {
             _hasCompletedOnboarding.value = userPreferencesRepository.hasCompletedOnboarding.first()

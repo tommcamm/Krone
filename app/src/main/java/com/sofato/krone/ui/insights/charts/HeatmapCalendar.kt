@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -112,11 +111,14 @@ private fun HeatmapGrid(
     maxSpend: Long,
     modifier: Modifier = Modifier,
 ) {
-    val lowColor = MaterialTheme.colorScheme.surfaceVariant
-    val highColor = MaterialTheme.colorScheme.primary
-    val emptyColor = MaterialTheme.colorScheme.surface
+    // Tint cells with a translucent primary so the day number stays legible even
+    // at max intensity. Alpha scales from a faint wash on light-spend days to a
+    // strong tint on the highest-spend day; the text uses onSurface for maximum
+    // contrast against whatever tint blends onto the surface underneath.
+    val heatColor = MaterialTheme.colorScheme.primary
+    val emptyColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
     val textMeasurer = rememberTextMeasurer()
-    val textColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val textColor = MaterialTheme.colorScheme.onSurface
 
     val firstDay = LocalDate(year, month, 1)
     // Monday = 1, Sunday = 7 (ISO)
@@ -154,8 +156,8 @@ private fun HeatmapGrid(
             val spent = spendByDate[date]
 
             val color = if (spent != null && spent > 0) {
-                val intensity = (spent.toFloat() / maxSpend).coerceIn(0.15f, 1f)
-                lerp(lowColor, highColor, intensity)
+                val intensity = (spent.toFloat() / maxSpend).coerceIn(0f, 1f)
+                heatColor.copy(alpha = 0.18f + intensity * 0.47f)
             } else {
                 emptyColor
             }

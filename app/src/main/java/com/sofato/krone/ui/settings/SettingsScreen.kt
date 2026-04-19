@@ -3,10 +3,10 @@
 package com.sofato.krone.ui.settings
 
 import android.content.Intent
-import androidx.core.net.toUri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toUri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,10 +21,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.CurrencyExchange
-import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.FileDownload
@@ -33,8 +33,11 @@ import androidx.compose.material.icons.outlined.Gavel
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -43,6 +46,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -63,16 +67,17 @@ import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onNavigateToCurrency: () -> Unit,
     onNavigateToCategories: () -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val darkModeOverride by viewModel.darkModeOverride.collectAsState()
     val isDynamicColorEnabled by viewModel.isDynamicColorEnabled.collectAsState()
-    val showMonthlyCard by viewModel.showMonthlyCard.collectAsState()
-    val showDailyCard by viewModel.showDailyCard.collectAsState()
+    val isHapticFeedbackEnabled by viewModel.isHapticFeedbackEnabled.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -81,6 +86,7 @@ fun SettingsScreen(
 
     val exportSuccessMsg = stringResource(R.string.export_success)
     val exportFailedMsg = stringResource(R.string.export_failed)
+    val importFailedMsg = stringResource(R.string.import_failed)
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/octet-stream"),
     ) { uri ->
@@ -107,6 +113,9 @@ fun SettingsScreen(
                     intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                     Runtime.getRuntime().exit(0)
+                }
+                is SettingsViewModel.SettingsEvent.ImportFailed -> {
+                    snackbarHostState.showSnackbar("$importFailedMsg: ${event.message}")
                 }
                 SettingsViewModel.SettingsEvent.ResetComplete -> {
                     val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
@@ -154,6 +163,20 @@ fun SettingsScreen(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.settings)) },
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                        )
+                    }
+                },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { paddingValues ->
@@ -191,26 +214,13 @@ fun SettingsScreen(
                 }
             }
 
-            // Dashboard section
-            item { SettingsSection("Dashboard") }
-
             item {
                 SettingsSwitchRow(
-                    icon = Icons.Outlined.Dashboard,
-                    title = "Monthly overview",
-                    subtitle = "Show \"Left this month\" card",
-                    checked = showMonthlyCard,
-                    onCheckedChange = { viewModel.setShowMonthlyCard(it) },
-                )
-            }
-
-            item {
-                SettingsSwitchRow(
-                    icon = Icons.Outlined.Dashboard,
-                    title = "Daily budget",
-                    subtitle = "Show \"You can spend today\" card",
-                    checked = showDailyCard,
-                    onCheckedChange = { viewModel.setShowDailyCard(it) },
+                    icon = Icons.Outlined.Vibration,
+                    title = stringResource(R.string.settings_haptic_feedback),
+                    subtitle = stringResource(R.string.settings_haptic_feedback_subtitle),
+                    checked = isHapticFeedbackEnabled,
+                    onCheckedChange = { viewModel.setHapticFeedback(it) },
                 )
             }
 

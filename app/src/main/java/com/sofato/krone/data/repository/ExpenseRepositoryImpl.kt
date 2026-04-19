@@ -31,6 +31,9 @@ class ExpenseRepositoryImpl @Inject constructor(
     override fun getRecentExpenses(limit: Int): Flow<List<Expense>> =
         expenseDao.getRecentExpenses(limit).map { it.toDomainList() }
 
+    override fun getAllExpenses(): Flow<List<Expense>> =
+        expenseDao.getAllExpenses().map { it.toDomainList() }
+
     override suspend fun getExpenseById(id: Long): Expense? {
         val entity = expenseDao.getExpenseById(id) ?: return null
         return listOf(entity).toDomainList().firstOrNull()

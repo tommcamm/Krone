@@ -1,34 +1,25 @@
 package com.sofato.krone.domain.usecase.expense
 
 import com.sofato.krone.domain.model.Expense
-import com.sofato.krone.domain.repository.ExchangeRateRepository
 import com.sofato.krone.domain.repository.ExpenseRepository
-import com.sofato.krone.domain.repository.UserPreferencesRepository
-import kotlinx.coroutines.flow.first
+import com.sofato.krone.domain.usecase.currency.ConvertAmountUseCase
 import javax.inject.Inject
-import kotlin.math.roundToLong
 
 class UpdateExpenseUseCase @Inject constructor(
     private val expenseRepository: ExpenseRepository,
-    private val userPreferencesRepository: UserPreferencesRepository,
-    private val exchangeRateRepository: ExchangeRateRepository,
+    private val convertAmountUseCase: ConvertAmountUseCase,
 ) {
     /**
      * Returns true if the update succeeded, false if the exchange rate was unavailable
      * for a foreign-currency expense.
      */
     suspend operator fun invoke(expense: Expense): Boolean {
-        val homeCurrencyCode = userPreferencesRepository.homeCurrencyCode.first()
-        val converted = if (expense.currency.code == homeCurrencyCode) {
-            expense.copy(homeAmount = expense.amount, exchangeRateUsed = 1.0)
-        } else {
-            val rate = exchangeRateRepository.getRate(expense.currency.code, homeCurrencyCode)
-                ?: return false
-            expense.copy(
-                homeAmount = (expense.amount * rate.rate).roundToLong(),
-                exchangeRateUsed = rate.rate,
-            )
-        }
+        val conversion = convertAmountUseCase(expense.amount, expense.currency.code, expense.date)
+            ?: return false
+        val converted = expense.copy(
+            homeAmount = conversion.convertedAmountMinor,
+            exchangeRateUsed = conversion.rateUsed,
+        )
         expenseRepository.updateExpense(converted)
         return true
     }

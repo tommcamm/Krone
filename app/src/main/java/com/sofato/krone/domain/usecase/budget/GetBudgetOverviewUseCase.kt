@@ -54,13 +54,19 @@ class GetBudgetOverviewUseCase @Inject constructor(
             Triple(expenses, categories, allocations)
         }
         combine(totalsFlow, dataFlow) { (totalIncome, totalFixed, totalSavings), (expenses, categories, allocations) ->
-            val totalSpent = expenses.sumOf { it.homeAmount }
+            // Recurring-instance expenses (rent, electricity, …) already come out of the
+            // Fixed bucket, so excluding them keeps categoryBreakdown and spentMinor
+            // consistent with `discretionaryMinor`.
+            val discretionaryExpenses = expenses.filter { !it.isRecurringInstance }
+            val totalSpent = discretionaryExpenses.sumOf { it.homeAmount }
             val discretionary = totalIncome - totalFixed - totalSavings
 
             val allocationMap = allocations.associate { it.categoryId to it.allocatedAmountMinor }
 
             val categoryBreakdown = categories.map { cat ->
-                val spent = expenses.filter { it.category.id == cat.id }.sumOf { it.homeAmount }
+                val spent = discretionaryExpenses
+                    .filter { it.category.id == cat.id }
+                    .sumOf { it.homeAmount }
                 val allocated = allocationMap[cat.id] ?: 0L
                 CategorySpend(category = cat, allocatedMinor = allocated, spentMinor = spent)
             }.filter { it.spentMinor > 0 || it.allocatedMinor > 0 }
