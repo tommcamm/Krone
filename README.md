@@ -20,6 +20,7 @@
   <a href="#"><img src="https://img.shields.io/badge/Kotlin-2.2-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin"></a>
   <a href="#"><img src="https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white" alt="Compose"></a>
   <a href="https://github.com/tommcamm/Krone/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/tommcamm/Krone/build.yml?style=flat-square&label=Build" alt="Build Status"></a>
+  <a href="https://codecov.io/gh/tommcamm/Krone"><img src="https://img.shields.io/codecov/c/github/tommcamm/Krone?style=flat-square&label=Coverage" alt="Coverage"></a>
   <a href="https://github.com/tommcamm/Krone/releases/latest"><img src="https://img.shields.io/github/v/release/tommcamm/Krone?style=flat-square&label=Latest%20Release" alt="Latest Release"></a>
 </p>
 

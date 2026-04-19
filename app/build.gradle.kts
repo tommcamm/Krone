@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.room)
+    jacoco
 }
 
 val versionPropsFile = rootProject.file("version.properties")
@@ -55,9 +56,14 @@ android {
         }
     }
 
+    testCoverage {
+        jacocoVersion = libs.versions.jacoco.get()
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            enableUnitTestCoverage = true
         }
         release {
             isMinifyEnabled = true
@@ -96,6 +102,55 @@ android {
 
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+jacoco {
+    toolVersion = libs.versions.jacoco.get()
+}
+
+val coverageExclusions = listOf(
+    "**/hilt_aggregated_deps/**",
+    "**/*_HiltModules*.*",
+    "**/*_Factory*.*",
+    "**/*_MembersInjector*.*",
+    "**/Dagger*.*",
+    "**/*_Impl*.*",
+    "**/*ComposableSingletons*.*",
+    "**/*\$\$ExternalSyntheticLambda*.*",
+    "**/ui/theme/**",
+    "**/MainActivity*.*",
+    "**/KroneApplication*.*",
+    "**/di/**",
+    "**/R.class",
+    "**/R\$*.class",
+    "**/BuildConfig.*",
+    "**/Manifest*.*"
+)
+
+tasks.register<JacocoReport>("jacocoFossDebugTestReport") {
+    group = "verification"
+    description = "Generates JaCoCo coverage report for fossDebug unit tests"
+    dependsOn("testFossDebugUnitTest")
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+
+    val kotlinClasses = fileTree("${layout.buildDirectory.get()}/intermediates/built_in_kotlinc/fossDebug/compileFossDebugKotlin/classes") {
+        exclude(coverageExclusions)
+    }
+    val javaClasses = fileTree("${layout.buildDirectory.get()}/intermediates/javac/fossDebug/compileFossDebugJavaWithJavac/classes") {
+        exclude(coverageExclusions)
+    }
+
+    classDirectories.setFrom(files(kotlinClasses, javaClasses))
+    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+    executionData.setFrom(
+        fileTree(layout.buildDirectory.get()) {
+            include("outputs/unit_test_code_coverage/fossDebugUnitTest/*.exec")
+        }
+    )
 }
 
 dependencies {
