@@ -2,6 +2,8 @@ package com.sofato.krone.ui.theme
 
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 // Teal/blue-green palette generated from seed #006874
@@ -161,3 +163,28 @@ val KroneSavingsGreen = Color(0xFF2E7D32)
 val KroneSavingsGreenDark = Color(0xFF66BB6A)
 val KroneForeignAmountColor = Color(0xFF78909C)
 val KroneForeignAmountColorDark = Color(0xFFB0BEC5)
+
+// Budget-bar palette. Uses three distinct hue families (orange/green/blue) so
+// the three segments stay distinguishable under dark mode and the common
+// red-green color-blindness types, instead of reusing theme roles that
+// collapse into the same hue (primary + tertiary both skewed blue in dark).
+@Immutable
+data class BudgetBarColors(
+    val fixed: Color,
+    val savings: Color,
+    val discretionary: Color,
+)
+
+val LightBudgetBarColors = BudgetBarColors(
+    fixed = Color(0xFFD55E00),        // Okabe-Ito vermillion — committed/locked
+    savings = Color(0xFF2E7D32),      // Green 800 — money saved
+    discretionary = Color(0xFF1565C0), // Blue 800 — available to spend
+)
+
+val DarkBudgetBarColors = BudgetBarColors(
+    fixed = Color(0xFFFFB74D),        // Orange 300 — softer on dark surface
+    savings = Color(0xFF81C784),      // Green 300
+    discretionary = Color(0xFF64B5F6), // Blue 300
+)
+
+val LocalBudgetBarColors = staticCompositionLocalOf { LightBudgetBarColors }

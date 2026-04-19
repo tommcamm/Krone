@@ -24,8 +24,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
@@ -131,11 +133,16 @@ fun BudgetArcChart(
                     style = stroke,
                 )
 
-                // Category segments
+                // Category segments — butt caps everywhere so adjacent segments meet
+                // cleanly. The two outer ends of the whole arc (start of the first drawn
+                // segment, end of the last drawn segment) get a filled semicircle cap
+                // that extends only outward past the endpoint — a true "D" shape —
+                // instead of a full circle that would bleed backward into a neighbor.
                 if (totalBudget > 0) {
                     var currentAngle = startAngle
-                    val firstSegmentStroke = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-                    segments.forEachIndexed { index, segment ->
+                    var firstDrawnColor: Color? = null
+                    var lastDrawnColor: Color? = null
+                    segments.forEach { segment ->
                         val sweep = (segment.value.toFloat() / totalBudget) * totalSweep * animationProgress.value
                         if (sweep > 0.5f) {
                             drawArc(
@@ -145,10 +152,62 @@ fun BudgetArcChart(
                                 useCenter = false,
                                 topLeft = topLeft,
                                 size = arcSize,
-                                style = if (index == 0) firstSegmentStroke else segmentStroke,
+                                style = segmentStroke,
                             )
+                            if (firstDrawnColor == null) firstDrawnColor = segment.color
+                            lastDrawnColor = segment.color
                         }
                         currentAngle += sweep
+                    }
+
+                    // Draws a semicircle (D shape) of diameter strokeWidth centered on the
+                    // arc at `angleDeg`, with its curved side facing `outwardDirectionDeg`
+                    // and its flat diameter facing into the segment body. The cap is
+                    // nudged inward along the tangent so its flat edge overlaps the
+                    // adjoining butt-cap segment by a few pixels — hides the AA-seam
+                    // where the track color would otherwise bleed through as a hairline.
+                    val capOverlap = strokeWidth * 0.1f
+                    fun drawEndCap(angleDeg: Float, outwardDirectionDeg: Float, color: Color) {
+                        val rad = (angleDeg * PI / 180.0).toFloat()
+                        val outRad = (outwardDirectionDeg * PI / 180.0).toFloat()
+                        val center = Offset(
+                            arcCenter.x + arcRadius * cos(rad) - cos(outRad) * capOverlap,
+                            arcCenter.y + arcRadius * sin(rad) - sin(outRad) * capOverlap,
+                        )
+                        val capRadius = strokeWidth / 2f
+                        val capRect = Rect(
+                            left = center.x - capRadius,
+                            top = center.y - capRadius,
+                            right = center.x + capRadius,
+                            bottom = center.y + capRadius,
+                        )
+                        val path = Path().apply {
+                            arcTo(
+                                rect = capRect,
+                                startAngleDegrees = outwardDirectionDeg - 90f,
+                                sweepAngleDegrees = 180f,
+                                forceMoveTo = true,
+                            )
+                            close()
+                        }
+                        drawPath(path = path, color = color)
+                    }
+
+                    firstDrawnColor?.let { color ->
+                        // Leading cap extends backward (CCW) from the arc's start into the C's gap.
+                        drawEndCap(
+                            angleDeg = startAngle,
+                            outwardDirectionDeg = startAngle - 90f,
+                            color = color,
+                        )
+                    }
+                    lastDrawnColor?.let { color ->
+                        // Trailing cap extends forward (CW) from the last segment's end.
+                        drawEndCap(
+                            angleDeg = currentAngle,
+                            outwardDirectionDeg = currentAngle + 90f,
+                            color = color,
+                        )
                     }
                 }
 

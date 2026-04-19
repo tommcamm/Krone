@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.sofato.krone.domain.model.CategorySpend
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.ui.theme.Dimens
+import com.sofato.krone.ui.theme.LocalBudgetBarColors
 import com.sofato.krone.util.CurrencyFormatter
 
 @Composable
@@ -37,9 +38,10 @@ fun BudgetOverviewCard(
     categoryBreakdown: List<CategorySpend> = emptyList(),
     unallocatedDiscretionaryMinor: Long = discretionary,
 ) {
-    val fixedColor = MaterialTheme.colorScheme.error
-    val savingsColor = MaterialTheme.colorScheme.tertiary
-    val unallocatedColor = MaterialTheme.colorScheme.primary
+    val budgetColors = LocalBudgetBarColors.current
+    val fixedColor = budgetColors.fixed
+    val savingsColor = budgetColors.savings
+    val unallocatedColor = budgetColors.discretionary
 
     // Categories that have a budget allocation
     val allocatedCategories = categoryBreakdown.filter { it.allocatedMinor > 0 }

@@ -55,37 +55,28 @@ fun SavingsBucketCard(
                 )
                 Spacer(Modifier.width(Dimens.SpacingSm))
             }
-            Column(
+            Row(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingXs),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSm),
-                ) {
-                    Text(
-                        text = bucket.label,
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    SuggestionChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                text = bucket.type.displayName,
-                                style = MaterialTheme.typography.labelSmall,
-                            )
-                        },
-                    )
-                }
                 Text(
-                    text = "${CurrencyFormatter.formatDisplay(bucket.monthlyContributionMinor, currency)}/month",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = bucket.label,
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                SuggestionChip(
+                    onClick = {},
+                    label = {
+                        Text(
+                            text = bucket.type.displayName,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    },
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = CurrencyFormatter.formatDisplay(bucket.currentBalanceMinor, currency),
+                    text = "${CurrencyFormatter.formatDisplay(bucket.monthlyContributionMinor, currency)}/month",
                     style = MaterialTheme.typography.titleSmall,
                 )
                 if (targetAmount != null) {

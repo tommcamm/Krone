@@ -77,8 +77,7 @@ private fun MainApp() {
         BottomNavItem.entries.any { dest.hasRoute(it.destination::class) }
     } ?: true
     val isSavingsTab = currentDestination?.hasRoute(KroneDestination.Savings::class) == true
-    val isDashboardTab = currentDestination?.hasRoute(KroneDestination.Dashboard::class) == true
-    val showFab = showBottomBar && !isDashboardTab
+    val showFab = showBottomBar && isSavingsTab
 
     // Expense bottom sheet state
     var showExpenseSheet by remember { mutableStateOf(false) }
@@ -104,22 +103,11 @@ private fun MainApp() {
         floatingActionButton = {
             if (showFab) {
                 FloatingActionButton(
-                    onClick = {
-                        if (isSavingsTab) {
-                            navController.navigate(KroneDestination.AddSavingsBucket)
-                        } else {
-                            expenseSheetViewModel.resetForNew()
-                            showExpenseSheet = true
-                        }
-                    },
+                    onClick = { navController.navigate(KroneDestination.AddSavingsBucket) },
                 ) {
                     Icon(
                         Icons.Default.Add,
-                        contentDescription = if (isSavingsTab) {
-                            stringResource(R.string.add_savings_bucket)
-                        } else {
-                            stringResource(R.string.add_expense)
-                        },
+                        contentDescription = stringResource(R.string.add_savings_bucket),
                     )
                 }
             }
