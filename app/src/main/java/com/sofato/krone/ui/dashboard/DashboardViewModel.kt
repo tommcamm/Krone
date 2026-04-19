@@ -94,15 +94,6 @@ class DashboardViewModel @Inject constructor(
         getBudgetOverviewUseCase()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    /** Positive = projected overspend, negative = projected underspend */
-    val projectedEndOfMonth: StateFlow<Long> =
-        combine(rollingDailyAverage, dailyBudget, totalSpentToday) { avg, budget, spentToday ->
-            if (budget == null) return@combine 0L
-            val totalSpentSoFar = budget.spentSoFarMinor + spentToday
-            val projected = totalSpentSoFar + avg * budget.remainingDays
-            projected - budget.discretionaryMinor
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
-
     private val _lastDeletedExpense = MutableStateFlow<Expense?>(null)
     val lastDeletedExpense: StateFlow<Expense?> = _lastDeletedExpense.asStateFlow()
 

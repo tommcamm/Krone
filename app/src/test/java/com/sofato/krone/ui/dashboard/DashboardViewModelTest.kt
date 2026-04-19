@@ -180,65 +180,6 @@ class DashboardViewModelTest {
         currencyCode = "DKK",
     )
 
-    // --- projectedEndOfMonth tests ---
-
-    @Test
-    fun `projection is negative when under budget`() = runTest {
-        dailyBudgetFlow.value = dailyBudget(
-            spentSoFar = 20000,    // 200 DKK spent
-            remainingDays = 20,
-            discretionary = 100000, // 1000 DKK discretionary
-        )
-
-        val viewModel = buildViewModel()
-
-        viewModel.projectedEndOfMonth.test {
-            val projection = awaitItem()
-            // rollingAvg = (20000 + 0) / (30 - 20 + 1) = 20000 / 11 ≈ 1818
-            // projected = 20000 + 1818 * 20 = 56360
-            // difference = 56360 - 100000 = -43640 (under budget)
-            assertThat(projection).isLessThan(0)
-        }
-    }
-
-    @Test
-    fun `projection is positive when over budget`() = runTest {
-        dailyBudgetFlow.value = dailyBudget(
-            spentSoFar = 80000,    // 800 DKK spent
-            remainingDays = 20,
-            discretionary = 100000, // 1000 DKK discretionary
-        )
-
-        val viewModel = buildViewModel()
-
-        viewModel.projectedEndOfMonth.test {
-            val projection = awaitItem()
-            // rollingAvg = 80000 / 11 ≈ 7272
-            // projected = 80000 + 7272 * 20 = 225440
-            // difference = 225440 - 100000 = 125440 (over budget)
-            assertThat(projection).isGreaterThan(0)
-        }
-    }
-
-    @Test
-    fun `projection equals spent minus discretionary when zero remaining days`() = runTest {
-        dailyBudgetFlow.value = dailyBudget(
-            spentSoFar = 90000,
-            remainingDays = 0,
-            discretionary = 100000,
-        )
-
-        val viewModel = buildViewModel()
-
-        viewModel.projectedEndOfMonth.test {
-            val projection = awaitItem()
-            // rollingAvg = 0 (remainingDays <= 0)
-            // projected = 90000 + 0 * 0 = 90000
-            // difference = 90000 - 100000 = -10000
-            assertThat(projection).isEqualTo(-10000L)
-        }
-    }
-
     // --- rollingDailyAverage tests ---
 
     @Test

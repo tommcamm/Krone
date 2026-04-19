@@ -14,12 +14,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sofato.krone.R
 import com.sofato.krone.domain.model.Currency
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.CurrencyFormatter
+import java.util.Locale
 
 @Composable
 fun StatsRow(
@@ -46,27 +50,37 @@ fun StatsRow(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
+                val isOver = availableToday < 0
+                val labelRes = if (isOver) {
+                    R.string.dashboard_stat_over_today
+                } else {
+                    R.string.dashboard_stat_left_today
+                }
                 Text(
-                    text = "AVAILABLE DAY",
+                    text = stringResource(labelRes).uppercase(Locale.getDefault()),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isOver) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp,
                 )
                 Spacer(Modifier.height(Dimens.SpacingSm))
                 Text(
-                    text = CurrencyFormatter.formatDisplay(availableToday.coerceAtLeast(0), currency),
+                    text = CurrencyFormatter.formatDisplay(
+                        if (isOver) -availableToday else availableToday,
+                        currency,
+                    ),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
+                    color = if (isOver) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        Color.Unspecified
+                    },
                 )
-                if (!onTrack) {
-                    Text(
-                        text = "• Over",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
             }
         }
         Card(
@@ -83,7 +97,7 @@ fun StatsRow(
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = "AVG DAY",
+                    text = stringResource(R.string.dashboard_stat_daily_avg).uppercase(Locale.getDefault()),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold,

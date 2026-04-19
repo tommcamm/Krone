@@ -44,7 +44,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.sofato.krone.ui.components.SwipeToDismissExpenseItem
 import com.sofato.krone.ui.dashboard.components.ArcSegment
 import com.sofato.krone.ui.dashboard.components.BudgetArcChart
-import com.sofato.krone.ui.dashboard.components.ProjectionCard
 import com.sofato.krone.ui.dashboard.components.StatsRow
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.today
@@ -68,7 +67,6 @@ fun DashboardScreen(
     val totalSpentToday by viewModel.totalSpentToday.collectAsState()
     val rollingAvg by viewModel.rollingDailyAverage.collectAsState()
     val budgetOverview by viewModel.budgetOverview.collectAsState()
-    val projectedEndOfMonth by viewModel.projectedEndOfMonth.collectAsState()
     val recentExpenses by viewModel.recentExpenses.collectAsState()
     val lastDeleted by viewModel.lastDeletedExpense.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -179,19 +177,10 @@ fun DashboardScreen(
 
             // Stats row
             val availableToday = budget.dailyAmountMinor - totalSpentToday
-            val onTrack = projectedEndOfMonth <= 0
             StatsRow(
                 availableToday = availableToday,
                 dailyAverage = rollingAvg,
-                onTrack = onTrack,
-                currency = currency,
-            )
-
-            Spacer(Modifier.height(Dimens.SpacingSm))
-
-            // Projection card
-            ProjectionCard(
-                projectedDifference = projectedEndOfMonth,
+                onTrack = availableToday >= 0,
                 currency = currency,
             )
 
