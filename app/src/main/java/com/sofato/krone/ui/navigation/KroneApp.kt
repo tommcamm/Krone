@@ -78,8 +78,7 @@ private fun MainApp() {
     } ?: true
     val isSavingsTab = currentDestination?.hasRoute(KroneDestination.Savings::class) == true
     val isDashboardTab = currentDestination?.hasRoute(KroneDestination.Dashboard::class) == true
-    val isSettingsTab = currentDestination?.hasRoute(KroneDestination.Settings::class) == true
-    val showFab = showBottomBar && !isSettingsTab && !isDashboardTab
+    val showFab = showBottomBar && !isDashboardTab
 
     // Expense bottom sheet state
     var showExpenseSheet by remember { mutableStateOf(false) }

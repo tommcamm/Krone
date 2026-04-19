@@ -39,6 +39,7 @@ fun KroneNavHost(
                 onAddExpense = { categoryId -> onAddExpense(categoryId) },
                 onViewAllExpenses = { navController.navigate(KroneDestination.ExpenseList) },
                 onEditExpense = { id -> onEditExpense(id) },
+                onNavigateToSettings = { navController.navigate(KroneDestination.Settings) },
             )
         }
         composable<KroneDestination.Budget> {
@@ -120,6 +121,7 @@ fun KroneNavHost(
             SettingsScreen(
                 onNavigateToCurrency = { navController.navigate(KroneDestination.CurrencySettings) },
                 onNavigateToCategories = { navController.navigate(KroneDestination.CategoryManagement) },
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }
