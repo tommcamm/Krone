@@ -83,14 +83,16 @@ class CurrencySettingsViewModel @Inject constructor(
             return
         }
 
-        // Enabling: fetch rates first, only enable if rates are available.
+        // Enable first so the new currency is included in cross-rate computation,
+        // then refresh rates. Revert on failure.
         viewModelScope.launch {
             _togglingCode.value = code
+            currencyRepository.setEnabled(code, true)
             val result = exchangeRateRepository.refreshRates()
             if (result.isSuccess) {
-                currencyRepository.setEnabled(code, true)
                 _lastSyncTime.value = exchangeRateRepository.getLatestFetchTime()
             } else {
+                currencyRepository.setEnabled(code, false)
                 _events.emit(CurrencySettingsEvent.RateFetchFailed(code))
             }
             _togglingCode.value = null
