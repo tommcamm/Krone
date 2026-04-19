@@ -4,57 +4,41 @@ import com.sofato.krone.domain.model.Expense
 import com.sofato.krone.domain.model.RecurrenceRule
 import com.sofato.krone.domain.repository.CategoryRepository
 import com.sofato.krone.domain.repository.CurrencyRepository
-import com.sofato.krone.domain.repository.ExchangeRateRepository
 import com.sofato.krone.domain.repository.ExpenseRepository
 import com.sofato.krone.domain.repository.RecurringExpenseRepository
-import com.sofato.krone.domain.repository.UserPreferencesRepository
+import com.sofato.krone.domain.usecase.currency.ConvertAmountUseCase
 import com.sofato.krone.util.today
-import kotlinx.coroutines.flow.first
 import kotlinx.datetime.LocalDate
 import kotlin.time.Clock
 import javax.inject.Inject
-import kotlin.math.roundToLong
 
 class ProcessDueRecurringExpensesUseCase @Inject constructor(
     private val recurringExpenseRepository: RecurringExpenseRepository,
     private val expenseRepository: ExpenseRepository,
     private val categoryRepository: CategoryRepository,
     private val currencyRepository: CurrencyRepository,
-    private val userPreferencesRepository: UserPreferencesRepository,
-    private val exchangeRateRepository: ExchangeRateRepository,
+    private val convertAmountUseCase: ConvertAmountUseCase,
 ) {
     suspend operator fun invoke() {
         val today = LocalDate.today()
         val dueExpenses = recurringExpenseRepository.getDueRecurring(today)
-        val homeCurrency = userPreferencesRepository.homeCurrencyCode.first()
 
         for (recurring in dueExpenses) {
             val category = categoryRepository.getCategoryById(recurring.categoryId) ?: continue
             val currency = currencyRepository.getCurrencyByCode(recurring.currencyCode) ?: continue
 
-            val homeAmount: Long
-            val rateUsed: Double
-            if (recurring.currencyCode == homeCurrency) {
-                homeAmount = recurring.amountMinor
-                rateUsed = 1.0
-            } else {
-                val rate = exchangeRateRepository.getRateForDate(
-                    recurring.currencyCode, homeCurrency, recurring.nextDate,
-                )
-                if (rate != null) {
-                    rateUsed = rate.rate
-                    homeAmount = (recurring.amountMinor * rateUsed).roundToLong()
-                } else {
-                    // Skip this recurring expense if we can't convert — will retry next run
-                    continue
-                }
-            }
+            // Skip this recurring expense if we can't convert — will retry next run.
+            val conversion = convertAmountUseCase(
+                amountMinor = recurring.amountMinor,
+                fromCode = recurring.currencyCode,
+                date = recurring.nextDate,
+            ) ?: continue
 
             val expense = Expense(
                 amount = recurring.amountMinor,
                 currency = currency,
-                homeAmount = homeAmount,
-                exchangeRateUsed = rateUsed,
+                homeAmount = conversion.convertedAmountMinor,
+                exchangeRateUsed = conversion.rateUsed,
                 category = category,
                 note = recurring.label,
                 date = recurring.nextDate,
