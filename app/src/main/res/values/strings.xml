@@ -47,7 +47,8 @@
     <!-- Dashboard -->
     <string name="todays_spending">Today\'s spending</string>
     <string name="no_expenses_today">No expenses today</string>
-    <string name="recent_expenses">Recent expenses</string>
+    <string name="all_expenses">All expenses</string>
+    <string name="no_expenses_yet">No expenses yet</string>
     <string name="daily_budget_hero">You can spend</string>
     <string name="daily_budget_today">today</string>
     <string name="rolling_average">Daily average</string>
@@ -188,6 +189,32 @@
     <string name="export_failed">Export failed</string>
     <string name="import_success">Backup imported successfully</string>
     <string name="import_failed">Import failed</string>
+
+    <!-- Filter & sort -->
+    <string name="filter_and_sort">Filter &amp; sort</string>
+    <string name="filter_active_badge">Filters active</string>
+    <string name="filter_clear_all">Clear all</string>
+    <string name="filter_apply">Apply</string>
+    <string name="sort_by">Sort by</string>
+    <string name="sort_date_newest">Newest first</string>
+    <string name="sort_date_oldest">Oldest first</string>
+    <string name="sort_amount_high">Amount (high → low)</string>
+    <string name="sort_amount_low">Amount (low → high)</string>
+    <string name="filter_date">Date</string>
+    <string name="filter_date_all_time">All time</string>
+    <string name="filter_date_this_month">This month</string>
+    <string name="filter_date_last_month">Last month</string>
+    <string name="filter_date_last_3_months">Last 3 months</string>
+    <string name="filter_date_this_year">This year</string>
+    <string name="filter_date_custom">Custom…</string>
+    <string name="filter_date_custom_range">%1$s – %2$s</string>
+    <string name="filter_category">Category</string>
+    <string name="filter_name">Name</string>
+    <string name="filter_name_hint">Search note</string>
+    <string name="filter_amount_range">Amount (in %s)</string>
+    <string name="filter_amount_min">Min</string>
+    <string name="filter_amount_max">Max</string>
+    <string name="expense_list_empty">No expenses match your filters</string>
 
     <!-- Error messages -->
     <string name="error_rate_unavailable">Exchange rate unavailable. Please check your connection.</string>

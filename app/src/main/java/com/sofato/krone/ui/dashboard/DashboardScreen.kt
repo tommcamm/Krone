@@ -1,6 +1,5 @@
 package com.sofato.krone.ui.dashboard
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,19 +14,24 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.sofato.krone.R
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.sofato.krone.ui.components.ExpenseItem
 import com.sofato.krone.ui.dashboard.components.ArcSegment
 import com.sofato.krone.ui.dashboard.components.BudgetArcChart
 import com.sofato.krone.ui.dashboard.components.ProjectionCard
@@ -45,6 +49,7 @@ import androidx.core.graphics.toColorInt
 fun DashboardScreen(
     onAddExpense: (categoryId: Long?) -> Unit,
     onViewAllExpenses: () -> Unit,
+    onEditExpense: (Long) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel(),
 ) {
     val homeCurrency by viewModel.homeCurrency.collectAsState()
@@ -53,6 +58,7 @@ fun DashboardScreen(
     val rollingAvg by viewModel.rollingDailyAverage.collectAsState()
     val budgetOverview by viewModel.budgetOverview.collectAsState()
     val projectedEndOfMonth by viewModel.projectedEndOfMonth.collectAsState()
+    val recentExpenses by viewModel.recentExpenses.collectAsState()
 
     val currency = homeCurrency ?: return
     val budget = dailyBudget ?: return
@@ -66,7 +72,7 @@ fun DashboardScreen(
 
     // Build arc segments from budget overview
     val overview = budgetOverview
-    val segments = buildArcSegments(overview, budget.totalFixedMinor)
+    val segments = buildArcSegments(overview)
 
     Column(
         modifier = Modifier
@@ -143,25 +149,46 @@ fun DashboardScreen(
 
         Spacer(Modifier.height(Dimens.SpacingMd))
 
-        // Recent expenses link
+        // All expenses section — header + preview of the 5 latest
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onViewAllExpenses)
-                .padding(vertical = Dimens.SpacingMd),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Recent expenses",
+                text = stringResource(R.string.all_expenses),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
             )
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "View all expenses",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            TextButton(onClick = onViewAllExpenses) {
+                Text(stringResource(R.string.view_all))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                )
+            }
+        }
+
+        if (recentExpenses.isEmpty()) {
+            Text(
+                text = stringResource(R.string.no_expenses_yet),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = Dimens.SpacingMd),
             )
+        } else {
+            Column {
+                recentExpenses.forEachIndexed { index, expense ->
+                    ExpenseItem(
+                        expense = expense,
+                        onClick = { onEditExpense(expense.id) },
+                        homeCurrency = currency,
+                    )
+                    if (index < recentExpenses.lastIndex) {
+                        HorizontalDivider(modifier = Modifier.padding(start = 52.dp))
+                    }
+                }
+            }
         }
 
         Spacer(Modifier.height(Dimens.FabSpacerHeight))
@@ -170,39 +197,21 @@ fun DashboardScreen(
 
 internal fun buildArcSegments(
     overview: com.sofato.krone.domain.model.BudgetOverview?,
-    fixedMinor: Long,
 ): List<ArcSegment> {
     if (overview == null) return emptyList()
 
-    val segments = mutableListOf<ArcSegment>()
-
-    // Fixed expenses as one segment
-    if (fixedMinor > 0) {
-        segments.add(
-            ArcSegment(
-                label = "Fixed",
-                value = fixedMinor,
-                color = Color(0xFF6366F1), // Indigo
-            ),
-        )
-    }
-
-    // Category spending segments
-    val trackedCategories = overview.categoryBreakdown.filter { it.spentMinor > 0 }
-    for (cs in trackedCategories) {
-        val categoryColor = try {
-            Color(cs.category.colorHex.toColorInt())
-        } catch (_: Exception) {
-            Color(0xFF94A3B8) // fallback slate
-        }
-        segments.add(
+    return overview.categoryBreakdown
+        .filter { it.spentMinor > 0 }
+        .map { cs ->
+            val categoryColor = try {
+                Color(cs.category.colorHex.toColorInt())
+            } catch (_: Exception) {
+                Color(0xFF94A3B8) // fallback slate
+            }
             ArcSegment(
                 label = cs.category.name,
                 value = cs.spentMinor,
                 color = categoryColor,
-            ),
-        )
-    }
-
-    return segments
+            )
+        }
 }

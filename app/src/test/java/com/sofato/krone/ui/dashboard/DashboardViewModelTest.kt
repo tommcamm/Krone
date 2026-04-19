@@ -15,6 +15,7 @@ import com.sofato.krone.domain.usecase.budget.CalculateDailyBudgetUseCase
 import com.sofato.krone.domain.usecase.budget.GetBudgetOverviewUseCase
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.domain.usecase.expense.GetExpensesByDateUseCase
+import com.sofato.krone.domain.usecase.expense.GetRecentExpensesUseCase
 import com.sofato.krone.domain.usecase.recurring.ProcessDueRecurringExpensesUseCase
 import com.sofato.krone.domain.usecase.savings.ProcessSavingsContributionsUseCase
 import io.mockk.coEvery
@@ -54,6 +55,7 @@ class DashboardViewModelTest {
     )
 
     private lateinit var getExpensesByDateUseCase: GetExpensesByDateUseCase
+    private lateinit var getRecentExpensesUseCase: GetRecentExpensesUseCase
     private lateinit var calculateDailyBudgetUseCase: CalculateDailyBudgetUseCase
     private lateinit var calculateBudgetPeriodUseCase: CalculateBudgetPeriodUseCase
     private lateinit var getBudgetOverviewUseCase: GetBudgetOverviewUseCase
@@ -73,6 +75,9 @@ class DashboardViewModelTest {
         dailyBudgetFlow = MutableStateFlow(defaultDailyBudget)
 
         getExpensesByDateUseCase = mockk {
+            every { this@mockk.invoke(any()) } returns flowOf(emptyList())
+        }
+        getRecentExpensesUseCase = mockk {
             every { this@mockk.invoke(any()) } returns flowOf(emptyList())
         }
         calculateDailyBudgetUseCase = mockk {
@@ -116,6 +121,7 @@ class DashboardViewModelTest {
     private fun buildViewModel(): DashboardViewModel =
         DashboardViewModel(
             getExpensesByDate = getExpensesByDateUseCase,
+            getRecentExpensesUseCase = getRecentExpensesUseCase,
             calculateBudgetPeriodUseCase = calculateBudgetPeriodUseCase,
             processRecurringUseCase = processRecurringUseCase,
             processSavingsUseCase = processSavingsUseCase,

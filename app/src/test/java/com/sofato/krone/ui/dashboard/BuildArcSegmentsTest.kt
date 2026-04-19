@@ -40,21 +40,13 @@ class BuildArcSegmentsTest {
 
     @Test
     fun `returns empty list when overview is null`() {
-        val segments = buildArcSegments(overview = null, fixedMinor = 50000)
+        val segments = buildArcSegments(overview = null)
         assertThat(segments).isEmpty()
     }
 
     @Test
-    fun `includes fixed segment when fixedMinor is positive`() {
-        val segments = buildArcSegments(overview = overview(), fixedMinor = 80000)
-        assertThat(segments).hasSize(1)
-        assertThat(segments[0].label).isEqualTo("Fixed")
-        assertThat(segments[0].value).isEqualTo(80000)
-    }
-
-    @Test
-    fun `skips fixed segment when fixedMinor is zero`() {
-        val segments = buildArcSegments(overview = overview(), fixedMinor = 0)
+    fun `returns empty list when overview has no spending`() {
+        val segments = buildArcSegments(overview = overview())
         assertThat(segments).isEmpty()
     }
 
@@ -65,10 +57,7 @@ class BuildArcSegmentsTest {
             CategorySpend(category("Transport"), allocatedMinor = 20000, spentMinor = 0),
             CategorySpend(category("Entertainment"), allocatedMinor = 10000, spentMinor = 5000),
         )
-        val segments = buildArcSegments(
-            overview = overview(categoryBreakdown = breakdown),
-            fixedMinor = 0,
-        )
+        val segments = buildArcSegments(overview = overview(categoryBreakdown = breakdown))
 
         assertThat(segments).hasSize(2)
         assertThat(segments.map { it.label }).containsExactly("Food", "Entertainment")
@@ -76,18 +65,16 @@ class BuildArcSegmentsTest {
     }
 
     @Test
-    fun `fixed segment comes before category segments`() {
+    fun `no fixed segment is added even when overview totalFixedMinor is positive`() {
+        // Fixed commitments are not part of the discretionary arc.
         val breakdown = listOf(
             CategorySpend(category("Food"), allocatedMinor = 30000, spentMinor = 15000),
         )
-        val segments = buildArcSegments(
-            overview = overview(categoryBreakdown = breakdown),
-            fixedMinor = 80000,
-        )
+        val segments = buildArcSegments(overview = overview(categoryBreakdown = breakdown))
 
-        assertThat(segments).hasSize(2)
-        assertThat(segments[0].label).isEqualTo("Fixed")
-        assertThat(segments[1].label).isEqualTo("Food")
+        assertThat(segments.map { it.label }).doesNotContain("Fixed")
+        assertThat(segments).hasSize(1)
+        assertThat(segments[0].label).isEqualTo("Food")
     }
 
     @Test
@@ -99,10 +86,7 @@ class BuildArcSegmentsTest {
                 spentMinor = 5000,
             ),
         )
-        val segments = buildArcSegments(
-            overview = overview(categoryBreakdown = breakdown),
-            fixedMinor = 0,
-        )
+        val segments = buildArcSegments(overview = overview(categoryBreakdown = breakdown))
 
         assertThat(segments).hasSize(1)
         assertThat(segments[0].color).isEqualTo(Color(0xFF94A3B8))
@@ -122,10 +106,7 @@ class BuildArcSegmentsTest {
                 spentMinor = 3000,
             ),
         )
-        val segments = buildArcSegments(
-            overview = overview(categoryBreakdown = breakdown),
-            fixedMinor = 0,
-        )
+        val segments = buildArcSegments(overview = overview(categoryBreakdown = breakdown))
 
         assertThat(segments).hasSize(2)
         assertThat(segments[0].label).isEqualTo("Food")

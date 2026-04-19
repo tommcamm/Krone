@@ -13,6 +13,8 @@ import com.sofato.krone.domain.usecase.budget.CalculateDailyBudgetUseCase
 import com.sofato.krone.domain.usecase.budget.GetBudgetOverviewUseCase
 import com.sofato.krone.domain.usecase.category.GetCategoriesUseCase
 import com.sofato.krone.domain.usecase.expense.GetExpensesByDateUseCase
+import com.sofato.krone.domain.usecase.expense.GetRecentExpensesUseCase
+import com.sofato.krone.domain.model.Expense
 import com.sofato.krone.domain.usecase.recurring.ProcessDueRecurringExpensesUseCase
 import com.sofato.krone.domain.usecase.savings.ProcessSavingsContributionsUseCase
 import com.sofato.krone.util.today
@@ -33,6 +35,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     getExpensesByDate: GetExpensesByDateUseCase,
+    getRecentExpensesUseCase: GetRecentExpensesUseCase,
     private val calculateBudgetPeriodUseCase: CalculateBudgetPeriodUseCase,
     private val processRecurringUseCase: ProcessDueRecurringExpensesUseCase,
     private val processSavingsUseCase: ProcessSavingsContributionsUseCase,
@@ -59,6 +62,10 @@ class DashboardViewModel @Inject constructor(
         getExpensesByDate(today)
             .map { expenses -> expenses.filter { !it.isRecurringInstance }.sumOf { it.homeAmount } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+
+    val recentExpenses: StateFlow<List<Expense>> =
+        getRecentExpensesUseCase(RECENT_EXPENSES_PREVIEW_LIMIT)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val dailyBudget: StateFlow<DailyBudget?> =
         calculateDailyBudgetUseCase()
@@ -99,5 +106,9 @@ class DashboardViewModel @Inject constructor(
                 // Non-critical; don't crash the dashboard
             }
         }
+    }
+
+    private companion object {
+        const val RECENT_EXPENSES_PREVIEW_LIMIT = 5
     }
 }

@@ -52,6 +52,9 @@ interface ExpenseDao {
     @Query("SELECT * FROM expense ORDER BY createdAt DESC LIMIT :limit")
     fun getRecentExpenses(limit: Int): Flow<List<ExpenseEntity>>
 
+    @Query("SELECT * FROM expense ORDER BY createdAt DESC")
+    fun getAllExpenses(): Flow<List<ExpenseEntity>>
+
     @Query("SELECT COUNT(*) FROM expense")
     suspend fun getExpenseCount(): Int
 

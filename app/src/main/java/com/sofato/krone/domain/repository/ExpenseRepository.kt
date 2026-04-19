@@ -11,6 +11,7 @@ interface ExpenseRepository {
     fun getExpensesByDate(date: LocalDate): Flow<List<Expense>>
     fun getExpensesBetween(startDate: LocalDate, endDate: LocalDate): Flow<List<Expense>>
     fun getRecentExpenses(limit: Int): Flow<List<Expense>>
+    fun getAllExpenses(): Flow<List<Expense>>
     suspend fun getExpenseById(id: Long): Expense?
     suspend fun addExpense(expense: Expense): Long
     suspend fun updateExpense(expense: Expense)

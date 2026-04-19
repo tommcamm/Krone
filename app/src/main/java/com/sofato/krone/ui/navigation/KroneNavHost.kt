@@ -38,6 +38,7 @@ fun KroneNavHost(
             DashboardScreen(
                 onAddExpense = { categoryId -> onAddExpense(categoryId) },
                 onViewAllExpenses = { navController.navigate(KroneDestination.ExpenseList) },
+                onEditExpense = { id -> onEditExpense(id) },
             )
         }
         composable<KroneDestination.Budget> {
