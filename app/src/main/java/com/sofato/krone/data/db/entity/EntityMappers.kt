@@ -20,7 +20,7 @@ fun CurrencyEntity.toDomain(): Currency = Currency(
 // ExchangeRate
 fun ExchangeRateEntity.toDomain(): ExchangeRate = ExchangeRate(
     baseCode = baseCode, targetCode = targetCode, rate = rate,
-    fetchedAt = fetchedAt, source = source,
+    rateDate = rateDate, fetchedAt = fetchedAt, source = source,
 )
 // Category
 fun CategoryEntity.toDomain(): Category = Category(

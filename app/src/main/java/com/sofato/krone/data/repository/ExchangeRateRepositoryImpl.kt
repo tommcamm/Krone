@@ -8,6 +8,7 @@ import com.sofato.krone.data.network.FrankfurterApi
 import com.sofato.krone.domain.model.ExchangeRate
 import com.sofato.krone.domain.repository.ExchangeRateRepository
 import kotlinx.coroutines.flow.first
+import kotlinx.datetime.LocalDate
 import kotlin.time.Clock
 import kotlin.time.Instant
 import javax.inject.Inject
@@ -18,21 +19,52 @@ class ExchangeRateRepositoryImpl @Inject constructor(
     private val frankfurterApi: FrankfurterApi,
 ) : ExchangeRateRepository {
 
-    override suspend fun getRate(from: String, to: String): ExchangeRate? {
-        if (from == to) return ExchangeRate(from, to, 1.0, Clock.System.now(), "identity")
+    override suspend fun getRateForDate(from: String, to: String, date: LocalDate): ExchangeRate? {
+        if (from == to) {
+            return ExchangeRate(from, to, 1.0, date, Clock.System.now(), "identity")
+        }
+
+        exchangeRateDao.getRateOnOrBefore(from, to, date)?.let { return it.toDomain() }
+
+        // No local rate at/before the target date — try to backfill from Frankfurter.
+        runCatching { frankfurterApi.getHistoricalRates(date) }.onSuccess { response ->
+            val quoteDate = runCatching { LocalDate.parse(response.date) }.getOrNull() ?: date
+            persistRatesFromResponse(response.rates, quoteDate)
+            exchangeRateDao.getRateOnOrBefore(from, to, date)?.let { return it.toDomain() }
+        }
+
+        // Last resort: nearest-after. Better than failing the transaction entirely; rates
+        // between close dates differ only marginally.
+        return exchangeRateDao.getRateOnOrAfter(from, to, date)?.toDomain()
+    }
+
+    override suspend fun getLatestRate(from: String, to: String): ExchangeRate? {
+        if (from == to) return ExchangeRate(from, to, 1.0, LocalDate.fromEpochDays(0), Clock.System.now(), "identity")
         return exchangeRateDao.getLatestRate(from, to)?.toDomain()
     }
 
     override suspend fun refreshRates(): Result<Unit> = runCatching {
         val response = frankfurterApi.getLatestRates()
+        val quoteDate = runCatching { LocalDate.parse(response.date) }.getOrNull()
+            ?: error("Frankfurter response missing date")
+        persistRatesFromResponse(response.rates, quoteDate)
+    }
+
+    override suspend fun getLatestFetchTime(): Instant? {
+        return exchangeRateDao.getLatestFetchTime()
+    }
+
+    private suspend fun persistRatesFromResponse(
+        eurBasedRates: Map<String, Double>,
+        rateDate: LocalDate,
+    ) {
         val now = Clock.System.now()
         val enabledCodes = currencyDao.getEnabledCurrencies().first().map { it.code }.toSet()
 
-        // Frankfurter returns EUR-based rates. Build cross-rate pairs for all enabled currencies.
-        // Include EUR itself with rate 1.0
+        // Frankfurter returns EUR-based rates. Build cross-rate pairs for enabled currencies.
         val eurRates = buildMap {
             put("EUR", 1.0)
-            putAll(response.rates)
+            putAll(eurBasedRates)
         }
 
         val entities = mutableListOf<ExchangeRateEntity>()
@@ -48,16 +80,15 @@ class ExchangeRateRepositoryImpl @Inject constructor(
                         baseCode = from,
                         targetCode = to,
                         rate = crossRate,
+                        rateDate = rateDate,
                         fetchedAt = now,
                         source = "frankfurter",
                     )
                 )
             }
         }
-        exchangeRateDao.insertRates(entities)
-    }
-
-    override suspend fun getLatestFetchTime(): Instant? {
-        return exchangeRateDao.getLatestFetchTime()
+        if (entities.isNotEmpty()) {
+            exchangeRateDao.insertRates(entities)
+        }
     }
 }

@@ -66,5 +66,32 @@ object Migrations {
         }
     }
 
-    val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(connection: SQLiteConnection) {
+            // exchange_rate is ephemeral (refreshed every 24h). Pre-v5 rows have no business-date
+            // for their quote, so rebuilding from scratch is cleaner than guessing a rateDate.
+            // User-facing expenses already store homeAmountMinor + exchangeRateUsed so no
+            // historical data is lost — only the rate cache is reset.
+            connection.execSQL("DROP TABLE IF EXISTS exchange_rate")
+            connection.execSQL(
+                """CREATE TABLE IF NOT EXISTS exchange_rate (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    baseCode TEXT NOT NULL,
+                    targetCode TEXT NOT NULL,
+                    rate REAL NOT NULL,
+                    rateDate TEXT NOT NULL,
+                    fetchedAt INTEGER NOT NULL,
+                    source TEXT NOT NULL
+                )""".trimIndent()
+            )
+            connection.execSQL(
+                "CREATE UNIQUE INDEX IF NOT EXISTS index_exchange_rate_baseCode_targetCode_rateDate " +
+                    "ON exchange_rate (baseCode, targetCode, rateDate)"
+            )
+        }
+    }
+
+    val ALL_MIGRATIONS: Array<Migration> = arrayOf(
+        MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
+    )
 }

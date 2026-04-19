@@ -38,7 +38,9 @@ class ProcessDueRecurringExpensesUseCase @Inject constructor(
                 homeAmount = recurring.amountMinor
                 rateUsed = 1.0
             } else {
-                val rate = exchangeRateRepository.getRate(recurring.currencyCode, homeCurrency)
+                val rate = exchangeRateRepository.getRateForDate(
+                    recurring.currencyCode, homeCurrency, recurring.nextDate,
+                )
                 if (rate != null) {
                     rateUsed = rate.rate
                     homeAmount = (recurring.amountMinor * rateUsed).roundToLong()

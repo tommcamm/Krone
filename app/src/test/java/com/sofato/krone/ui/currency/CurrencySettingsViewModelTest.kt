@@ -77,8 +77,13 @@ class CurrencySettingsViewModelTest {
         var refreshCount = 0
             private set
 
-        override suspend fun getRate(from: String, to: String): ExchangeRate? {
-            if (from == to) return ExchangeRate(from, to, 1.0, Clock.System.now(), "identity")
+        override suspend fun getRateForDate(from: String, to: String, date: kotlinx.datetime.LocalDate): ExchangeRate? {
+            if (from == to) return ExchangeRate(from, to, 1.0, date, Clock.System.now(), "identity")
+            return rates[from to to]
+        }
+
+        override suspend fun getLatestRate(from: String, to: String): ExchangeRate? {
+            if (from == to) return ExchangeRate(from, to, 1.0, kotlinx.datetime.LocalDate.fromEpochDays(0), Clock.System.now(), "identity")
             return rates[from to to]
         }
 
@@ -86,10 +91,11 @@ class CurrencySettingsViewModelTest {
             refreshCount++
             if (shouldFail) return Result.failure(RuntimeException("network"))
             val now = Clock.System.now()
+            val today = kotlinx.datetime.LocalDate.fromEpochDays(0)
             for (code in currencies.currentEnabledCodes) {
                 if (code == homeCode) continue
                 rates[code to homeCode] =
-                    ExchangeRate(code, homeCode, 7.5, now, "fake")
+                    ExchangeRate(code, homeCode, 7.5, today, now, "fake")
             }
             latestFetch = now
             return Result.success(Unit)

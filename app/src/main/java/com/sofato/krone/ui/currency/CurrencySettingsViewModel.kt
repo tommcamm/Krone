@@ -61,7 +61,7 @@ class CurrencySettingsViewModel @Inject constructor(
                 CurrencyWithRate(
                     currency = currency,
                     rateToHome = if (currency.code == homeCode) null
-                    else exchangeRateRepository.getRate(currency.code, homeCode),
+                    else exchangeRateRepository.getLatestRate(currency.code, homeCode),
                     isHome = currency.code == homeCode,
                 )
             }

@@ -35,7 +35,7 @@ class AddExpenseUseCase @Inject constructor(
             homeAmount = amountMinor
             rateUsed = 1.0
         } else {
-            val rate = exchangeRateRepository.getRate(currency.code, homeCurrencyCode)
+            val rate = exchangeRateRepository.getRateForDate(currency.code, homeCurrencyCode, date)
                 ?: return null
             rateUsed = rate.rate
             homeAmount = (amountMinor * rateUsed).roundToLong()

@@ -22,8 +22,9 @@ class UpdateExpenseUseCase @Inject constructor(
         val converted = if (expense.currency.code == homeCurrencyCode) {
             expense.copy(homeAmount = expense.amount, exchangeRateUsed = 1.0)
         } else {
-            val rate = exchangeRateRepository.getRate(expense.currency.code, homeCurrencyCode)
-                ?: return false
+            val rate = exchangeRateRepository.getRateForDate(
+                expense.currency.code, homeCurrencyCode, expense.date,
+            ) ?: return false
             expense.copy(
                 homeAmount = (expense.amount * rate.rate).roundToLong(),
                 exchangeRateUsed = rate.rate,
