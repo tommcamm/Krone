@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,9 +28,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,8 +47,10 @@ import androidx.compose.ui.unit.dp
 import com.sofato.krone.R
 import com.sofato.krone.domain.model.Category
 import com.sofato.krone.domain.model.Currency
+import com.sofato.krone.domain.model.Defaults
 import com.sofato.krone.ui.theme.Dimens
 import com.sofato.krone.util.CurrencyFormatter
+import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 import androidx.core.graphics.toColorInt
 
@@ -58,15 +61,14 @@ fun ExpenseFilterSortBottomSheet(
     currentSort: ExpenseSort,
     categories: List<Category>,
     homeCurrency: Currency?,
-    onApply: (ExpenseFilter, ExpenseSort) -> Unit,
+    onFilterChange: (ExpenseFilter) -> Unit,
+    onSortChange: (ExpenseSort) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-
-    var draftFilter by remember { mutableStateOf(currentFilter) }
-    var draftSort by remember { mutableStateOf(currentSort) }
     var showCustomDatePicker by remember { mutableStateOf(false) }
 
+    var nameQueryText by remember { mutableStateOf(currentFilter.nameQuery) }
     var minAmountText by remember {
         mutableStateOf(
             currentFilter.minAmountMinor?.let {
@@ -80,6 +82,27 @@ fun ExpenseFilterSortBottomSheet(
                 CurrencyFormatter.formatPlain(it, homeCurrency?.decimalPlaces ?: 2)
             } ?: "",
         )
+    }
+
+    val latestFilter by rememberUpdatedState(currentFilter)
+    val latestHomeCurrency by rememberUpdatedState(homeCurrency)
+    val latestOnFilterChange by rememberUpdatedState(onFilterChange)
+
+    LaunchedEffect(nameQueryText, minAmountText, maxAmountText) {
+        delay(Defaults.CONVERSION_DEBOUNCE_MS)
+        val decimals = latestHomeCurrency?.decimalPlaces ?: 2
+        val updated = latestFilter.copy(
+            nameQuery = nameQueryText,
+            minAmountMinor = minAmountText
+                .takeIf { it.isNotBlank() }
+                ?.let { CurrencyFormatter.parseToMinorUnits(it, decimals) },
+            maxAmountMinor = maxAmountText
+                .takeIf { it.isNotBlank() }
+                ?.let { CurrencyFormatter.parseToMinorUnits(it, decimals) },
+        )
+        if (updated != latestFilter) {
+            latestOnFilterChange(updated)
+        }
     }
 
     ModalBottomSheet(
@@ -102,15 +125,15 @@ fun ExpenseFilterSortBottomSheet(
 
             Column {
                 SortSection(
-                    selected = draftSort,
-                    onSelected = { draftSort = it },
+                    selected = currentSort,
+                    onSelected = onSortChange,
                 )
 
                 Spacer(Modifier.height(Dimens.SpacingMd))
 
                 DateSection(
-                    selected = draftFilter.dateRange,
-                    onSelected = { draftFilter = draftFilter.copy(dateRange = it) },
+                    selected = currentFilter.dateRange,
+                    onSelected = { onFilterChange(currentFilter.copy(dateRange = it)) },
                     onCustomClick = { showCustomDatePicker = true },
                 )
 
@@ -118,14 +141,14 @@ fun ExpenseFilterSortBottomSheet(
                     Spacer(Modifier.height(Dimens.SpacingMd))
                     CategorySection(
                         categories = categories,
-                        selectedIds = draftFilter.categoryIds,
+                        selectedIds = currentFilter.categoryIds,
                         onToggle = { id ->
-                            val next = if (id in draftFilter.categoryIds) {
-                                draftFilter.categoryIds - id
+                            val next = if (id in currentFilter.categoryIds) {
+                                currentFilter.categoryIds - id
                             } else {
-                                draftFilter.categoryIds + id
+                                currentFilter.categoryIds + id
                             }
-                            draftFilter = draftFilter.copy(categoryIds = next)
+                            onFilterChange(currentFilter.copy(categoryIds = next))
                         },
                     )
                 }
@@ -135,8 +158,8 @@ fun ExpenseFilterSortBottomSheet(
                 SectionLabel(stringResource(R.string.filter_name))
                 Spacer(Modifier.height(Dimens.SpacingXs))
                 OutlinedTextField(
-                    value = draftFilter.nameQuery,
-                    onValueChange = { draftFilter = draftFilter.copy(nameQuery = it) },
+                    value = nameQueryText,
+                    onValueChange = { nameQueryText = it },
                     placeholder = { Text(stringResource(R.string.filter_name_hint)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -155,24 +178,13 @@ fun ExpenseFilterSortBottomSheet(
                 Spacer(Modifier.height(Dimens.SpacingMd))
             }
 
-            ActionRow(
+            ClearAllRow(
                 onClearAll = {
-                    draftFilter = ExpenseFilter.Empty
-                    draftSort = ExpenseSort.DateNewest
+                    nameQueryText = ""
                     minAmountText = ""
                     maxAmountText = ""
-                },
-                onApply = {
-                    val decimals = homeCurrency?.decimalPlaces ?: 2
-                    val applied = draftFilter.copy(
-                        minAmountMinor = minAmountText
-                            .takeIf { it.isNotBlank() }
-                            ?.let { CurrencyFormatter.parseToMinorUnits(it, decimals) },
-                        maxAmountMinor = maxAmountText
-                            .takeIf { it.isNotBlank() }
-                            ?.let { CurrencyFormatter.parseToMinorUnits(it, decimals) },
-                    )
-                    onApply(applied, draftSort)
+                    onFilterChange(ExpenseFilter.Empty)
+                    onSortChange(ExpenseSort.DateNewest)
                 },
             )
 
@@ -182,10 +194,10 @@ fun ExpenseFilterSortBottomSheet(
 
     if (showCustomDatePicker) {
         CustomDateRangeDialog(
-            initial = draftFilter.dateRange as? DateRange.Custom,
+            initial = currentFilter.dateRange as? DateRange.Custom,
             onDismiss = { showCustomDatePicker = false },
             onConfirm = { start, end ->
-                draftFilter = draftFilter.copy(dateRange = DateRange.Custom(start, end))
+                onFilterChange(currentFilter.copy(dateRange = DateRange.Custom(start, end)))
                 showCustomDatePicker = false
             },
         )
@@ -356,20 +368,16 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun ActionRow(
+private fun ClearAllRow(
     onClearAll: () -> Unit,
-    onApply: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TextButton(onClick = onClearAll) {
             Text(stringResource(R.string.filter_clear_all))
-        }
-        Button(onClick = onApply) {
-            Text(stringResource(R.string.filter_apply))
         }
     }
 }

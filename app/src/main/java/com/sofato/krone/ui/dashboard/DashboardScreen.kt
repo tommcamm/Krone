@@ -241,6 +241,7 @@ internal fun buildArcSegments(
 
     return overview.categoryBreakdown
         .filter { it.spentMinor > 0 }
+        .sortedByDescending { it.spentMinor }
         .map { cs ->
             val categoryColor = try {
                 Color(cs.category.colorHex.toColorInt())

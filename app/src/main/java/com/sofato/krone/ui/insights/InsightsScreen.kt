@@ -102,7 +102,8 @@ fun InsightsScreen(
                 ChartCard(title = stringResource(R.string.insights_donut_title)) {
                     val remaining = (overview.discretionaryMinor - overview.spentMinor)
                         .coerceAtLeast(0L)
-                    val categorySlices = overview.categoryBreakdown.map { cs ->
+                    val sortedBreakdown = overview.categoryBreakdown.sortedByDescending { it.spentMinor }
+                    val categorySlices = sortedBreakdown.map { cs ->
                         DonutSlice(
                             label = cs.category.name,
                             value = cs.spentMinor,
@@ -134,7 +135,7 @@ fun InsightsScreen(
                     Spacer(Modifier.height(Dimens.SpacingSm))
 
                     // Legend (categories only)
-                    overview.categoryBreakdown.take(6).forEach { cs ->
+                    sortedBreakdown.take(6).forEach { cs ->
                         DonutLegendRow(
                             color = parseColor(cs.category.colorHex),
                             label = cs.category.name,

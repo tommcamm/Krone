@@ -176,11 +176,8 @@ fun ExpenseListScreen(
             currentSort = sort,
             categories = categories,
             homeCurrency = homeCurrency,
-            onApply = { newFilter, newSort ->
-                viewModel.updateFilter(newFilter)
-                viewModel.updateSort(newSort)
-                showFilterSheet = false
-            },
+            onFilterChange = viewModel::updateFilter,
+            onSortChange = viewModel::updateSort,
             onDismiss = { showFilterSheet = false },
         )
     }
