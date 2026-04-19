@@ -96,7 +96,7 @@ class ExpenseSheetViewModel @Inject constructor(
     private fun ensureInitialized() {
         if (isInitialized) return
         isInitialized = true
-        conversionHelper.startObserving(viewModelScope, _amountForConversion, _selectedCurrency)
+        conversionHelper.startObserving(viewModelScope, _amountForConversion, _selectedCurrency, _selectedDate)
     }
 
     fun resetForNew(categoryId: Long? = null) {

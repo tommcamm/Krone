@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import kotlin.time.Clock
 import kotlin.math.pow
 import kotlin.math.roundToLong
@@ -43,14 +44,19 @@ class ConversionPreviewHelper(
         scope: CoroutineScope,
         amountInput: StateFlow<String>,
         selectedCurrency: StateFlow<Currency?>,
+        selectedDate: StateFlow<LocalDate>,
     ) {
-        // Debounced conversion preview
+        // Preview re-runs on amount (debounced), currency, or date changes — the preview must
+        // reflect the rate that will actually be locked when the expense is saved.
         scope.launch {
-            combine(amountInput.debounce(Defaults.CONVERSION_DEBOUNCE_MS), selectedCurrency) { amount, currency ->
-                amount to currency
-            }.collect { (amountText, currency) ->
-                updateConversionPreview(amountText, currency)
-            }
+            combine(
+                amountInput.debounce(Defaults.CONVERSION_DEBOUNCE_MS),
+                selectedCurrency,
+                selectedDate,
+            ) { amount, currency, date -> Triple(amount, currency, date) }
+                .collect { (amountText, currency, date) ->
+                    updateConversionPreview(amountText, currency, date)
+                }
         }
 
         // Rate freshness
@@ -66,7 +72,7 @@ class ConversionPreviewHelper(
         }
     }
 
-    private suspend fun updateConversionPreview(amountText: String, currency: Currency?) {
+    private suspend fun updateConversionPreview(amountText: String, currency: Currency?, date: LocalDate) {
         if (currency == null) {
             _convertedAmountText.value = null
             return
@@ -82,7 +88,7 @@ class ConversionPreviewHelper(
             return
         }
         val amountMinor = (parsed * 10.0.pow(currency.decimalPlaces)).roundToLong()
-        val result = convertAmountUseCase(amountMinor, currency.code)
+        val result = convertAmountUseCase(amountMinor, currency.code, date)
         if (result != null) {
             val homeCurrency = currencyRepository.getCurrencyByCode(homeCode)
             if (homeCurrency != null) {
