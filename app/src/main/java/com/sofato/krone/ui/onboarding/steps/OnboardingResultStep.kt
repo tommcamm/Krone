@@ -130,6 +130,31 @@ fun OnboardingResultStep(
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(Dimens.SpacingLg))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            ),
+        ) {
+            Column(
+                modifier = Modifier.padding(Dimens.SpacingMd),
+                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingXs),
+            ) {
+                Text(
+                    text = "Splitting expenses with others?",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Text(
+                    text = "Krone has an optional Groups feature for shared costs " +
+                        "with friends, partners, or housemates. End-to-end encrypted, " +
+                        "opt-in, off by default. You can enable it anytime from Settings → Groups.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
     }
 }
 

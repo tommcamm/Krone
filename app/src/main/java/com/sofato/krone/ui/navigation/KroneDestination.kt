@@ -22,4 +22,6 @@ sealed interface KroneDestination {
     @Serializable data object MonthlyBudgets : KroneDestination
     @Serializable data object CurrencySettings : KroneDestination
     @Serializable data object Settings : KroneDestination
+    @Serializable data object GroupsSettings : KroneDestination
+    @Serializable data object GroupsEnrollment : KroneDestination
 }

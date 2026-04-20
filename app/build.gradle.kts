@@ -33,6 +33,19 @@ android {
         versionName = versionProps["VERSION_NAME"]!!
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Groups (Phase 0): donated-server pin + scheme policy.
+        // Placeholders — real donated URL/fingerprint set when the server is deployed.
+        buildConfigField(
+            "String",
+            "GROUPS_DONATED_SERVER_URL",
+            "\"https://groups.krone.app\""
+        )
+        buildConfigField(
+            "String",
+            "GROUPS_DONATED_SERVER_PK_HEX",
+            "\"0000000000000000000000000000000000000000000000000000000000000000\""
+        )
     }
 
     signingConfigs {
@@ -64,6 +77,7 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             enableUnitTestCoverage = true
+            buildConfigField("boolean", "GROUPS_ALLOW_HTTP", "true")
         }
         release {
             isMinifyEnabled = true
@@ -72,11 +86,13 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("boolean", "GROUPS_ALLOW_HTTP", "false")
         }
         create("share") {
             initWith(getByName("release"))
             signingConfig = signingConfigs.getByName("share")
             matchingFallbacks += "release"
+            buildConfigField("boolean", "GROUPS_ALLOW_HTTP", "false")
         }
     }
 
@@ -97,6 +113,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -208,12 +225,24 @@ dependencies {
     // Vico Charts
     implementation(libs.vico.compose.m3)
 
+    // Crypto (libsodium via Lazysodium). Android needs JNA as an AAR (bundles
+    // native .so files); exclude the transitive JAR variant to avoid META-INF
+    // resource collisions between the classes.jar inside the AAR and the JAR.
+    implementation(libs.lazysodium.android) {
+        exclude(group = "net.java.dev.jna", module = "jna")
+    }
+    implementation(libs.jna) {
+        artifact { type = "aar" }
+    }
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     testImplementation(libs.truth)
+    testImplementation(libs.lazysodium.java)
+    testImplementation(libs.jna)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

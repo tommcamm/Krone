@@ -28,6 +28,10 @@ import com.sofato.krone.data.db.entity.RecurringExpenseEntity
 import com.sofato.krone.data.db.entity.SavingsBalanceSnapshotEntity
 import com.sofato.krone.data.db.entity.SavingsBucketEntity
 import com.sofato.krone.data.db.entity.SavingsContributionEntity
+import com.sofato.krone.groups.data.db.dao.DeviceIdentityDao
+import com.sofato.krone.groups.data.db.dao.ServerEnrollmentDao
+import com.sofato.krone.groups.data.db.entity.DeviceIdentityEntity
+import com.sofato.krone.groups.data.db.entity.ServerEnrollmentEntity
 
 @Database(
     entities = [
@@ -43,8 +47,10 @@ import com.sofato.krone.data.db.entity.SavingsContributionEntity
         SavingsContributionEntity::class,
         MonthlySnapshotEntity::class,
         MlModelMetadataEntity::class,
+        DeviceIdentityEntity::class,
+        ServerEnrollmentEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -61,4 +67,6 @@ abstract class KroneDatabase : RoomDatabase() {
     abstract fun monthlySnapshotDao(): MonthlySnapshotDao
     abstract fun budgetAllocationDao(): BudgetAllocationDao
     abstract fun mlModelMetadataDao(): MlModelMetadataDao
+    abstract fun deviceIdentityDao(): DeviceIdentityDao
+    abstract fun serverEnrollmentDao(): ServerEnrollmentDao
 }

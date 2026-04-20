@@ -9,12 +9,14 @@ interface UserPreferencesRepository {
     val hasCompletedOnboarding: Flow<Boolean>
     val incomeDay: Flow<Int>
     val isHapticFeedbackEnabled: Flow<Boolean>
+    val isGroupsEnabled: Flow<Boolean>
     suspend fun setHomeCurrencyCode(code: String)
     suspend fun setDynamicColorEnabled(enabled: Boolean)
     suspend fun setDarkModeOverride(mode: String)
     suspend fun setHasCompletedOnboarding(completed: Boolean)
     suspend fun setIncomeDay(day: Int)
     suspend fun setHapticFeedbackEnabled(enabled: Boolean)
+    suspend fun setGroupsEnabled(enabled: Boolean)
     suspend fun clearAll()
     suspend fun getBackupData(): Map<String, String>
     suspend fun restoreFromBackupData(data: Map<String, String>)

@@ -91,7 +91,33 @@ object Migrations {
         }
     }
 
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(connection: SQLiteConnection) {
+            // Groups Phase 0: add opt-in identity + server enrollment tables.
+            // Additive — no existing tables touched.
+            connection.execSQL(
+                """CREATE TABLE IF NOT EXISTS device_identity (
+                    id INTEGER PRIMARY KEY NOT NULL,
+                    sigPk BLOB NOT NULL,
+                    sigSkEncIv BLOB NOT NULL,
+                    sigSkEnc BLOB NOT NULL,
+                    createdAt INTEGER NOT NULL
+                )""".trimIndent()
+            )
+            connection.execSQL(
+                """CREATE TABLE IF NOT EXISTS server_enrollment (
+                    id INTEGER PRIMARY KEY NOT NULL,
+                    url TEXT NOT NULL,
+                    serverSigPk BLOB NOT NULL,
+                    fingerprintWords TEXT NOT NULL,
+                    fingerprintHex TEXT NOT NULL,
+                    enrolledAt INTEGER NOT NULL
+                )""".trimIndent()
+            )
+        }
+    }
+
     val ALL_MIGRATIONS: Array<Migration> = arrayOf(
-        MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5,
+        MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
     )
 }

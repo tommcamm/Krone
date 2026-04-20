@@ -15,4 +15,5 @@ object PreferenceKeys {
     val HAS_COMPLETED_ONBOARDING = booleanPreferencesKey("has_completed_onboarding")
     val INCOME_DAY = intPreferencesKey("income_day")
     val HAPTIC_FEEDBACK_ENABLED = booleanPreferencesKey("haptic_feedback_enabled")
+    val GROUPS_ENABLED = booleanPreferencesKey("groups_enabled")
 }
