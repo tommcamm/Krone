@@ -38,6 +38,10 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         prefs[PreferenceKeys.HAPTIC_FEEDBACK_ENABLED] ?: true
     }
 
+    override val isGroupsEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[PreferenceKeys.GROUPS_ENABLED] ?: false
+    }
+
     override suspend fun setHomeCurrencyCode(code: String) {
         dataStore.edit { it[PreferenceKeys.HOME_CURRENCY_CODE] = code }
     }
@@ -62,6 +66,10 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         dataStore.edit { it[PreferenceKeys.HAPTIC_FEEDBACK_ENABLED] = enabled }
     }
 
+    override suspend fun setGroupsEnabled(enabled: Boolean) {
+        dataStore.edit { it[PreferenceKeys.GROUPS_ENABLED] = enabled }
+    }
+
     override suspend fun clearAll() {
         dataStore.edit { it.clear() }
     }
@@ -75,6 +83,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
         prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING]?.let { result["has_completed_onboarding"] = it.toString() }
         prefs[PreferenceKeys.INCOME_DAY]?.let { result["income_day"] = it.toString() }
         prefs[PreferenceKeys.HAPTIC_FEEDBACK_ENABLED]?.let { result["haptic_feedback_enabled"] = it.toString() }
+        prefs[PreferenceKeys.GROUPS_ENABLED]?.let { result["groups_enabled"] = it.toString() }
         return result
     }
 
@@ -87,6 +96,7 @@ class UserPreferencesRepositoryImpl @Inject constructor(
             data["has_completed_onboarding"]?.let { prefs[PreferenceKeys.HAS_COMPLETED_ONBOARDING] = it.toBooleanStrictOrNull() ?: false }
             data["income_day"]?.let { prefs[PreferenceKeys.INCOME_DAY] = it.toIntOrNull() ?: 1 }
             data["haptic_feedback_enabled"]?.let { prefs[PreferenceKeys.HAPTIC_FEEDBACK_ENABLED] = it.toBooleanStrictOrNull() ?: true }
+            data["groups_enabled"]?.let { prefs[PreferenceKeys.GROUPS_ENABLED] = it.toBooleanStrictOrNull() ?: false }
         }
     }
 }

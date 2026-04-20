@@ -17,6 +17,8 @@ import com.sofato.krone.data.db.dao.SavingsBalanceSnapshotDao
 import com.sofato.krone.data.db.dao.SavingsBucketDao
 import com.sofato.krone.data.db.dao.SavingsContributionDao
 import com.sofato.krone.data.db.migration.Migrations
+import com.sofato.krone.groups.data.db.dao.DeviceIdentityDao
+import com.sofato.krone.groups.data.db.dao.ServerEnrollmentDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,4 +51,6 @@ object DatabaseModule {
     @Provides fun provideMonthlySnapshotDao(db: KroneDatabase): MonthlySnapshotDao = db.monthlySnapshotDao()
     @Provides fun provideBudgetAllocationDao(db: KroneDatabase): BudgetAllocationDao = db.budgetAllocationDao()
     @Provides fun provideMlModelMetadataDao(db: KroneDatabase): MlModelMetadataDao = db.mlModelMetadataDao()
+    @Provides fun provideDeviceIdentityDao(db: KroneDatabase): DeviceIdentityDao = db.deviceIdentityDao()
+    @Provides fun provideServerEnrollmentDao(db: KroneDatabase): ServerEnrollmentDao = db.serverEnrollmentDao()
 }

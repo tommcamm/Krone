@@ -30,6 +30,9 @@ class SettingsViewModel @Inject constructor(
     val isHapticFeedbackEnabled: StateFlow<Boolean> = userPreferencesRepository.isHapticFeedbackEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val isGroupsEnabled: StateFlow<Boolean> = userPreferencesRepository.isGroupsEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     private val _events = MutableSharedFlow<SettingsEvent>()
     val events = _events.asSharedFlow()
 

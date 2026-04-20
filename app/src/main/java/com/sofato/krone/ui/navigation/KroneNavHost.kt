@@ -10,6 +10,8 @@ import com.sofato.krone.ui.budget.MonthlyBudgetsScreen
 import com.sofato.krone.ui.currency.CurrencySettingsScreen
 import com.sofato.krone.ui.income.ManageSalaryScreen
 import com.sofato.krone.ui.settings.SettingsScreen
+import com.sofato.krone.groups.ui.GroupsSettingsScreen
+import com.sofato.krone.groups.ui.ServerEnrollmentScreen
 import com.sofato.krone.ui.dashboard.DashboardScreen
 import com.sofato.krone.ui.expenses.CategoryManagementScreen
 import com.sofato.krone.ui.expenses.ExpenseListScreen
@@ -121,7 +123,20 @@ fun KroneNavHost(
             SettingsScreen(
                 onNavigateToCurrency = { navController.navigate(KroneDestination.CurrencySettings) },
                 onNavigateToCategories = { navController.navigate(KroneDestination.CategoryManagement) },
+                onNavigateToGroups = { navController.navigate(KroneDestination.GroupsSettings) },
                 onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable<KroneDestination.GroupsSettings> {
+            GroupsSettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToEnrollment = { navController.navigate(KroneDestination.GroupsEnrollment) },
+            )
+        }
+        composable<KroneDestination.GroupsEnrollment> {
+            ServerEnrollmentScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onEnrolled = { navController.popBackStack() },
             )
         }
     }

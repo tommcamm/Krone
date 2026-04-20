@@ -22,6 +22,10 @@ import com.sofato.krone.domain.repository.RecurringExpenseRepository
 import com.sofato.krone.domain.repository.SavingsBucketRepository
 import com.sofato.krone.domain.repository.SavingsContributionRepository
 import com.sofato.krone.domain.repository.UserPreferencesRepository
+import com.sofato.krone.groups.data.repository.DeviceIdentityRepositoryImpl
+import com.sofato.krone.groups.data.repository.ServerEnrollmentRepositoryImpl
+import com.sofato.krone.groups.domain.repository.DeviceIdentityRepository
+import com.sofato.krone.groups.domain.repository.ServerEnrollmentRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -64,4 +68,10 @@ abstract class RepositoryModule {
 
     @Binds @Singleton
     abstract fun bindExchangeRateRepository(impl: ExchangeRateRepositoryImpl): ExchangeRateRepository
+
+    @Binds @Singleton
+    abstract fun bindDeviceIdentityRepository(impl: DeviceIdentityRepositoryImpl): DeviceIdentityRepository
+
+    @Binds @Singleton
+    abstract fun bindServerEnrollmentRepository(impl: ServerEnrollmentRepositoryImpl): ServerEnrollmentRepository
 }

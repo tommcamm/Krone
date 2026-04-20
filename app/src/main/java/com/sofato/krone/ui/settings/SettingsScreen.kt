@@ -30,6 +30,7 @@ import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.outlined.Gavel
+import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Palette
@@ -72,12 +73,14 @@ import kotlinx.datetime.toLocalDateTime
 fun SettingsScreen(
     onNavigateToCurrency: () -> Unit,
     onNavigateToCategories: () -> Unit,
+    onNavigateToGroups: () -> Unit,
     onNavigateBack: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val darkModeOverride by viewModel.darkModeOverride.collectAsState()
     val isDynamicColorEnabled by viewModel.isDynamicColorEnabled.collectAsState()
     val isHapticFeedbackEnabled by viewModel.isHapticFeedbackEnabled.collectAsState()
+    val isGroupsEnabled by viewModel.isGroupsEnabled.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -241,6 +244,18 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Category,
                     title = stringResource(R.string.categories),
                     onClick = onNavigateToCategories,
+                    showChevron = true,
+                )
+            }
+
+            // Groups section (opt-in feature)
+            item { SettingsSection("Groups") }
+            item {
+                SettingsClickRow(
+                    icon = Icons.Outlined.Groups,
+                    title = "Shared groups",
+                    subtitle = if (isGroupsEnabled) "Enabled" else "Off · tap to set up",
+                    onClick = onNavigateToGroups,
                     showChevron = true,
                 )
             }

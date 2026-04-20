@@ -27,6 +27,8 @@ workmanager = "2.11.2"
 hiltWork = "1.3.0"
 vico = "3.1.0"
 jacoco = "0.8.12"
+lazysodium = "5.2.0"
+jna = "5.17.0"
 
 [libraries]
 # Core
@@ -97,6 +99,11 @@ androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", vers
 
 # Vico Charts
 vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
+
+# Crypto (libsodium bindings)
+lazysodium-android = { group = "com.goterl", name = "lazysodium-android", version.ref = "lazysodium" }
+lazysodium-java = { group = "com.goterl", name = "lazysodium-java", version.ref = "lazysodium" }
+jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
